@@ -1,0 +1,376 @@
+/*-
+ * ========================LICENSE_START=================================
+ * org.etsi.osl.tmf.api
+ * %%
+ * Copyright (C) 2019 openslice.io
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
+package org.etsi.osl.services.api;
+
+
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.common.model.Any;
+import org.etsi.osl.tmf.common.model.UserPartRoleType;
+import org.etsi.osl.tmf.common.model.service.Characteristic;
+import org.etsi.osl.tmf.common.model.service.Note;
+import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
+import org.etsi.osl.tmf.common.model.service.ServiceStateType;
+import org.etsi.osl.tmf.prm669.model.RelatedParty;
+import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCreate;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
+import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
+import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
+import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
+import org.etsi.osl.tmf.sim638.model.Service;
+import org.etsi.osl.tmf.sim638.model.ServiceActionQueueAction;
+import org.etsi.osl.tmf.sim638.model.ServiceCreate;
+import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
+import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
+
+@RunWith(SpringRunner.class)
+@Transactional
+@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
+//@AutoConfigureTestDatabase //this automatically uses h2
+@AutoConfigureMockMvc 
+@ActiveProfiles("testing")
+//@TestPropertySource(
+//		  locations = "classpath:application-testing.yml")
+public class ServiceInventoryIntegrationTest {
+
+
+	private static final transient Log logger = LogFactory.getLog( ServiceInventoryIntegrationTest.class.getName());
+	
+    @Autowired
+    private MockMvc mvc;
+
+	@Autowired
+	CatalogRepoService catalogRepoService;
+	
+
+	@Autowired
+	CategoryRepoService categRepoService;
+
+	@Autowired
+	ServiceSpecificationRepoService specRepoService;
+	
+
+	@Autowired
+	ServiceRepoService serviceRepoService;
+
+	  @Autowired
+	    private WebApplicationContext context;
+	    
+		@Before
+	    public void setup() {
+	        mvc = MockMvcBuilders
+	          .webAppContextSetup(context)
+	          .apply(springSecurity())
+	          .build();
+	    }
+	
+	@Test
+	public void _countDefaultProperties() {
+
+		assertThat( serviceRepoService.findAll().size() ).isEqualTo( 0 );
+		
+	}
+
+	@WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
+	@Test
+	public void testServiceCreateAndUpdate() throws UnsupportedEncodingException, IOException, Exception {
+	
+		/**
+		 * first add 2 specs
+		 */
+
+		File sspec = new File( "src/test/resources/testServiceSpec.json" );
+		InputStream in = new FileInputStream( sspec );
+		String sspectext = IOUtils.toString(in, "UTF-8");
+
+		
+		ServiceSpecificationCreate sspeccr1 = JsonUtils.toJsonObj( sspectext,  ServiceSpecificationCreate.class);
+		sspeccr1.setName("Spec1");
+		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);
+
+		//service 2 is an RFS
+		ServiceSpecificationCreate sspeccr2 = JsonUtils.toJsonObj( sspectext,  ServiceSpecificationCreate.class);
+		sspeccr2.setName("Spec2");
+		ResourceSpecificationRef resourceSpecificationItem = new ResourceSpecificationRef();
+		resourceSpecificationItem.setId("resourceid");
+		resourceSpecificationItem.setName("resourceName");		
+		sspeccr2.addResourceSpecificationItem(resourceSpecificationItem);		
+		ServiceSpecification responsesSpec2 = createServiceSpec(sspectext, sspeccr2);
+		/**
+		 * add them as bundle
+		 */
+
+		ServiceSpecificationCreate sspeccr3 = JsonUtils.toJsonObj( sspectext,  ServiceSpecificationCreate.class);
+		sspeccr3.setName("BundleExampleSpec");
+		sspeccr3.isBundle(true);
+		sspeccr3.addServiceSpecRelationshipWith( responsesSpec1 );
+		sspeccr3.addServiceSpecRelationshipWith( responsesSpec2 );		
+		ServiceSpecification responsesSpec3 = createServiceSpec(sspectext, sspeccr3);
+		
+		ServiceCreate aService = new ServiceCreate();
+		aService.setName("aNew Service");
+		aService.setCategory("Experimentation");
+		aService.setDescription("Experimentation Descr");
+		aService.setStartDate( OffsetDateTime.now(ZoneOffset.UTC ).toString() );
+		aService.setEndDate( OffsetDateTime.now(ZoneOffset.UTC ).toString() );
+		
+		Note noteItem = new Note();
+		noteItem.text("test note");
+		aService.addNoteItem(noteItem);
+		
+		Characteristic serviceCharacteristicItem = new Characteristic();
+		
+		serviceCharacteristicItem.setName( "ConfigStatus" );
+		serviceCharacteristicItem.setValue( new Any("NONE"));
+		aService.addServiceCharacteristicItem(serviceCharacteristicItem);
+
+		serviceCharacteristicItem = new Characteristic();		
+		serviceCharacteristicItem.setName( "NSLCM" );
+		serviceCharacteristicItem.setValue( new Any("nslcm_test"));
+		aService.addServiceCharacteristicItem(serviceCharacteristicItem);
+		
+
+		serviceCharacteristicItem = new Characteristic();		
+		serviceCharacteristicItem.setName( "NSR" );
+		serviceCharacteristicItem.setValue( new Any("nsr_test"));
+		aService.addServiceCharacteristicItem(serviceCharacteristicItem);
+		
+		ServiceSpecificationRef aServiceSpecificationRef = new ServiceSpecificationRef();
+		aServiceSpecificationRef.setId(responsesSpec3.getId() );
+		aServiceSpecificationRef.setName(responsesSpec3.getName());
+		
+		aService.setServiceSpecificationRef(aServiceSpecificationRef );
+
+		logger.info("aService JSON = " + JsonUtils.toJsonString( aService ));
+		
+		String responseService = mvc.perform(MockMvcRequestBuilders.post("/serviceInventory/v4/service")
+	            .with( SecurityMockMvcRequestPostProcessors.csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content( JsonUtils.toJson( aService ) ))
+			    .andExpect(status().isOk())
+			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	    	    .andExpect(status().isOk())
+	    	    .andReturn().getResponse().getContentAsString();
+		logger.info("testServiceOrderCreate = " + responseService);
+		Service responseSrvc = JsonUtils.toJsonObj( responseService,  Service.class);
+		
+		
+		logger.info("testService = " + JsonUtils.toJsonString( responseSrvc ));
+		
+
+		assertThat( responseSrvc.getCategory()  ).isEqualTo( "Experimentation" );
+		assertThat( responseSrvc.getDescription()  ).isEqualTo( "Experimentation Descr" );
+		assertThat( responseSrvc.getStartDate() ).isNotNull();
+		assertThat( responseSrvc.getEndDate() ).isNotNull();
+		assertThat( responseSrvc.getServiceCharacteristic().size()  ).isEqualTo( 3 );
+		assertThat( responseSrvc.getServiceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "NONE" )  ;
+		
+
+		assertThat( responseSrvc.getNote().size()  ).isEqualTo( 2 );
+		
+		boolean userPartyRoleexists = false;
+		for (RelatedParty r : responseSrvc.getRelatedParty()) {
+			if ( r.getName().equals( "osadmin" ) && r.getRole().equals( UserPartRoleType.REQUESTER.toString() )) {
+				userPartyRoleexists = true;
+			}
+		}
+		
+		assertThat(userPartyRoleexists  ).isTrue() ;
+
+		assertThat( serviceRepoService.findAll().size() ).isEqualTo( 1 );
+		
+		
+		ServiceUpdate servUpd = new ServiceUpdate();
+		servUpd.setEndDate( OffsetDateTime.now(ZoneOffset.UTC ).toString()  );
+		responseSrvc.getNote().stream().forEach(n -> servUpd.addNoteItem(n));
+		Note en = new Note();
+		en.text("test note2");
+		en.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+		servUpd.addNoteItem(en);		
+
+		for (Characteristic c : responseSrvc.getServiceCharacteristic()) {
+			if (c.getName().equals( "ConfigStatus" )) {
+				c.setValue( new Any("RUNNING"));
+			}
+			servUpd.addServiceCharacteristicItem(c);
+		}
+		servUpd.setState( ServiceStateType.ACTIVE );
+		serviceCharacteristicItem = new Characteristic();		
+		serviceCharacteristicItem.setName( "DeploymentRequestID" );
+		serviceCharacteristicItem.setValue( new Any("1007"));
+		servUpd.addServiceCharacteristicItem(serviceCharacteristicItem);
+		
+		
+		
+		String responseSorderUpd = mvc.perform(MockMvcRequestBuilders.patch("/serviceInventory/v4/service/" + responseSrvc.getId() )
+	            .with( SecurityMockMvcRequestPostProcessors.csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content( JsonUtils.toJson( servUpd ) ))
+			    .andExpect(status().isOk())
+			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	    	    .andExpect(status().isOk())
+	    	    .andReturn().getResponse().getContentAsString();
+		logger.info("testServiceOrderUpdate = " + responseSorderUpd);
+		Service responseSOUpd = JsonUtils.toJsonObj(responseSorderUpd,  Service.class);
+		
+
+		assertThat( serviceRepoService.findAll().size() ).isEqualTo( 1 );
+
+		assertThat( responseSOUpd.getEndDate() ).isNotNull();
+		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 5 );
+		assertThat( responseSOUpd.getServiceCharacteristic().size()  ).isEqualTo( 4 );
+		assertThat( responseSOUpd.getServiceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
+		assertThat( responseSOUpd.getServiceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "1007" )  ;
+		
+		 		
+		
+		
+//		responseSorderUpd = mvc.perform(MockMvcRequestBuilders.get("/serviceInventory/v4/service/updateServiceDeploymentDescriptor/1007" )
+//	            .with( SecurityMockMvcRequestPostProcessors.csrf())
+//				.contentType(MediaType.APPLICATION_JSON)
+//				.content( JsonUtils.toJson( servUpd ) ))
+//			    .andExpect(status().isOk())
+//			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+//	    	    .andExpect(status().isOk())
+//	    	    .andReturn().getResponse().getContentAsString();
+//		logger.info("testServiceOrderUpdate = " + responseSorderUpd);
+//		responseSOUpd = JsonUtils.toJsonObj(responseSorderUpd,  Service.class);
+//		assertThat( responseSOUpd.getServiceCharacteristic().size()  ).isEqualTo( 4 );
+//		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 5 );
+		
+		
+		
+		servUpd.setState( ServiceStateType.INACTIVE );
+		serviceCharacteristicItem = new Characteristic();		
+		serviceCharacteristicItem.setName( "DeploymentRequestID" );
+		serviceCharacteristicItem.setValue( new Any("1007"));
+		servUpd.addServiceCharacteristicItem(serviceCharacteristicItem);
+		
+		
+		
+		responseSorderUpd = mvc.perform(MockMvcRequestBuilders.patch("/serviceInventory/v4/service/" + responseSrvc.getId() )
+	            .with( SecurityMockMvcRequestPostProcessors.csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content( JsonUtils.toJson( servUpd ) ))
+			    .andExpect(status().isOk())
+			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	    	    .andExpect(status().isOk())
+	    	    .andReturn().getResponse().getContentAsString();
+		logger.info("testServiceOrderUpdate = " + responseSorderUpd);
+		responseSOUpd = JsonUtils.toJsonObj(responseSorderUpd,  Service.class);
+		
+
+		assertThat( serviceRepoService.findAll().size() ).isEqualTo( 1 );
+
+		assertThat( responseSOUpd.getEndDate() ).isNotNull();
+		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 7 );
+		assertThat( responseSOUpd.getServiceCharacteristic().size()  ).isEqualTo( 4 );
+		assertThat( responseSOUpd.getServiceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
+		assertThat( responseSOUpd.getServiceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "1007" )  ;
+		
+		 
+		assertThat( serviceRepoService.findAllServiceActionQueueItems().size() ).isEqualTo( 3 );		
+		assertThat( serviceRepoService.findAllServiceActionQueueItems().get(0).getAction() ).isEqualTo(ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE   );
+		
+	}
+		
+	
+	private ServiceSpecification createServiceSpec(String sspectext, ServiceSpecificationCreate sspeccr1) throws Exception{
+		
+		String responseSpec = mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")
+	            .with( SecurityMockMvcRequestPostProcessors.csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content( JsonUtils.toJson( sspeccr1 ) ))
+			    .andExpect(status().isOk())
+			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	    	    .andExpect(status().isOk())
+	    	    .andReturn().getResponse().getContentAsString();
+		ServiceSpecification responsesSpec1 = JsonUtils.toJsonObj(responseSpec,  ServiceSpecification.class);
+		logger.info("createServiceSpec = " + responseSpec);
+		return responsesSpec1;
+	}
+	
+
+	
+	
+	private LogicalResourceSpecification createLogicalResourceSpec() throws Exception{
+		File sspec = new File( "src/test/resources/testResourceSpec.json" );
+		InputStream in = new FileInputStream( sspec );
+		String sspectext = IOUtils.toString(in, "UTF-8");
+		ResourceSpecificationCreate sspeccr1 = JsonUtils.toJsonObj( sspectext,  ResourceSpecificationCreate.class);
+
+		URI url = new URI("/resourceCatalogManagement/v4/logicalResourceSpec");
+		
+		String responseSpec = mvc.perform(MockMvcRequestBuilders.post( url  )
+				.contentType(MediaType.APPLICATION_JSON)
+				.content( JsonUtils.toJson( sspeccr1 ) ))
+			    .andExpect(status().isOk())
+			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	    	    .andExpect(status().isOk())
+	    	    .andReturn().getResponse().getContentAsString();
+		
+		LogicalResourceSpecification responsesSpec1;
+		
+		responsesSpec1 = JsonUtils.toJsonObj(responseSpec,  LogicalResourceSpecification.class);
+		
+		logger.info("createResourceSpec = " + responseSpec);
+		return responsesSpec1;
+	}
+	
+	
+	
+}
