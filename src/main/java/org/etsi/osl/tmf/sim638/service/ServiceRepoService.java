@@ -785,7 +785,7 @@ public class ServiceRepoService {
 	 */
 	public List<ServiceActionQueueItem> findAllServiceActionQueueItems() {
 
-		return (List<ServiceActionQueueItem>) this.serviceActionQueueRepo.findByOrderByInsertedDate();
+		return (List<ServiceActionQueueItem>) this.serviceActionQueueRepo.findFirst10ByOrderByInsertedDate();
 	}
 	
 	public ServiceActionQueueItem  addServiceActionQueueItem(@Valid ServiceActionQueueItem item) {

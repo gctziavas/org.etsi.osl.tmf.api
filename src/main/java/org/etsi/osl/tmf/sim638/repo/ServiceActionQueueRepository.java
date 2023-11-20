@@ -34,5 +34,5 @@ public interface ServiceActionQueueRepository extends CrudRepository<ServiceActi
 	
 	Optional<ServiceActionQueueItem> findByUuid(String id);
 
-	List<ServiceActionQueueItem> findByOrderByInsertedDate();
+	List<ServiceActionQueueItem> findFirst10ByOrderByInsertedDate();
 }
