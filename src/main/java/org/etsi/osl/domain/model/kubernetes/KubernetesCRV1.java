@@ -47,7 +47,7 @@ public class KubernetesCRV1 extends DomainModelDefinition
 	private String json;
 	private Map<String, String> properties;
 	private Map<String, String> additionalProperties;
-    private String cr_spec;
+    private String cr_spec_applied;
 	private String statusCheckFieldName;
     private String statusCheckValueStandby;
     private String statusCheckValueAlarm;
@@ -119,6 +119,7 @@ public class KubernetesCRV1 extends DomainModelDefinition
         rsc.addResourceSpecificationCharacteristicItemShort( "json", "", EValueType.TEXT.getValue(), "", false);
 
         rsc.addResourceSpecificationCharacteristicItemShort( "_CR_SPEC", "", EValueType.TEXT.getValue(), "Used for providing the json Custom Resource description to apply", false);
+        rsc.addResourceSpecificationCharacteristicItemShort( "_CR_SPEC_APPLIED", "", EValueType.TEXT.getValue(), "Used for providing the json Custom Resource description as applied", false);
         rsc.addResourceSpecificationCharacteristicItemShort( "_CR_CHECK_FIELD", "", EValueType.TEXT.getValue(), "Used for providing the field that need to be checked for the resource status", false);
         rsc.addResourceSpecificationCharacteristicItemShort( "_CR_CHECKVAL_STANDBY", "", EValueType.TEXT.getValue(), "Used for providing the equivalent value from resource to signal the standby status", false);
         rsc.addResourceSpecificationCharacteristicItemShort( "_CR_CHECKVAL_ALARM", "", EValueType.TEXT.getValue(), "Used for providing the equivalent value from resource to signal the alarm status", false);
@@ -181,7 +182,7 @@ public class KubernetesCRV1 extends DomainModelDefinition
         rs.addResourceCharacteristicItemShort("json", this.json, EValueType.TEXT.getValue());
         
 
-        rs.addResourceCharacteristicItemShort("_CR_SPEC", this.cr_spec, EValueType.TEXT.getValue());
+        rs.addResourceCharacteristicItemShort("_CR_SPEC_APPLIED", this.cr_spec_applied, EValueType.TEXT.getValue());
         rs.addResourceCharacteristicItemShort("_CR_CHECK_FIELD", this.statusCheckFieldName, EValueType.TEXT.getValue());
         rs.addResourceCharacteristicItemShort("_CR_CHECKVAL_STANDBY", this.statusCheckValueStandby, EValueType.TEXT.getValue());
         rs.addResourceCharacteristicItemShort("_CR_CHECKVAL_ALARM", this.statusCheckValueAlarm, EValueType.TEXT.getValue());
