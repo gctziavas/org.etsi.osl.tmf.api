@@ -42,7 +42,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import org.etsi.osl.model.DeploymentDescriptor;
+import org.etsi.osl.model.nfv.DeploymentDescriptor;
 
 @Configuration
 //@RefreshScope
