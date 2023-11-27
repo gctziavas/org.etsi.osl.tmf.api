@@ -42,7 +42,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import org.etsi.osl.model.UserRoleType;
+import org.etsi.osl.model.nfv.UserRoleType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 

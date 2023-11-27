@@ -69,8 +69,8 @@ import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.etsi.osl.model.DeploymentDescriptor;
-import org.etsi.osl.model.DeploymentDescriptorVxFInstanceInfo;
+import org.etsi.osl.model.nfv.DeploymentDescriptor;
+import org.etsi.osl.model.nfv.DeploymentDescriptorVxFInstanceInfo;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 

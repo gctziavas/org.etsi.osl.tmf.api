@@ -86,9 +86,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.etsi.osl.model.ConstituentVxF;
-import org.etsi.osl.model.ExperimentOnBoardDescriptor;
-import org.etsi.osl.model.NetworkServiceDescriptor;
+import org.etsi.osl.model.nfv.ConstituentVxF;
+import org.etsi.osl.model.nfv.ExperimentOnBoardDescriptor;
+import org.etsi.osl.model.nfv.NetworkServiceDescriptor;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
