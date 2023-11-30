@@ -195,6 +195,16 @@
 		</dependency>
 		<dependency>
 			<groupId>org.etsi.osl</groupId>
+			<artifactId>org.etsi.osl.model.tmf</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.etsi.osl</groupId>
+			<artifactId>org.etsi.osl.model.k8s</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.etsi.osl</groupId>
 			<artifactId>org.etsi.osl.centrallog.client</artifactId>
 			<version>${project.version}</version>
 		</dependency>

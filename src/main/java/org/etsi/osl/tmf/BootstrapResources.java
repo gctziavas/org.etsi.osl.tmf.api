@@ -19,28 +19,20 @@
  */
 package org.etsi.osl.tmf;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.etsi.osl.domain.model.kubernetes.KubernetesCRDV1;
 import org.etsi.osl.domain.model.kubernetes.KubernetesCRV1;
 import org.etsi.osl.domain.model.kubernetes.KubernetesContextDefinition;
 import org.etsi.osl.domain.model.kubernetes.KubernetesSecret;
-import org.etsi.osl.tmf.common.model.BaseRootNamedEntity;
-import org.etsi.osl.tmf.rcm634.model.ResourceCandidate;
-import org.etsi.osl.tmf.rcm634.model.ResourceCandidateCreate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCandidateUpdate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalog;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalogCreate;
-import org.etsi.osl.tmf.rcm634.model.ResourceCatalogUpdate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCategory;
 import org.etsi.osl.tmf.rcm634.model.ResourceCategoryCreate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCategoryRef;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCreate;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
-import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRelationship;
 import org.etsi.osl.tmf.rcm634.repo.ResourceCatalogRepository;
 import org.etsi.osl.tmf.rcm634.repo.ResourceSpecificationRepository;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCandidateRepoService;
@@ -48,12 +40,9 @@ import org.etsi.osl.tmf.rcm634.reposervices.ResourceCatalogRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCategoryRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 
 @Service
