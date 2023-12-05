@@ -44,6 +44,7 @@ import org.etsi.osl.tmf.common.model.service.ServiceStateType;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.ri639.model.Resource;
 import org.etsi.osl.tmf.ri639.model.ResourceAttributeValueChangeNotification;
+import org.etsi.osl.tmf.ri639.model.ResourceCreateNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.etsi.osl.tmf.sim638.api.ServiceApiRouteBuilderEvents;
@@ -530,6 +531,12 @@ public class ServiceRepoService {
 			service.addNoteItem(noteItem);		
 		}
 		
+		
+		
+        if (charChangedForNotes.contains( "reconciledAt") ) { //this is just a sync message, so we need to igore such changes
+          serviceCharacteristicChanged = false;
+        }
+		
 		if (serviceCharacteristicChanged) {
 			Note noteItem = new Note();
 			noteItem.setText("Service Characteristic changed: " + charChangedForNotes );
@@ -987,13 +994,76 @@ public class ServiceRepoService {
               this.updateService( aService.getId(), supd , true, null, null); //update the service            
           //}
       }
+      
+    }
+    
+    
+    @Transactional  
+    public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {
+      
+      logger.debug("resourceCreatedEvent"); 
+      Resource res = resNotif.getEvent().getEvent().getResource();
+      logger.info("Will update services related to this resource with id = " + res.getId() );
+      
+      var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
+      
+      for (Service as : aservices) {
+        ServiceUpdate supd = new ServiceUpdate();
+          
+          Service aService = findByUuid(as.getId()); 
+          
+          //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {    
+              if ( res.getResourceStatus() != null ) {
+                switch (res.getResourceStatus()) {
+                  case STANDBY: {
+                    supd.setState( ServiceStateType.RESERVED);
+                    break;
+                  }
+                  case SUSPENDED: {
+                    supd.setState( ServiceStateType.INACTIVE);
+                    break;
+                  }
+                  case RESERVED: {
+                    supd.setState( ServiceStateType.RESERVED);
+                    break;
+                  }
+                  case UNKNOWN: {
+                    if (aService.getState().equals( ServiceStateType.ACTIVE  )) {
+                      supd.setState( ServiceStateType.TERMINATED);              
+                    }
+                    break;
+                  }
+                  case ALARM: {
+                    supd.setState( ServiceStateType.INACTIVE);
+                    break;
+                  }
+                  default:
+                    break;
+                } 
+              }
+             
+              
+              Note n = new Note();
+              n.setText("Supporting Resource "+ res.getId() + " State Changed with status: " +  res.getResourceStatus());
+              n.setAuthor( "SIM638-API" );
+              n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+              supd.addNoteItem( n );                  
+              
+              this.updateService( aService.getId(), supd , true, null, null); //update the service            
+          //}  //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
+      }
+      
+      
+      updateResourceFromKubernetesLabel( res );
+      
+      
     }
     
 
     @Transactional  
     public void  resourceStateChangedEvent(@Valid ResourceStateChangeNotification resNotif) {
       
-      logger.debug("ResourceAttributeValueChangeNotification"); 
+      logger.debug("resourceStateChangedEvent"); 
       Resource res = resNotif.getEvent().getEvent().getResource();
       logger.info("Will update services related to this resource with id = " + res.getId() );
       
