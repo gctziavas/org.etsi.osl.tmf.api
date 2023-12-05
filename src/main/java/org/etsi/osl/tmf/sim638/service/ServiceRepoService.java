@@ -593,7 +593,9 @@ public class ServiceRepoService {
 			
 			
 			this.addServiceActionQueueItem(saqi);
-			
+		}
+		
+		if ( serviceCharacteristicChanged) {
 			/*
 			 * Update any parent service
 			 */
