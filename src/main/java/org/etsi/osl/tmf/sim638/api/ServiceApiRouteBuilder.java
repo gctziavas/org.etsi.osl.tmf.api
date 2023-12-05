@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.tmf.common.model.Notification;
 import org.etsi.osl.tmf.ri639.model.ResourceAttributeValueChangeNotification;
+import org.etsi.osl.tmf.ri639.model.ResourceCreateNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
 import org.etsi.osl.tmf.sim638.model.ServiceActionQueueItem;
 import org.etsi.osl.tmf.sim638.model.ServiceCreate;
@@ -93,11 +94,13 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
     @Value("${EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED}")
     private String EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED = "";
 
-
-
     //services care to take this event in case they are related to a specific resource (see CRs)
     @Value("${EVENT_RESOURCE_STATE_CHANGED}")
     private String EVENT_RESOURCE_STATE_CHANGED = "";
+    
+
+    @Value("${EVENT_RESOURCE_CREATE}")
+    private String EVENT_RESOURCE_CREATE = "";
 
 	@Autowired
 	private ProducerTemplate template;
@@ -185,12 +188,24 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		.unmarshal().json( JsonLibrary.Jackson, DeploymentDescriptor.class, true)
 		.bean( serviceRepoService, "nfvCatalogNSResourceChanged(${body})");
 		
+		
+		
 
         from( EVENT_RESOURCE_STATE_CHANGED )
         .log(LoggingLevel.INFO, log, EVENT_RESOURCE_STATE_CHANGED + " message received and will be processed for service inventory!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .unmarshal().json( JsonLibrary.Jackson, ResourceStateChangeNotification.class, true)
         .bean( serviceRepoService, "resourceStateChangedEvent(${body})");
+        
+
+        from( EVENT_RESOURCE_CREATE )
+        .log(LoggingLevel.INFO, log, EVENT_RESOURCE_CREATE + " message received and will be processed for service inventory!")
+        .to("log:DEBUG?showBody=true&showHeaders=true")
+        .unmarshal().json( JsonLibrary.Jackson, ResourceCreateNotification.class, true)
+        .bean( serviceRepoService, "resourceCreatedEvent(${body})");
+        
+        
+        
         
         from( EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED )
         .log(LoggingLevel.INFO, log, EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED + " message received and will be processed for service inventory!")

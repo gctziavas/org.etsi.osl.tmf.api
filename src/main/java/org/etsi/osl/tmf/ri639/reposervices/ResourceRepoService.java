@@ -341,7 +341,7 @@ public class ResourceRepoService {
 
     boolean resourceStateChanged = false;
     if (resourceUpd.getResourceStatus() != null) {
-      if (resourceUpd.getResourceStatus().equals(resource.getResourceStatus())) {
+      if (!resourceUpd.getResourceStatus().equals(resource.getResourceStatus())) {
         resourceStateChanged = true;
       }
       resource.setResourceStatus(resourceUpd.getResourceStatus());
