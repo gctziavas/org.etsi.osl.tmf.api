@@ -799,6 +799,12 @@ public class ServiceRepoService {
 	
 	public ServiceActionQueueItem  addServiceActionQueueItem(@Valid ServiceActionQueueItem item) {
 		logger.debug("Will add ServiceActionQueueItem ServiceRefId: " + item.getServiceRefId() );
+		
+		//find any similar action inqueue and delete them, so to keep this one as the most recent
+		//List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+        //logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
+        this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+        
 		return this.serviceActionQueueRepo.save( item);
 	}
 
