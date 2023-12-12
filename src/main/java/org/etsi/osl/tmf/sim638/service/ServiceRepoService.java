@@ -1147,6 +1147,15 @@ public class ServiceRepoService {
             rref.id(res.getId()).name(res.getName());
             supd.addSupportingResourceItem(rref );
             
+            //copy characteristics from resource to service
+            for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
+              Characteristic cNew = new Characteristic();
+              cNew.setName( rChar.getName());
+              cNew.value( new Any( rChar.getValue() ));                
+              supd.addServiceCharacteristicItem( cNew );  
+            }
+            
+            
             Note n = new Note();
             n.setText("Supporting Resource "+ res.getId() + " Added in service" );
             n.setAuthor( "SIM638-API" );
