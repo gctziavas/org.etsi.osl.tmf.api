@@ -5,13 +5,13 @@ stages:
 build_docker_image:
   stage: build
   image: docker:24.0.5
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2375
+  # variables:
+  #   DOCKER_DRIVER: overlay2
+  #   DOCKER_HOST: tcp://docker:2375
     # DOCKER_TLS_CERTDIR: ""
-  services:
-    - name: docker:24.0.4-dind
-      alias: docker
+  # services:
+  #   - name: docker:24.0.4-dind
+  #     alias: docker
   before_script:
     - docker info
   script:
