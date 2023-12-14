@@ -6,7 +6,7 @@ build_docker_image:
   stage: build
   image: docker:24.0.5
   services:
-    - image: docker:24.0.5-dind
+    - name: docker:24.0.5-dind
       alias: docker
   variables:
     DOCKER_HOST: "tcp://docker:2375"
