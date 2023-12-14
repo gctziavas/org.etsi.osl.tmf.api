@@ -14,7 +14,6 @@ build_docker_image:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
   script:
-    - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG -f Dockerfile.tmfapi .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
