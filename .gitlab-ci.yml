@@ -7,8 +7,9 @@ build_docker_image:
   image: docker:24.0.5
   services:
     - name: docker:24.0.5-dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
+      alias: docker
+      # entrypoint: ["env", "-u", "DOCKER_HOST"]
+      # command: ["dockerd-entrypoint.sh"]
   variables:
     DOCKER_HOST: "unix:///var/run/docker.sock"
   script:
