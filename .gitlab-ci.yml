@@ -6,7 +6,7 @@ stages:
 download_jar:
   stage: prepare
   variables:
-    LOGGING_STRATEGY: ""
+    LOGGING_STRATEGY: "-q"
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
     - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
