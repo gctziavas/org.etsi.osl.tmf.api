@@ -2,15 +2,34 @@ stages:
   - build
   - deploy
 
-build_docker_image:
+build_image:
   stage: build
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  before_script:
+    - |
+      if [ "$CI_COMMIT_REF_NAME" = "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" ]; then
+        export IMAGE_TAG=$CI_COMMIT_TAG
+        export ADDITIONAL_TAG="latest"
+      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
+        export IMAGE_TAG="develop"
+      fi
+    - echo "Building Docker image with tag: $IMAGE_TAG"
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG -f Dockerfile.tmfapi .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - /kaniko/executor
+        --context "${CI_PROJECT_DIR}"
+        --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+        --destination "${CI_REGISTRY_IMAGE}:$IMAGE_TAG"
+    - |
+      if [ ! -z "$ADDITIONAL_TAG" ]; then
+        /kaniko/executor
+          --context "${CI_PROJECT_DIR}"
+          --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+          --destination "${CI_REGISTRY_IMAGE}:$ADDITIONAL_TAG"
+      fi
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" || $CI_COMMIT_REF_NAME == "develop"'
 
 deploy:
   stage: deploy
