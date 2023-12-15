@@ -44,11 +44,11 @@ build_image:
         --destination "${CI_REGISTRY_IMAGE}:$IMAGE_TAG"
         --verbosity=debug
     - |
-      if [ ! -z "$ADDITIONAL_TAG" ]; then
+      if [ "$CI_COMMIT_REF_NAME" = "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" ]; then
         /kaniko/executor
           --context "${CI_PROJECT_DIR}"
           --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-          --destination "${CI_REGISTRY_IMAGE}:$ADDITIONAL_TAG"
+          --destination "${CI_REGISTRY_IMAGE}:latest"
       fi
   rules:
     - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" || $CI_COMMIT_REF_NAME == "develop"'
