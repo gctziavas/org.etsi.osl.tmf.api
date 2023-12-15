@@ -12,7 +12,7 @@ download_jar:
     - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
     - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT
     - mvn -s ci_settings.xml dependency:copy -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT -DoutputDirectory=target/
-    - ls
+    - ls target
   artifacts:
     paths:
       - target/
@@ -20,7 +20,7 @@ download_jar:
 build_image:
   stage: build
   image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   before_script:
     - |
