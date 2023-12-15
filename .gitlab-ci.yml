@@ -7,7 +7,7 @@ download_jar:
   stage: prepare
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
-    - mvn dependency:get -Dartifact=org.etsi.osl.tmf.api:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT -Ddest=target/
+    - mvn --settings ci_settings.xml dependency:get -Dartifact=org.etsi.osl.tmf.api:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT -Ddest=target/
   artifacts:
     paths:
       - target/org.etsi.osl.tmf.api-1.2.0-SNAPSHOT-exec.jar
