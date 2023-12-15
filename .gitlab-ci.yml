@@ -10,7 +10,7 @@ build_image:
   before_script:
     - |
       if [ "$CI_COMMIT_REF_NAME" = "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" ]; then
-        export IMAGE_TAG=$CI_COMMIT_TAG
+        export IMAGE_TAG=$(echo $CI_COMMIT_REF_NAME | tr -cd '[:alnum:]._-') # $CI_COMMIT_TAG
         export ADDITIONAL_TAG="latest"
       elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
         export IMAGE_TAG="develop"
