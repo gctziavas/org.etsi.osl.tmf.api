@@ -35,7 +35,6 @@ build_image:
         export IMAGE_TAG="develop"
       fi
     - echo "Building Docker image with tag $IMAGE_TAG"
-    - docker info
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
