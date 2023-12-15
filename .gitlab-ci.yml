@@ -10,8 +10,8 @@ download_jar:
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
     - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
-    - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT -Ddest=target/
-    - ls
+    - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT
+    - mvn -s ci_settings.xml dependency:copy -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:1.2.0-SNAPSHOT -DoutputDirectory=target/
   artifacts:
     paths:
       - target/
