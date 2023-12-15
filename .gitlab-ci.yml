@@ -6,20 +6,20 @@ stages:
 variables:
   APP_VERSION: "1.2.0-SNAPSHOT"
 
-download_jar:
-  stage: prepare
-  variables:
-    LOGGING_STRATEGY: "-q"
-  image: maven:3.9.5-ibm-semeru-17-focal
-  script:
-    - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
-    - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION
-    - mvn -s ci_settings.xml dependency:copy -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION -DoutputDirectory=target/
-    - mv target/org.etsi.osl.tmf.api-*.jar target/org.etsi.osl.tmf.api-${APP_VERSION}-exec.jar
-    - ls target
-  artifacts:
-    paths:
-      - target/
+# download_jar:
+#   stage: prepare
+#   variables:
+#     LOGGING_STRATEGY: "-q"
+#   image: maven:3.9.5-ibm-semeru-17-focal
+#   script:
+#     - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
+#     - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION
+#     - mvn -s ci_settings.xml dependency:copy -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION -DoutputDirectory=target/
+#     - mv target/org.etsi.osl.tmf.api-*.jar target/org.etsi.osl.tmf.api-${APP_VERSION}-exec.jar
+#     - ls target
+#   artifacts:
+#     paths:
+#       - target/
       
 build_image:
   stage: build
@@ -44,18 +44,18 @@ build_image:
         --destination "${CI_REGISTRY_IMAGE}:$IMAGE_TAG"
         --verbosity=debug
     - |
-      if [ "$CI_COMMIT_REF_NAME" = "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" ]; then
+      if [ ! -z "$ADDITIONAL_TAG" ]; then
         echo "Executing Kaniko build for additional tag $ADDITIONAL_TAG"
         /kaniko/executor
           --context "${CI_PROJECT_DIR}"
           --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-          --destination "${CI_REGISTRY_IMAGE}:latest"
+          --destination "${CI_REGISTRY_IMAGE}:$ADDITIONAL_TAG"
       fi
   rules:
     - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" || $CI_COMMIT_REF_NAME == "develop"'
 
-deploy:
-  stage: deploy
-  image: maven:3.9.5-ibm-semeru-17-focal
-  script:
-    - mvn deploy -s ci_settings.xml -DskipTests
+# deploy:
+#   stage: deploy
+#   image: maven:3.9.5-ibm-semeru-17-focal
+#   script:
+#     - mvn deploy -s ci_settings.xml -DskipTests
