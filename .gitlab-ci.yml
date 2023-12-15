@@ -36,8 +36,8 @@ build_image:
       fi
     - echo "Building Docker image with tag $IMAGE_TAG"
   script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    # - mkdir -p /kaniko/.docker
+    # - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor
         --context "${CI_PROJECT_DIR}"
         --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
@@ -45,6 +45,7 @@ build_image:
         --verbosity=debug
     - |
       if [ "$CI_COMMIT_REF_NAME" = "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" ]; then
+        echo "Executing Kaniko build for additional tag $ADDITIONAL_TAG"
         /kaniko/executor
           --context "${CI_PROJECT_DIR}"
           --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
