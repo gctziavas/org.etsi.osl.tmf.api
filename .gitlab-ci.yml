@@ -15,7 +15,7 @@ download_jar:
     - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
     - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION
     - mvn -s ci_settings.xml dependency:copy -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION -DoutputDirectory=target/
-    - mv target/org.etsi.osl.tmf.api-*.jar target/org.etsi.osl.tmf.api-${APP_VERSION}.jar
+    - mv target/org.etsi.osl.tmf.api-*.jar target/org.etsi.osl.tmf.api-${APP_VERSION}-exec.jar
     - ls target
   artifacts:
     paths:
