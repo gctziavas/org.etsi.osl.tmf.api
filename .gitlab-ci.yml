@@ -1,46 +1,8 @@
-stages:
-  - java_build
-  - docker_build
-
-.default_rules: &default_rules
-  rules:
-    - if: '$CI_COMMIT_REF_NAME == "main"'
-    - if: '$CI_COMMIT_REF_NAME == "develop"'
-    - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry"'
-
-variables:
-  DEFAULT_TAG: "1.2.0-SNAPSHOT"
-
-before_script:
-  - |
-    if [ "$CI_COMMIT_REF_NAME" = "main" ] && [ -n "$CI_COMMIT_TAG" ]; then
-      export APP_VERSION=$CI_COMMIT_TAG
-    elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-      export APP_VERSION="develop"
-    else
-      export APP_VERSION=$DEFAULT_TAG
-    fi
-
+include:
+  - project: 'org.etsi.osl.main'
+    ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
+    file: '.gitlab-ci.yml'
+  
 java_build:
-  stage: java_build
-  image: maven:3.9.5-ibm-semeru-17-focal
-  script:
-    - mvn deploy -s ci_settings.xml -DskipTests -Dversion=$APP_VERSION
-  artifacts:
-    paths:
-      - target/
-  <<: *default_rules
-
-docker_build:
-  stage: docker_build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  script:
-    - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile" --destination "${CI_REGISTRY_IMAGE}:$APP_VERSION"
-    - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        echo "Pushing Docker image with tag 'latest'"
-        /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile" --destination "${CI_REGISTRY_IMAGE}:latest"
-      fi
-  <<: *default_rules
+  extends: java_build
+  
