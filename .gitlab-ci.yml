@@ -10,3 +10,5 @@ maven_build:
 
 docker_build:
   extends: .docker_build
+  needs:
+    - maven_build
