@@ -26,9 +26,6 @@ java_build:
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
     - mvn deploy -s ci_settings.xml -DskipTests -Dversion=$APP_VERSION
-    - ls
-    - ls target/
-    - mv target/org.etsi.osl.tmf.api-*.jar target/org.etsi.osl.tmf.api-${APP_VERSION}-exec.jar
   artifacts:
     paths:
       - target/
