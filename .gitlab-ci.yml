@@ -1,5 +1,5 @@
-stages:
-  - java_build
+# stages:
+#   - java_build
 #   - docker_build
 
 include:
@@ -8,6 +8,6 @@ include:
     file: '.gitlab-ci.yml'
   
 jar_build:
-  stage: java_build
+  # stage: java_build
   extends: java_build
   
