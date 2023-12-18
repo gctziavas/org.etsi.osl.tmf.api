@@ -3,6 +3,6 @@ include:
     ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
     file: '.gitlab-ci.yml'
   
-java_build:
+jar_build:
   extends: java_build
   
