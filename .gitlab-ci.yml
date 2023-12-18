@@ -2,6 +2,13 @@ stages:
   - java_build
   - docker_build
 
+# Define default rules as a YAML anchor
+.default_rules: &default_rules
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+    - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry"'
+
 variables:
   DEFAULT_TAG: "1.2.0-SNAPSHOT"
 
@@ -20,6 +27,7 @@ deploy_jar:
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
     - mvn deploy -s ci_settings.xml -DskipTests -Dversion=$APP_VERSION
+  <<: *default_rules
 
 download_jar:
   stage: docker_build
@@ -34,6 +42,7 @@ download_jar:
   artifacts:
     paths:
       - target/
+  <<: *default_rules
 
 build_image:
   stage: docker_build
@@ -47,9 +56,6 @@ build_image:
         echo "Pushing Docker image with tag 'latest'"
         /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile" --destination "${CI_REGISTRY_IMAGE}:latest"
       fi
-  rules:
-    - if: '$CI_COMMIT_REF_NAME == "main"'
-    - if: '$CI_COMMIT_REF_NAME == "develop"'
-    - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry"'
+  <<: *default_rules
   needs:
     - download_jar
