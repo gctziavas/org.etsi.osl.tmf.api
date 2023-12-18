@@ -1,37 +1,14 @@
-# include:
-#   - project: osl/code/org.etsi.osl.main
-#     ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
-#     file: 
-#       - ci-templates/default.yml
-#       - ci-templates/build.yml
-
-# maven_build:
-#   extends: .maven_build
-
-# docker_build:
-#   extends: .docker_build
-#   needs:
-#     - maven_build
-
-.default:
-  variables:
-    DEFAULT_TAG: "1.2.0-SNAPSHOT"
-  before_script:
-    - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ] && [ -n "$CI_COMMIT_TAG" ]; then
-        export APP_VERSION=$CI_COMMIT_TAG
-      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        export APP_VERSION="develop"
-      else
-        export APP_VERSION=$DEFAULT_TAG
-      fi
+include:
+  - project: osl/code/org.etsi.osl.main
+    ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
+    file: 
+      - ci-templates/default.yml
+      - ci-templates/build.yml
 
 maven_build:
-  extends: .default
-  stage: build
-  image: maven:3.9.5-ibm-semeru-17-focal
-  script:
-    - mvn deploy -s ci_settings.xml -DskipTests -Dversion=$APP_VERSION
-  artifacts:
-    paths:
-      - target/
+  extends: .maven_build
+
+docker_build:
+  extends: .docker_build
+  needs:
+    - maven_build
