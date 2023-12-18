@@ -1,5 +1,5 @@
 include:
-  - project: 'org.etsi.osl.main'
+  - project: 'rep/osl/code/org.etsi.osl.main'
     ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
     file: '.gitlab-ci.yml'
   
