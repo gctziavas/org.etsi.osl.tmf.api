@@ -1,8 +1,8 @@
 stages:
   - java_build
   - docker_build
+  - mr_build
 
-# Define default rules as a YAML anchor
 .default_rules: &default_rules
   rules:
     - if: '$CI_COMMIT_REF_NAME == "main"'
