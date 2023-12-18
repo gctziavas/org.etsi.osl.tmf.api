@@ -3,13 +3,23 @@ stages:
   - docker_build
 
 variables:
-  APP_VERSION: "1.2.0-SNAPSHOT"
+  DEFAULT_TAG: "1.2.0-SNAPSHOT"
+
+before_script:
+  - |
+    if [ "$CI_COMMIT_REF_NAME" = "main" ] && [ -n "$CI_COMMIT_TAG" ]; then
+      export APP_VERSION=$CI_COMMIT_TAG
+    elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
+      export APP_VERSION="develop"
+    else
+      export APP_VERSION=$DEFAULT_TAG
+    fi
 
 deploy_jar:
   stage: java_build
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
-    - mvn deploy -s ci_settings.xml -DskipTests
+    - mvn deploy -s ci_settings.xml -DskipTests -Dversion=$APP_VERSION
 
 download_jar:
   stage: docker_build
@@ -24,31 +34,14 @@ download_jar:
   artifacts:
     paths:
       - target/
-      
+
 build_image:
   stage: docker_build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
-  before_script:
-    - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        if [ -n "$CI_COMMIT_TAG" ]; then
-          IMAGE_TAG=$CI_COMMIT_TAG
-        else
-          IMAGE_TAG="latest" # Default tag if no specific tag is found
-        fi
-      elif [ "$CI_COMMIT_REF_NAME" = "develop" ]; then
-        IMAGE_TAG="develop"
-      else
-        IMAGE_TAG=$APP_VERSION
-      fi
-      echo "Building Docker image with tag $IMAGE_TAG"
   script:
-    - /kaniko/executor
-        --context "${CI_PROJECT_DIR}"
-        --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-        --destination "${CI_REGISTRY_IMAGE}:$IMAGE_TAG"
+    - /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile" --destination "${CI_REGISTRY_IMAGE}:$APP_VERSION"
   rules:
     - if: '$CI_COMMIT_REF_NAME == "main"'
     - if: '$CI_COMMIT_REF_NAME == "develop"'
