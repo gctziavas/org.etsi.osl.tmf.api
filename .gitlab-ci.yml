@@ -1,13 +1,18 @@
 stages:
-  - prepare
-  - build
-  - deploy
+  - java_build
+  - docker_build
 
 variables:
   APP_VERSION: "1.2.0-SNAPSHOT"
 
+deploy_jar:
+  stage: java_build
+  image: maven:3.9.5-ibm-semeru-17-focal
+  script:
+    - mvn deploy -s ci_settings.xml -DskipTests
+
 download_jar:
-  stage: prepare
+  stage: docker_build
   variables:
     LOGGING_STRATEGY: "-q"
   image: maven:3.9.5-ibm-semeru-17-focal
@@ -22,7 +27,7 @@ download_jar:
       - target/
       
 build_image:
-  stage: build
+  stage: docker_build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
@@ -52,9 +57,5 @@ build_image:
       fi
   rules:
     - if: '$CI_COMMIT_REF_NAME == "12-create-a-pipeline-to-build-and-publish-the-docker-image-in-gitlab-registry" || $CI_COMMIT_REF_NAME == "develop"'
-
-deploy:
-  stage: deploy
-  image: maven:3.9.5-ibm-semeru-17-focal
-  script:
-    - mvn deploy -s ci_settings.xml -DskipTests
+  needs:
+    - download_jar
