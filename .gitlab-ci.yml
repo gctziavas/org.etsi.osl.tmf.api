@@ -21,29 +21,20 @@ before_script:
       export APP_VERSION=$DEFAULT_TAG
     fi
 
-deploy_jar:
+java_build:
   stage: java_build
   image: maven:3.9.5-ibm-semeru-17-focal
   script:
     - mvn deploy -s ci_settings.xml -DskipTests -Dversion=$APP_VERSION
-  <<: *default_rules
-
-download_jar:
-  stage: docker_build
-  variables:
-    LOGGING_STRATEGY: "-q"
-  image: maven:3.9.5-ibm-semeru-17-focal
-  script:
-    - echo "Maven logging strategy set to quiet. For more verbosity, change LOGGING_STRATEGY in the job configuration."
-    - mvn -s ci_settings.xml $LOGGING_STRATEGY dependency:get -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION
-    - mvn -s ci_settings.xml dependency:copy -Dartifact=org.etsi.osl:org.etsi.osl.tmf.api:$APP_VERSION -DoutputDirectory=target/
+    - ls
+    - ls target/
     - mv target/org.etsi.osl.tmf.api-*.jar target/org.etsi.osl.tmf.api-${APP_VERSION}-exec.jar
   artifacts:
     paths:
       - target/
   <<: *default_rules
 
-build_image:
+docker_build:
   stage: docker_build
   image:
     name: gcr.io/kaniko-project/executor:debug
