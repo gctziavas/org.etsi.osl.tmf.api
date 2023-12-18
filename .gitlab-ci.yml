@@ -1,8 +1,13 @@
+stages:
+  - java_build
+#   - docker_build
+
 include:
   - project: 'osl/code/org.etsi.osl.main'
     ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
     file: '.gitlab-ci.yml'
   
 jar_build:
+  stage: java_build
   extends: java_build
   
