@@ -1,7 +1,9 @@
 include:
   - project: osl/code/org.etsi.osl.main
     ref: 12-update-gitlab-ci-file-to-use-inherited-jobs-from-main
-    file: 'ci-templates/build.yml'
+    file: 
+      - '.gitlab-ci.yml'
+      - 'ci-templates/build.yml'
 
 maven_build:
   extends: .maven_build
