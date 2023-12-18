@@ -7,3 +7,6 @@ include:
 
 maven_build:
   extends: .maven_build
+
+docker_build:
+  extends: .docker_build
