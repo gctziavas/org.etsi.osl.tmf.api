@@ -47,5 +47,3 @@ docker_build:
         /kaniko/executor --context "${CI_PROJECT_DIR}" --dockerfile "${CI_PROJECT_DIR}/Dockerfile" --destination "${CI_REGISTRY_IMAGE}:latest"
       fi
   <<: *default_rules
-  needs:
-    - download_jar
