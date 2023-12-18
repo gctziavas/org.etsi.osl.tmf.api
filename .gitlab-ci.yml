@@ -1,7 +1,6 @@
 stages:
   - java_build
   - docker_build
-  - mr_build
 
 .default_rules: &default_rules
   rules:
