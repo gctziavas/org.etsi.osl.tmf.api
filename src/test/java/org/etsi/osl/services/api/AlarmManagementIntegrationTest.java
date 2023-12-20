@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.am642.model.AffectedService;
 import org.etsi.osl.tmf.am642.model.Alarm;
@@ -46,6 +47,8 @@ import org.etsi.osl.tmf.am642.model.Comment;
 import org.etsi.osl.tmf.am642.model.PerceivedSeverityType;
 import org.etsi.osl.tmf.am642.model.ProbableCauseType;
 import org.etsi.osl.tmf.am642.reposervices.AlarmRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

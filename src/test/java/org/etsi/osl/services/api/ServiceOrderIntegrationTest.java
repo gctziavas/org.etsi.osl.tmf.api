@@ -40,6 +40,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
@@ -67,6 +68,8 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
 import org.etsi.osl.tmf.so641.model.ServiceRestriction;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

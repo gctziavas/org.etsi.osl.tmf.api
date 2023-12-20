@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.lcm.model.ELCMRulePhase;
@@ -19,6 +20,8 @@ import org.etsi.osl.tmf.lcm.model.LCMRuleSpecification;
 import org.etsi.osl.tmf.lcm.model.LCMRuleSpecificationCreate;
 import org.etsi.osl.tmf.lcm.model.LCMRuleSpecificationUpdate;
 import org.etsi.osl.tmf.lcm.reposervices.LCMRuleSpecificationRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

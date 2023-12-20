@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
@@ -63,6 +64,8 @@ import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
 import org.etsi.osl.tmf.ri639.model.ResourceRelationship;
 import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -291,7 +294,7 @@ public class ResourceInventoryIntegrationTest {
 		assertThat( resourceRepoService.findAll().size() ).isEqualTo( 2 );
 
 		assertThat( responseRes2.getEndOperatingDate() ).isNotNull();
-		assertThat( responseRes2.getNote().size()  ).isEqualTo( 3 );
+		assertThat( responseRes2.getNote().size()  ).isEqualTo( 4 );
 		assertThat( responseRes2.getResourceCharacteristic().size()  ).isEqualTo( 2 );
 		assertThat( responseRes2.getResourceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
 		assertThat( responseRes2.getResourceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "007a008" )  ;
@@ -317,7 +320,7 @@ public class ResourceInventoryIntegrationTest {
 		assertThat( resourceRepoService.findAll().size() ).isEqualTo( 2 );
 
 		assertThat( responseRes2.getEndOperatingDate() ).isNotNull();
-		assertThat( responseRes2.getNote().size()  ).isEqualTo( 3 );
+		assertThat( responseRes2.getNote().size()  ).isEqualTo( 4 );
 		assertThat( responseRes2.getResourceCharacteristic().size()  ).isEqualTo( 2 );
 		assertThat( responseRes2.getResourceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
 		assertThat( responseRes2.getResourceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "007a008" )  ;
@@ -344,7 +347,7 @@ public class ResourceInventoryIntegrationTest {
 		assertThat( resourceRepoService.findAll().size() ).isEqualTo( 2 );
 
 		assertThat( responseRes2.getEndOperatingDate() ).isNotNull();
-		assertThat( responseRes2.getNote().size()  ).isEqualTo( 4 );
+		assertThat( responseRes2.getNote().size()  ).isEqualTo( 5 );
 		assertThat( responseRes2.getResourceCharacteristic().size()  ).isEqualTo( 2 );
 		assertThat( responseRes2.getResourceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
 		assertThat( responseRes2.getResourceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "007a008" )  ;

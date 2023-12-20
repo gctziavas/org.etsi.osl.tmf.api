@@ -42,6 +42,7 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.BootstrapRepository;
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
@@ -76,6 +77,8 @@ import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -519,9 +522,9 @@ public class ServiceCatalogIntegrationTest {
 		val.setValueType( EValueType.ARRAY.toString());
 		val.setValue( new Any("1" ,"a second value") );
 		responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharacteristicValue().add(val);
-		ServiceSpecCharRelationship scrObj = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[0])[0];
-		ServiceSpecCharRelationship scrObj2 = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[0])[1];
-		ServiceSpecCharRelationship scrObj3 = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[0])[2];
+		ServiceSpecCharRelationship scrObj = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[0];
+		ServiceSpecCharRelationship scrObj2 = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[1];
+		ServiceSpecCharRelationship scrObj3 = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[2];
 		scrObj3.setName("FORTESTING");
 		String preid = scrObj3.getId();
 		responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().remove(scrObj);
@@ -792,7 +795,7 @@ public class ServiceCatalogIntegrationTest {
 		assertThat( clonedSpec.findSpecCharacteristicByName("Coverage") ).isNotNull();
 		assertThat( clonedSpec.findSpecCharacteristicByName("Coverage").getUuid() ).isNotNull();		
 		assertThat( clonedSpec.findSpecCharacteristicByName("Coverage").getUuid()  ).isNotEqualTo( responsesSpec3.findSpecCharacteristicByName("Coverage").getUuid() );
-		
+		assertThat(clonedSpec.getServiceSpecCharacteristic().size()).isEqualTo(responsesSpec3.getServiceSpecCharacteristic().size());
 
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
 		
@@ -809,7 +812,7 @@ public class ServiceCatalogIntegrationTest {
 		
 
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 5 );
-		
+
 		String responseSpecClonedVINNI = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneVINNI?serviceName=aVINNIService")
 				.contentType(MediaType.APPLICATION_JSON)
 				.param("addServiceTopology", "true")
@@ -827,20 +830,19 @@ public class ServiceCatalogIntegrationTest {
 			    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 	    	    .andExpect(status().isOk())
 	    	    .andReturn().getResponse().getContentAsString();
-
 		clonedSpec = JsonUtils.toJsonObj( responseSpecClonedVINNI,  ServiceSpecification.class);
-		assertThat( clonedSpec.getName() ).isEqualTo( "aVINNIService" );	
+		assertThat( clonedSpec.getName() ).isEqualTo( "aVINNIService" );
 
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 16 );
-		
+
 
 		/**
 		 * the bundle service characteristics must be same with the total of characteristics of each service in the bundle
 		 * 
 		 */
-		
-		assertThat( clonedSpec.getServiceSpecCharacteristic().size() ).isEqualTo( 70 );
-		
+
+		assertThat( clonedSpec.getServiceSpecCharacteristic().size() ).isEqualTo( 71 );
+
 		
 		String responseSpecClonedVINNI2 = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneVINNI?serviceName=aVINNIService")
 				.contentType(MediaType.APPLICATION_JSON)

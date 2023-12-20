@@ -416,7 +416,7 @@ public class ResourceRepoService {
     if (resourceCharacteristicChanged) {
       Note n = new Note();
       n.setText("Resource characteristics changed : " + charsChanged);
-      n.setAuthor( "RI6398-API" );
+      n.setAuthor( "RI639-API" );
       n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
       resource.addNoteItem( n );                  
       
@@ -425,7 +425,7 @@ public class ResourceRepoService {
     if (resourceStateChanged) {
       Note n = new Note();
       n.setText("Resource resourceStateChanged changed to " + resource.getResourceStatus().toString() );
-      n.setAuthor( "RI6398-API" );
+      n.setAuthor( "RI639-API" );
       n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
       resource.addNoteItem( n );                  
       
