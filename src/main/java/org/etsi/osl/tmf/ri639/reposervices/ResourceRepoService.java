@@ -284,7 +284,7 @@ public class ResourceRepoService {
 
   @Transactional
   public Resource updateResource(String id, @Valid ResourceUpdate resourceUpd,
-      boolean propagateToSO) {
+      boolean triggerServiceActionQueue) {
     Resource resource = this.getResourceEager(id);
 
     if (resource == null) {
