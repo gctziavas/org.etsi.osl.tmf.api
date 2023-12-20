@@ -31,6 +31,7 @@ import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.cm629.model.Customer;
 import org.etsi.osl.tmf.cm629.model.CustomerCreate;
@@ -39,6 +40,8 @@ import org.etsi.osl.tmf.cm629.service.CustomerRepoService;
 import org.etsi.osl.tmf.pm632.model.ContactMedium;
 import org.etsi.osl.tmf.pm632.model.MediumCharacteristic;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

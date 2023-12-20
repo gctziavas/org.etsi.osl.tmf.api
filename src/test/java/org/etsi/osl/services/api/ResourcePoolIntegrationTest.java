@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.service.ResourceRef;
 import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
@@ -65,6 +66,8 @@ import org.etsi.osl.tmf.rpm685.model.ResourcePoolCreate;
 import org.etsi.osl.tmf.rpm685.model.ResourcePoolRef;
 import org.etsi.osl.tmf.rpm685.model.ResourcePoolUpdate;
 import org.etsi.osl.tmf.rpm685.reposervices.ResourcePoolRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

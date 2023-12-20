@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
+
 import org.etsi.osl.tmf.pm632.model.Characteristic;
 import org.etsi.osl.tmf.pm632.model.ContactMedium;
 import org.etsi.osl.tmf.pm632.model.Individual;
@@ -44,6 +45,8 @@ import org.etsi.osl.tmf.pm632.model.Organization;
 import org.etsi.osl.tmf.pm632.model.OrganizationCreate;
 import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.pm632.reposervices.OrganizationRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
