@@ -34,6 +34,7 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.pcm620.model.BundledProductOffering;
 import org.etsi.osl.tmf.pcm620.model.Catalog;
@@ -61,6 +62,8 @@ import org.etsi.osl.tmf.pcm620.reposervices.ProductCategoryRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

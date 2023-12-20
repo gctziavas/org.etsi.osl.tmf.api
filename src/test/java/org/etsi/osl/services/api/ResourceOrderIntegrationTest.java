@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
@@ -36,6 +37,8 @@ import org.etsi.osl.tmf.ro652.model.ExternalId;
 import org.etsi.osl.tmf.ro652.model.ResourceOrder;
 import org.etsi.osl.tmf.ro652.model.ResourceOrderCreate;
 import org.etsi.osl.tmf.ro652.model.ResourceOrderItem;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +81,7 @@ public class ResourceOrderIntegrationTest {
 
 	public void testResourceOrderCreate() throws UnsupportedEncodingException, IOException, Exception {
 
-		File sspec = new File("src/main/resources/resourceSpecifications/OSMTenantResourceSpecification.json");
+		File sspec = new File("src/main/resources/resourceSpecifications/osm-tenant.openslice.io.json");
 		InputStream in = new FileInputStream(sspec);
 		String sspectext = IOUtils.toString(in, "UTF-8");
 
@@ -162,7 +165,7 @@ public class ResourceOrderIntegrationTest {
 		assertThat( responseRO.getRequestedCompletionDate()).isNotNull();
 		assertThat( responseRO.getOrderItem().stream().findFirst().get() ).isNotNull();
 		assertThat( responseRO.getOrderItem().stream().findFirst().get().getResource().getId() ).isNotNull();
-		assertThat( responseRO.getOrderItem().stream().findFirst().get().getResource().getName() ).isEqualTo( "OSM Tenant" ) ;
+		assertThat( responseRO.getOrderItem().stream().findFirst().get().getResource().getName() ).isEqualTo( "osm-tenant.openslice.io" ) ;
 	}
 
 	private ResourceSpecification createResourceSpec(ResourceSpecificationUpdate sspeccr1) throws Exception {

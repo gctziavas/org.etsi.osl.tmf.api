@@ -35,12 +35,15 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.etsi.osl.tmf.stm653.model.ServiceTestCreate;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecificationCreate;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestRepoService;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestSpecificationRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
