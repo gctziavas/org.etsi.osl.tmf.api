@@ -92,7 +92,7 @@ public class ResourceApiRouteBuilder extends RouteBuilder {
 		.log(LoggingLevel.INFO, log, CATALOG_UPD_RESOURCE + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ResourceUpdate.class, true)
-		.bean( resourceRepoService, "updateResource(${header.resourceId}, ${body}, ${header.propagateToSO} )")
+		.bean( resourceRepoService, "updateResource(${header.resourceId}, ${body}, ${header.triggerServiceActionQueue} )")
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );		
 
