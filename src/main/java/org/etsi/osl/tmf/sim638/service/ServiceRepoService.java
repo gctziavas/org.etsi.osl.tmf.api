@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ import org.etsi.osl.tmf.ri639.model.Resource;
 import org.etsi.osl.tmf.ri639.model.ResourceAttributeValueChangeNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceCreateNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
+import org.etsi.osl.tmf.ri639.repo.ResourceRepository;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.etsi.osl.tmf.sim638.api.ServiceApiRouteBuilderEvents;
 import org.etsi.osl.tmf.sim638.model.Service;
@@ -87,6 +89,10 @@ public class ServiceRepoService {
 
 	@Autowired
 	ServiceRepository serviceRepo;
+	
+
+    @Autowired
+    ResourceRepository resourceRepo;
 	
 	@Autowired
 	ServiceActionQueueRepository serviceActionQueueRepo;
@@ -1041,126 +1047,59 @@ public class ServiceRepoService {
     
     
     @Transactional  
-    public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {
-      
+    public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {      
       logger.debug("resourceCreatedEvent"); 
       Resource res = resNotif.getEvent().getEvent().getResource();
-      logger.info("Will update services related to this resource with id = " + res.getId() );
-      
-      var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
-      
-      for (Service as : aservices) {
-        ServiceUpdate supd = new ServiceUpdate();
-          
-          Service aService = findByUuid(as.getId()); 
-          
-          //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {    
-              if ( res.getResourceStatus() != null ) {
-                switch (res.getResourceStatus()) {
-                  case STANDBY: {
-                    supd.setState( ServiceStateType.RESERVED);
-                    break;
-                  }
-                  case SUSPENDED: {
-                    supd.setState( ServiceStateType.INACTIVE);
-                    break;
-                  }
-                  case RESERVED: {
-                    supd.setState( ServiceStateType.RESERVED);
-                    break;
-                  }
-                  case UNKNOWN: {
-                    if (aService.getState().equals( ServiceStateType.ACTIVE  )) {
-                      supd.setState( ServiceStateType.TERMINATED);              
-                    }
-                    break;
-                  }
-                  case ALARM: {
-                    supd.setState( ServiceStateType.INACTIVE);
-                    break;
-                  }
-                  default:
-                    break;
-                } 
-              }
-             
-              
-              Note n = new Note();
-              n.setText("Supporting Resource "+ res.getId() + " State Changed with status: " +  res.getResourceStatus());
-              n.setAuthor( "SIM638-API" );
-              n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-              supd.addNoteItem( n );                  
-              
-              this.updateService( aService.getId(), supd , true, null, null); //update the service            
-          //}  //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
-      }
-      
-      
-      updateResourceFromKubernetesLabel( res );
-      
-      
+      updateServiceFromresourceChange(res);
     }
     
 
-    @Transactional  
-    public void  resourceStateChangedEvent(@Valid ResourceStateChangeNotification resNotif) {
-      
-      logger.debug("resourceStateChangedEvent"); 
+    @Transactional
+    public void resourceStateChangedEvent(@Valid ResourceStateChangeNotification resNotif) {
+
+      logger.debug("resourceStateChangedEvent");
       Resource res = resNotif.getEvent().getEvent().getResource();
+      updateServiceFromresourceChange(res);
+    }
+      
+    private void updateServiceFromresourceChange(Resource res) {
+
       logger.info("Will update services related to this resource with id = " + res.getId() );
-      
-      var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
-      
+      var aservices = findServicesHavingThisSupportingResourceID(res.getId());
+
       for (Service as : aservices) {
+
+        Service aService = findByUuid(as.getId());
+
+
+        List<Resource> rlist = new ArrayList<Resource>();
+        for (ResourceRef rref : aService.getSupportingResource()) {
+          Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
+          if (result.isPresent()) {
+            rlist.add( result.get() );
+          }
+        }
+
+        rlist.add(res); //add also this one
+        
+        ServiceStateType nextState = aService.findNextStateBasedOnSupportingResources(rlist);
+
         ServiceUpdate supd = new ServiceUpdate();
-          
-          Service aService = findByUuid(as.getId()); 
-          
-          //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {    
-              if ( res.getResourceStatus() != null ) {
-                switch (res.getResourceStatus()) {
-                  case STANDBY: {
-                    supd.setState( ServiceStateType.RESERVED);
-                    break;
-                  }
-                  case SUSPENDED: {
-                    supd.setState( ServiceStateType.INACTIVE);
-                    break;
-                  }
-                  case RESERVED: {
-                    supd.setState( ServiceStateType.RESERVED);
-                    break;
-                  }
-                  case UNKNOWN: {
-                    if (aService.getState().equals( ServiceStateType.ACTIVE  )) {
-                      supd.setState( ServiceStateType.TERMINATED);              
-                    }
-                    break;
-                  }
-                  case ALARM: {
-                    supd.setState( ServiceStateType.INACTIVE);
-                    break;
-                  }
-                  default:
-                    break;
-                } 
-              }
-             
-              
-              Note n = new Note();
-              n.setText("Supporting Resource "+ res.getId() + " State Changed with status: " +  res.getResourceStatus());
-              n.setAuthor( "SIM638-API" );
-              n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-              supd.addNoteItem( n );                  
-              
-              this.updateService( aService.getId(), supd , true, null, null); //update the service            
-          //}  //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
+        supd.setState(nextState);
+        Note n = new Note();
+        n.setText("Supporting Resource " + res.getId() + " State Changed with status: "
+            + res.getResourceStatus() + ".Next state is " + nextState);
+        n.setAuthor("SIM638-API");
+        n.setDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
+        supd.addNoteItem(n);
+
+        this.updateService(aService.getId(), supd, true, null, null); // update the service
       }
-      
-      
-      updateResourceFromKubernetesLabel( res );
-      
-      
+
+
+      updateResourceFromKubernetesLabel(res);
+
+
     }
 
     private void updateResourceFromKubernetesLabel(Resource res) {
