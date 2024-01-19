@@ -1137,8 +1137,7 @@ public class ServiceRepoService {
             n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
             supd.addNoteItem( n );                  
             
-            this.updateService( aService.getId(), supd , true, null, null); //update the service         
-            
+            this.updateService( aService.getId(), supd , true, null, null); //update the service
           }
          
         }
