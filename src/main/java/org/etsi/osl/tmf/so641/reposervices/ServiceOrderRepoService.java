@@ -318,6 +318,7 @@ public class ServiceOrderRepoService {
 		return res;
 	}
 
+    @Transactional
 	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate) {
 		ServiceOrder so = new ServiceOrder();
 		so.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
