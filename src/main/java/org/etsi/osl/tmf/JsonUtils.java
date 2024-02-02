@@ -2,6 +2,7 @@ package org.etsi.osl.tmf;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +40,16 @@ public class JsonUtils {
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 		mapper.registerModule(new JavaTimeModule());
 		return mapper.readValue(content, valueType);
+	}
+
+	public static <T> List<T> toListOfJsonObj(String content, Class<T> valueType) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		List<T> listOfJsonObj = mapper.readValue(
+				content,
+				mapper.getTypeFactory().constructCollectionType(
+						List.class, valueType));
+		return listOfJsonObj;
 	}
 
 }
