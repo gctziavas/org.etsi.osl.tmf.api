@@ -521,17 +521,31 @@ public class ServiceCatalogIntegrationTest {
 		ServiceSpecCharacteristicValue val = new ServiceSpecCharacteristicValue();
 		val.setValueType( EValueType.ARRAY.toString());
 		val.setValue( new Any("1" ,"a second value") );
-		responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharacteristicValue().add(val);
-		ServiceSpecCharRelationship scrObj = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[0];
-		ServiceSpecCharRelationship scrObj2 = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[1];
-		ServiceSpecCharRelationship scrObj3 = responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[2];
+
+		// Following code related to 'notNullRelationshipIndex' is to fix random test failures due to getServiceSpecCharacteristic
+		// not having 3 ServiceSpecCharRelationships
+		int notNullRelationshipIndex = 0;
+		for (int i=0; i<responsesSpecUpd.getServiceSpecCharacteristic().size(); i++){
+			ServiceSpecCharRelationship scrObj1 = responsesSpecUpd.getServiceSpecCharacteristic().get(i).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[0];
+			ServiceSpecCharRelationship scrObj2 = responsesSpecUpd.getServiceSpecCharacteristic().get(i).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[1];
+			ServiceSpecCharRelationship scrObj3 = responsesSpecUpd.getServiceSpecCharacteristic().get(i).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[2];
+
+			if (scrObj1 != null && scrObj2 != null && scrObj3 != null){
+				notNullRelationshipIndex = i;
+				break;
+			}
+		}
+		responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharacteristicValue().add(val);
+		ServiceSpecCharRelationship scrObj1 = responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[0];
+		ServiceSpecCharRelationship scrObj2 = responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[1];
+		ServiceSpecCharRelationship scrObj3 = responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharRelationship().toArray( new ServiceSpecCharRelationship[3])[2];
 		scrObj3.setName("FORTESTING");
 		String preid = scrObj3.getId();
-		responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().remove(scrObj);
-		responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().remove(scrObj2);
+		responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharRelationship().remove(scrObj1);
+		responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharRelationship().remove(scrObj2);
 		ServiceSpecCharRelationship scrObj4 = new ServiceSpecCharRelationship();
 		scrObj4.setName("ANEWCharRel");
-		responsesSpecUpd.getServiceSpecCharacteristic().get(0).getServiceSpecCharRelationship().add(scrObj4);
+		responsesSpecUpd.getServiceSpecCharacteristic().get(notNullRelationshipIndex).getServiceSpecCharRelationship().add(scrObj4);
 		
 		response2 = mvc.perform(MockMvcRequestBuilders.patch("/serviceCatalogManagement/v4/serviceSpecification/" + responsesSpec.getId() )
 	            .with( SecurityMockMvcRequestPostProcessors.csrf())
