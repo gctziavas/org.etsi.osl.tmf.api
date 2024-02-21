@@ -1,0 +1,5 @@
+{
+  "description": "A Test Service Candidate",
+  "version": "1.8",
+  "name": "Test Service Candidate"
+}
