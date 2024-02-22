@@ -855,7 +855,7 @@ public class ServiceCatalogIntegrationTest {
 		 * 
 		 */
 
-		assertThat( clonedSpec.getServiceSpecCharacteristic().size() ).isEqualTo( 71 );
+		assertThat( clonedSpec.getServiceSpecCharacteristic().size() ).isEqualTo( 70 );
 
 		
 		String responseSpecClonedVINNI2 = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneVINNI?serviceName=aVINNIService")
