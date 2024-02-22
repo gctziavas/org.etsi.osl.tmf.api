@@ -346,8 +346,16 @@ public class ServiceRepoService {
 				.orElse(null);
 	}
 
+	/**
+	 * @param id
+	 * @param servUpd
+	 * @param triggerServiceActionQueue
+	 * @param updatedFromParentService
+	 * @param updatedFromChildService
+	 * @return
+	 */
 	@Transactional
-	public Service updateService(String id, @Valid ServiceUpdate servUpd, boolean propagateToSO, Service updatedFromParentService, Service updatedFromChildService ) {
+	public Service updateService(String id, @Valid ServiceUpdate servUpd, boolean triggerServiceActionQueue, Service updatedFromParentService, Service updatedFromChildService ) {
 		//Service service = this.findByUuid(id);
 		Service service = this.getServiceEager(id);
 		
@@ -458,7 +466,7 @@ public class ServiceRepoService {
 		boolean serviceCharacteristicChangedContainsPrimitive = false;
 		
 		String charChangedForNotes = "";
-		List<Characteristic> childCharacteristicsChanged = new ArrayList<>();
+		//List<Characteristic> childCharacteristicsChanged = new ArrayList<>();
 		
 
 		//logger.info("==> Will update serviceToString: " + service.toString() );
@@ -472,15 +480,18 @@ public class ServiceRepoService {
 						Characteristic origChar = service.getServiceCharacteristicByName( n.getName() );
 						if ( ( origChar !=null ) && ( origChar.getValue() !=null ) && ( origChar.getValue().getValue() !=null )) {
 							if ( !origChar.getValue().getValue().equals(n.getValue().getValue()) ) {									
-								if ( n.getName().contains("::") ) {
-									childCharacteristicsChanged.add(n); //the characteristic needs later to be propagated to its children
-									
-								}
-								serviceCharacteristicChanged = true; //change only characteristics of this service
-								charChangedForNotes += n.getName(); 
-								if ( n.getName().toUpperCase().contains(  "PRIMITIVE::" ) ){
-									serviceCharacteristicChangedContainsPrimitive = true;
-								}
+//								if ( n.getName().contains("::") ) {
+//									childCharacteristicsChanged.add(n); //the characteristic needs later to be propagated to its children
+//									
+//								}
+							  
+							  if ( !n.getName().contains("::") ) { //it is not a child characteristic
+                                serviceCharacteristicChanged = true; //change only characteristics of this service
+                                charChangedForNotes += n.getName() + ", "; 
+							  }
+                              if ( n.getName().toUpperCase().contains(  "PRIMITIVE::" ) ){
+                                serviceCharacteristicChangedContainsPrimitive = true;
+                              }
 								
 							}
 						}
@@ -490,8 +501,10 @@ public class ServiceRepoService {
 								 );
 					} else {
 						service.addServiceCharacteristicItem(n);
-						serviceCharacteristicChanged = true;	
-						charChangedForNotes += n.getName() + ", "; 
+						if ( !n.getName().contains("::") ) { //it is not a child characteristic
+	                        serviceCharacteristicChanged = true;    
+	                        charChangedForNotes += n.getName() + ", "; 						  
+						}
 					}
 				
 			}						
@@ -561,7 +574,7 @@ public class ServiceRepoService {
 		 * Save in ServiceActionQueueItem
 		 */
 		
-		if (propagateToSO && stateChanged) {
+		if (triggerServiceActionQueue && stateChanged) {
 		  ServiceActionQueueItem saqi = new ServiceActionQueueItem();
 		  saqi.setServiceRefId( id );
 		  saqi.setOriginalServiceInJSON( originaServiceAsJson );
@@ -594,7 +607,7 @@ public class ServiceRepoService {
 			}
 		}		
 		
-		if ( serviceCharacteristicChanged &&  service.getState().equals(  ServiceStateType.ACTIVE) &&  previousState!=null && previousState.equals( ServiceStateType.ACTIVE) ) {
+		if ( serviceCharacteristicChanged &&  service.getState().equals(  ServiceStateType.ACTIVE) &&  previousState!=null && previousState.equals( ServiceStateType.ACTIVE) && triggerServiceActionQueue ) {
 			ServiceActionQueueItem saqi = new ServiceActionQueueItem();
 			saqi.setServiceRefId( id );
 			saqi.setOriginalServiceInJSON( originaServiceAsJson );		
@@ -602,65 +615,88 @@ public class ServiceRepoService {
 			if ( serviceCharacteristicChangedContainsPrimitive ) {
 				saqi.setAction( ServiceActionQueueAction.EVALUATE_CHARACTERISTIC_CHANGED_MANODAY2  );					
 			}
-			
-			
-			
 			this.addServiceActionQueueItem(saqi);
 		}
 		
-		if ( serviceCharacteristicChanged) {
-			/*
-			 * Update any parent service
-			 */
-			for (ServiceRelationship serviceRelationship : service.getServiceRelationship()) {
-				if ( serviceRelationship.getRelationshipType().equals("ChildService") ) {
-					if ( serviceRelationship.getService() != null ) {
-						if ( updatedFromParentService == null ||
-								(updatedFromParentService!=null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId())) ) { //avoid circular
-							propagateCharacteristicsToParentService(service, serviceRelationship.getService().getId());
-						}
-							
-					}
-				}
-			}			
-		}
+        /*
+         * Update any parent service
+         */
+        for (ServiceRelationship serviceRelationship : service.getServiceRelationship()) {
+          if (serviceRelationship.getRelationshipType().equals("ChildService")) {
+            if (serviceRelationship.getService() != null) {
+
+
+              if (serviceCharacteristicChanged) {
+                if (updatedFromParentService == null || (updatedFromParentService != null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId()))) { // avoid circular
+                  ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
+                  saqi.setServiceRefId(serviceRelationship.getService().getId());
+                  try {
+                    saqi.setOriginalServiceInJSON( mapper.writeValueAsString( service ) ); //pass the child service as is
+                  } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                  }
+                  saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_CHARACTERISTIC_CHANGED);
+                  this.addServiceActionQueueItem(saqi);
+                }
+
+              }
+              
+              if (stateChanged) {
+                if (updatedFromParentService == null || (updatedFromParentService != null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId()))) { // avoid circular
+                  ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
+                  saqi.setServiceRefId(serviceRelationship.getService().getId());
+                  try {
+                    saqi.setOriginalServiceInJSON( mapper.writeValueAsString( service ) ); //pass the child service as is
+                  } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                  }
+                  saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_STATE_CHANGE );
+                  this.addServiceActionQueueItem(saqi);
+                }
+              }
+
+
+
+            }
+          }
+        }	
 		
-		if ( childCharacteristicsChanged.size()>0 ) {
-			if ( service.getSupportingService() != null ) { //propagate to children
-				//copy characteristics values from CFS Service  to its supporting services.
-				for (ServiceRef sref : service.getSupportingService() ) {
-					Service aSupportingService = this.findByUuid( sref.getId() );
-					ServiceUpdate supd = new ServiceUpdate();
-					boolean foundCharacteristicForChild = false;
-					for (Characteristic supportingServiceChar : aSupportingService.getServiceCharacteristic() ) {
-						
-						for (Characteristic serviceCharacteristic : childCharacteristicsChanged ) {
-							if ( serviceCharacteristic.getName().contains( aSupportingService.getName() + "::" + supportingServiceChar.getName() )) { 									
-								//supportingServiceChar.setValue( serviceCharacteristic.getValue() );
-								Characteristic cNew = new Characteristic();
-								cNew.setName(supportingServiceChar.getName());
-								cNew.value( new Any( serviceCharacteristic.getValue() ));
-								supd.addServiceCharacteristicItem( cNew );
-								foundCharacteristicForChild = true;
-							}
-						}
-					}					
-					
-					if ( foundCharacteristicForChild ) {
-						Note n = new Note();
-						n.setText("Child Characteristics Changed"  );
-						n.setAuthor( "SIM638-API" );
-						n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-						supd.addNoteItem( n );					
-						if ( updatedFromChildService == null || 
-								(updatedFromChildService!=null && !updatedFromChildService.getId().equals( aSupportingService.getId())) ) { //avoid circular
-							this.updateService( aSupportingService.getId(), supd , false, service, null); //update the service							
-						} 
-					}
-				}
-				
-			}
-		}
+//		if ( childCharacteristicsChanged.size()>0 ) {
+//			if ( service.getSupportingService() != null ) { //propagate to children
+//				//copy characteristics values from CFS Service  to its supporting services.
+//				for (ServiceRef sref : service.getSupportingService() ) {
+//					Service aSupportingService = this.findByUuid( sref.getId() );
+//					ServiceUpdate supd = new ServiceUpdate();
+//					boolean foundCharacteristicForChild = false;
+//					for (Characteristic supportingServiceChar : aSupportingService.getServiceCharacteristic() ) {
+//						
+//						for (Characteristic serviceCharacteristic : childCharacteristicsChanged ) {
+//							if ( serviceCharacteristic.getName().contains( aSupportingService.getName() + "::" + supportingServiceChar.getName() )) { 									
+//								//supportingServiceChar.setValue( serviceCharacteristic.getValue() );
+//								Characteristic cNew = new Characteristic();
+//								cNew.setName(supportingServiceChar.getName());
+//								cNew.value( new Any( serviceCharacteristic.getValue() ));
+//								supd.addServiceCharacteristicItem( cNew );
+//								foundCharacteristicForChild = true;
+//							}
+//						}
+//					}					
+//					
+//					if ( foundCharacteristicForChild ) {
+//						Note n = new Note();
+//						n.setText("Child Characteristics Changed"  );
+//						n.setAuthor( "SIM638-API" );
+//						n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+//						supd.addNoteItem( n );					
+//						if ( updatedFromChildService == null || 
+//								(updatedFromChildService!=null && !updatedFromChildService.getId().equals( aSupportingService.getId())) ) { //avoid circular
+//							this.updateService( aSupportingService.getId(), supd , false, service, null); //update the service							
+//						} 
+//					}
+//				}
+//				
+//			}
+//		}
 		
 		
 		
@@ -698,19 +734,19 @@ public class ServiceRepoService {
 	 * @param service
 	 * @param parentService
 	 */
-	private void propagateCharacteristicsToParentService(Service childService, String parentServiceId) {
-		
-		ServiceUpdate servUpd = new ServiceUpdate();
-		
-		for (Characteristic n : childService.getServiceCharacteristic()) {			
-			Characteristic serviceCharacteristicItem = new Characteristic();
-			serviceCharacteristicItem.setName( childService.getName() + "::" + n.getName());
-			serviceCharacteristicItem.setValue( new Any( n.getValue() ));
-			servUpd.addServiceCharacteristicItem(serviceCharacteristicItem);
-		}
-		
-		this.updateService( parentServiceId, servUpd, false, null, childService);
-	}
+//	private void propagateCharacteristicsToParentService(Service childService, String parentServiceId) {
+//		
+//		ServiceUpdate servUpd = new ServiceUpdate();
+//		
+//		for (Characteristic n : childService.getServiceCharacteristic()) {			
+//			Characteristic serviceCharacteristicItem = new Characteristic();
+//			serviceCharacteristicItem.setName( childService.getName() + "::" + n.getName());
+//			serviceCharacteristicItem.setValue( new Any( n.getValue() ));
+//			servUpd.addServiceCharacteristicItem(serviceCharacteristicItem);
+//		}
+//		
+//		this.updateService( parentServiceId, servUpd, false, null, childService);
+//	}
 
 	public String getServiceEagerAsString(String id) throws JsonProcessingException {
 		Service s = this.getServiceEager(id);
@@ -807,8 +843,8 @@ public class ServiceRepoService {
 		logger.debug("Will add ServiceActionQueueItem ServiceRefId: " + item.getServiceRefId() );
 		
 		//find any similar action inqueue and delete them, so to keep this one as the most recent
-		//List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
-        //logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
+		List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+        logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
         this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
         
 		return this.serviceActionQueueRepo.save( item);
@@ -1101,8 +1137,7 @@ public class ServiceRepoService {
             n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
             supd.addNoteItem( n );                  
             
-            this.updateService( aService.getId(), supd , true, null, null); //update the service         
-            
+            this.updateService( aService.getId(), supd , true, null, null); //update the service
           }
          
         }

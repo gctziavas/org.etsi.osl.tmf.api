@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
 //@RefreshScope
@@ -87,6 +88,7 @@ public class ServiceOrderApiRouteBuilderEvents extends RouteBuilder {
 	/**
 	 * @param n
 	 */
+    @Transactional
 	public void publishEvent(final Notification n, final String objId) {
 		n.setEventType( n.getClass().getName());
 		logger.info("will send Event for type " + n.getEventType());

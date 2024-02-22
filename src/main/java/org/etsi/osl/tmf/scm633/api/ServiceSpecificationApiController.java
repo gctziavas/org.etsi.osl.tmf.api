@@ -186,18 +186,6 @@ public class ServiceSpecificationApiController implements ServiceSpecificationAp
 			@Parameter(description = "Identifier of the ServiceSpecification", required = true) @PathVariable("id") String id,
 			@Parameter(description = "Comma-separated properties to provide in response") @Valid @RequestParam(value = "fields", required = false) String fields) {
 		try {
-
-			Object attr = request.getSession().getAttribute("SPRING_SECURITY_CONTEXT");
-
-			if ( attr!=null) {
-				SecurityContextHolder.setContext( (SecurityContext) attr );  
-			}
-			if ( SecurityContextHolder.getContext().getAuthentication() != null ) {
-				Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-				centralLogger.log( CLevel.INFO, "User " + authentication.getName() + " retrieve spec id: "+ id , compname );
-			} else {
-				centralLogger.log( CLevel.INFO, "Anonymous retrieve spec id: "+ id, compname );				
-			}	
 			
 			return new ResponseEntity<ServiceSpecification>(serviceSpecificationRepoService.findByUuid(id),
 					HttpStatus.OK);
