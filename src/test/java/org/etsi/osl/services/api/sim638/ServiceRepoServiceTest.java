@@ -121,86 +121,86 @@ public class ServiceRepoServiceTest {
 //    }
 
 
-//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-//    @Test
-//    public void testDeleteServiceActionQueueItemByUuid() throws Exception {
-//        ServiceActionQueueItem saqi = new ServiceActionQueueItem();
-//        ServiceActionQueueItem saqiResponse = serviceRepoService.addServiceActionQueueItem(saqi);
-//        String uuid = saqiResponse.getUuid();
-//
-//        serviceRepoService.deleteServiceActionQueueItemByUuid(uuid);
-//        List<ServiceActionQueueItem> saqiList = serviceRepoService.findAllServiceActionQueueItems();
-//
-//        boolean idExists = false;
-//        for (ServiceActionQueueItem s : saqiList) {
-//            if ( s.getUuid().equals( uuid ) ) {
-//                idExists= true;
-//                break;
-//            }
-//        }
-//        assertThat( idExists ).isFalse();
-//    }
-//
-//
-//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-//    @Test
-//    public void testFindAllActiveServicesToTerminate() throws Exception {
-//        String response = createService();
-//        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
-//        String id = responsesService.getId();
-//
-//        List<String> serviceList = serviceRepoService.findAllActiveServicesToTerminate();
-//
-//        boolean idExists = false;
-//        for (String serviceId : serviceList) {
-//            if (serviceId.equals(id)) {
-//                idExists = true;
-//                break;
-//            }
-//        }
-//        assertThat( idExists ).isTrue();
-//    }
-//
-//
-//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-//    @Test
-//    public void testFindAllActiveAndReservedServicesOfPartners() throws Exception {
-//        String response = createService();
-//        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
-//        String id = responsesService.getId();
-//
-//        List<String> serviceList = serviceRepoService.findAllActiveAndReservedServicesOfPartners();
-//
-//        boolean idExists = false;
-//        for (String serviceId : serviceList) {
-//            if (serviceId.equals(id)) {
-//                idExists = true;
-//                break;
-//            }
-//        }
-//        assertThat( idExists ).isTrue();
-//    }
-//
-//
-//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-//    @Test
-//    public void testFindDeploymentRequestID() throws Exception {
-//        String response = createService();
-//        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
-//        String id = responsesService.getId();
-//
-//        List<Service> serviceList = serviceRepoService.findDeploymentRequestID("1234567890");
-//
-//        boolean idExists = false;
-//        for (Service s : serviceList) {
-//            if ( s.getId().equals( id ) ) {
-//                idExists= true;
-//            }
-//        }
-//        assertThat( idExists ).isTrue();
-//    }
-//
-//
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testDeleteServiceActionQueueItemByUuid() throws Exception {
+        ServiceActionQueueItem saqi = new ServiceActionQueueItem();
+        ServiceActionQueueItem saqiResponse = serviceRepoService.addServiceActionQueueItem(saqi);
+        String uuid = saqiResponse.getUuid();
+
+        serviceRepoService.deleteServiceActionQueueItemByUuid(uuid);
+        List<ServiceActionQueueItem> saqiList = serviceRepoService.findAllServiceActionQueueItems();
+
+        boolean idExists = false;
+        for (ServiceActionQueueItem s : saqiList) {
+            if ( s.getUuid().equals( uuid ) ) {
+                idExists= true;
+                break;
+            }
+        }
+        assertThat( idExists ).isFalse();
+    }
+
+
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testFindAllActiveServicesToTerminate() throws Exception {
+        String response = createService();
+        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+        String id = responsesService.getId();
+
+        List<String> serviceList = serviceRepoService.findAllActiveServicesToTerminate();
+
+        boolean idExists = false;
+        for (String serviceId : serviceList) {
+            if (serviceId.equals(id)) {
+                idExists = true;
+                break;
+            }
+        }
+        assertThat( idExists ).isTrue();
+    }
+
+
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testFindAllActiveAndReservedServicesOfPartners() throws Exception {
+        String response = createService();
+        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+        String id = responsesService.getId();
+
+        List<String> serviceList = serviceRepoService.findAllActiveAndReservedServicesOfPartners();
+
+        boolean idExists = false;
+        for (String serviceId : serviceList) {
+            if (serviceId.equals(id)) {
+                idExists = true;
+                break;
+            }
+        }
+        assertThat( idExists ).isTrue();
+    }
+
+
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testFindDeploymentRequestID() throws Exception {
+        String response = createService();
+        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+        String id = responsesService.getId();
+
+        List<Service> serviceList = serviceRepoService.findDeploymentRequestID("1234567890");
+
+        boolean idExists = false;
+        for (Service s : serviceList) {
+            if ( s.getId().equals( id ) ) {
+                idExists= true;
+            }
+        }
+        assertThat( idExists ).isTrue();
+    }
+
+
 //    // org.hibernate.exception.JDBCConnectionException: Unable to acquire JDBC Connection [HikariPool-1 - Connection is not available, request timed out after 30000ms.]
 ////    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 ////    @Test
