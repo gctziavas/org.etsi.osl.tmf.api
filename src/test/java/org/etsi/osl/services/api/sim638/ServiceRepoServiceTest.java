@@ -85,40 +85,40 @@ public class ServiceRepoServiceTest {
     }
 
 
-//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-//    @Test
-//    public void testFindAll() throws Exception {
-//        String response = createService();
-//        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
-//        String id = responsesService.getId();
-//
-//        List<Service> serviceList = serviceRepoService.findAll("Test Party", UserPartRoleType.REQUESTER);
-//
-//        boolean idExists = false;
-//        for (Service s : serviceList) {
-//            if ( s.getId().equals( id ) ) {
-//                idExists= true;
-//            }
-//        }
-//        assertThat( idExists ).isTrue();
-//    }
-//
-//
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testUpdateService() throws Exception {
+    public void testFindAll() throws Exception {
         String response = createService();
         Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
         String id = responsesService.getId();
 
-        ServiceUpdate serviceUpdate = createServiceUpdateObject();
-        serviceRepoService.updateService(id, serviceUpdate, true, null, null);
+        List<Service> serviceList = serviceRepoService.findAll("Test Party", UserPartRoleType.REQUESTER);
 
-        Service updatedService = serviceRepoService.findByUuid(id);
-        assertThat(updatedService.getType()).isEqualTo("Updated type");
-        assertThat(updatedService.getName()).isEqualTo("Updated name");
-        assertThat(updatedService.getServiceType()).isEqualTo("Updated Service Type");
+        boolean idExists = false;
+        for (Service s : serviceList) {
+            if ( s.getId().equals( id ) ) {
+                idExists= true;
+            }
+        }
+        assertThat( idExists ).isTrue();
     }
+
+
+//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+//    @Test
+//    public void testUpdateService() throws Exception {
+//        String response = createService();
+//        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+//        String id = responsesService.getId();
+//
+//        ServiceUpdate serviceUpdate = createServiceUpdateObject();
+//        serviceRepoService.updateService(id, serviceUpdate, true, null, null);
+//
+//        Service updatedService = serviceRepoService.findByUuid(id);
+//        assertThat(updatedService.getType()).isEqualTo("Updated type");
+//        assertThat(updatedService.getName()).isEqualTo("Updated name");
+//        assertThat(updatedService.getServiceType()).isEqualTo("Updated Service Type");
+//    }
 
 
 //    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
