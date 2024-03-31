@@ -202,32 +202,32 @@ public class ServiceRepoServiceTest {
 
 
 //    // org.hibernate.exception.JDBCConnectionException: Unable to acquire JDBC Connection [HikariPool-1 - Connection is not available, request timed out after 30000ms.]
-////    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-////    @Test
-////    public void testNfvCatalogNSResourceChanged() throws Exception {
-////        String response = createService();
-////        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
-////        String id = responsesService.getId();
-////
-////        DeploymentDescriptor dd = new DeploymentDescriptor();
-////        dd.setId(1234567890);
-////
-////        serviceRepoService.nfvCatalogNSResourceChanged(dd);
-////
-////        Service updatedService = serviceRepoService.findByUuid(id);
-////        Set<Note> noteList = updatedService.getNote();
-////
-////        boolean expectedNoteExists = false;
-////        for (Note n : noteList) {
-////            if ( n.getText().equals("NS Resource LCM Changed") && n.getAuthor().equals("SIM638-API")) {
-////                expectedNoteExists= true;
-////                break;
-////            }
-////        }
-////        assertThat( expectedNoteExists ).isTrue();
-////    }
-//
-//
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testNfvCatalogNSResourceChanged() throws Exception {
+        String response = createService();
+        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+        String id = responsesService.getId();
+
+        DeploymentDescriptor dd = new DeploymentDescriptor();
+        dd.setId(1234567890);
+
+        serviceRepoService.nfvCatalogNSResourceChanged(dd);
+
+        Service updatedService = serviceRepoService.findByUuid(id);
+        Set<Note> noteList = updatedService.getNote();
+
+        boolean expectedNoteExists = false;
+        for (Note n : noteList) {
+            if ( n.getText().equals("NS Resource LCM Changed") && n.getAuthor().equals("SIM638-API")) {
+                expectedNoteExists= true;
+                break;
+            }
+        }
+        assertThat( expectedNoteExists ).isTrue();
+    }
+
+
 //    //  org.hibernate.exception.JDBCConnectionException: Unable to acquire JDBC Connection [HikariPool-1 - Connection is not available, request timed out after 30000ms.]
 ////    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 ////    @Test
