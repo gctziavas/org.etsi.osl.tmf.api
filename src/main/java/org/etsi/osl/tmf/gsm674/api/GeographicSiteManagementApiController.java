@@ -80,8 +80,13 @@ public class GeographicSiteManagementApiController implements GeographicSiteMana
     public ResponseEntity<GeographicSite> patchGeographicalSite(
             @Parameter(description = "Identifier of the ServiceOrder", required = true) @PathVariable("id") String id,
             @Parameter(description = "The ServiceOrder to be updated", required = true) @Valid @RequestBody GeographicSite geographicSite) {
+        try{
         GeographicSite c = geographicSiteManagementService.updateGeographicSite(id, geographicSite);
 
         return new ResponseEntity<>(c, HttpStatus.OK);
+        }catch (Exception e){
+            log.error(COULD_NOT_SERIALIZE, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

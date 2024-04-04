@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
+@Generated
 public interface GeographicSiteManagementApi {
     Logger log = LoggerFactory.getLogger(GeographicSiteManagementApi.class);
 
