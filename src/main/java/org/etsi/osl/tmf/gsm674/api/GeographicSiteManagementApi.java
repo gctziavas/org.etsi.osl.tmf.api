@@ -94,35 +94,35 @@ public interface GeographicSiteManagementApi {
     }
 
 
-//    @Operation(summary = "List or find 'GeographicSite' objects", operationId = "listGeographicSite", description = "" , tags={ "GeographicSite", })
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode ="200", description = "Ok" ),
-//            @ApiResponse(responseCode = "400", description = "Bad Request" ),
-//            @ApiResponse(responseCode = "401", description = "Unauthorized" ),
-//            @ApiResponse(responseCode = "403", description = "Forbidden" ),
-//            @ApiResponse(responseCode = "404", description = "Not Found" ),
-//            @ApiResponse(responseCode = "405", description = "Method Not allowed" ),
-//            @ApiResponse(responseCode = "409", description = "Conflict" ),
-//            @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
-//    @RequestMapping(value = "/geographicSite",
-//            produces = { "application/json" },
-//            consumes = { "application/json" },
-//            method = RequestMethod.GET)
-//    default ResponseEntity<List<GeographicSite>> listGeographicSite(@Parameter(description = "Comma separated properties to display in response") @Valid @RequestParam(value = "fields", required = false) String fields, @Parameter(description = "Requested index for start of resources to be provided in response") @Valid @RequestParam(value = "offset", required = false) Integer offset, @Parameter(description = "Requested number of resources to be provided in response") @Valid @RequestParam(value = "limit", required = false) Integer limit) {
-//        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-//            if (getAcceptHeader().get().contains("application/json")) {
-//                try {
-//                    return new ResponseEntity<>(getObjectMapper().get().readValue("[ {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}, {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
-//                } catch (IOException e) {
-//                    log.error("Couldn't serialize response for content type application/json", e);
-//                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//                }
-//            }
-//        } else {
-//            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
-//        }
-//        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-//    }
+    @Operation(summary = "List or find 'GeographicSite' objects", operationId = "listGeographicSite", description = "" , tags={ "GeographicSite", })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode ="200", description = "Ok" ),
+            @ApiResponse(responseCode = "400", description = "Bad Request" ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized" ),
+            @ApiResponse(responseCode = "403", description = "Forbidden" ),
+            @ApiResponse(responseCode = "404", description = "Not Found" ),
+            @ApiResponse(responseCode = "405", description = "Method Not allowed" ),
+            @ApiResponse(responseCode = "409", description = "Conflict" ),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
+    @RequestMapping(value = "/geographicSite",
+            produces = { "application/json" },
+            consumes = { "application/json" },
+            method = RequestMethod.GET)
+    default ResponseEntity<List<GeographicSite>> listGeographicSite() {
+        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
+            if (getAcceptHeader().get().contains("application/json")) {
+                try {
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("[ {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}, {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
+                } catch (IOException e) {
+                    log.error("Couldn't serialize response for content type application/json", e);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        } else {
+            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
 
 
     @Operation(summary = "Updates partially a 'GeographicSite' by Id", operationId = "patchGeographicSite", description = "", tags={ "GeographicSite", })
@@ -170,11 +170,11 @@ public interface GeographicSiteManagementApi {
             produces = { "application/json" },
             consumes = { "application/json" },
             method = RequestMethod.GET)
-    default ResponseEntity<List<GeographicSite>> retrieveGeographicSite() {
+    default ResponseEntity<GeographicSite> retrieveGeographicSite() {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("[ {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}, {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
+                    return new ResponseEntity<>(getObjectMapper().get().readValue("[ {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}, {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]} ]", GeographicSite.class), HttpStatus.NOT_IMPLEMENTED);
                 } catch (IOException e) {
                     log.error("Couldn't serialize response for content type application/json", e);
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

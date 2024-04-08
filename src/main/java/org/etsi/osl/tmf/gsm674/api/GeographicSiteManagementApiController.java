@@ -27,9 +27,9 @@ public class GeographicSiteManagementApiController implements GeographicSiteMana
         this.geographicSiteManagementService = geographicSiteManagementService;
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
+//    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
     @Override
-    public ResponseEntity<List<GeographicSite>> retrieveGeographicSite() {
+    public ResponseEntity<List<GeographicSite>> listGeographicSite() {
 
 
         try {

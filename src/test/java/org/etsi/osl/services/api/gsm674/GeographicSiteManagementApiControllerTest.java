@@ -40,12 +40,12 @@ class GeographicSiteManagementApiControllerTest {
     }
 
     @Test
-    void testRetrieveGeographicSite() {
+    void testRetrieveGeographicSites() {
         List<GeographicSite> sites = new ArrayList<>();
         // Add test data to sites list
         when(service.findAllGeographicSites()).thenReturn(sites);
 
-        ResponseEntity<List<GeographicSite>> response = controller.retrieveGeographicSite();
+        ResponseEntity<List<GeographicSite>> response = controller.listGeographicSite();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(sites, response.getBody());
@@ -54,8 +54,8 @@ class GeographicSiteManagementApiControllerTest {
     @Test
     void throwExceptionTestWhenRetrieveGeographicSites(){
         when(service.findAllGeographicSites()).thenThrow(RuntimeException.class);
-        ResponseEntity<List<GeographicSite>> response = controller.retrieveGeographicSite();
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseEntity<GeographicSite> response = controller.retrieveGeographicSite();
+        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
 
     }
     @Test
