@@ -49,10 +49,9 @@ class GeographicSiteManagementServiceTest {
         GeographicSite site = new GeographicSite();
         when(repository.findByUuid(uuid)).thenReturn(Optional.of(site));
 
-        Optional<GeographicSite> result = service.findGeographicSiteByUUID(uuid);
+        GeographicSite result = service.findGeographicSiteByUUID(uuid);
 
-        assertTrue(result.isPresent());
-        assertEquals(site, result.get());
+        assertEquals(site, result);
     }
 
     @Test

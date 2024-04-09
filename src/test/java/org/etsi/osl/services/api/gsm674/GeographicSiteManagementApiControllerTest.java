@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,12 +54,17 @@ class GeographicSiteManagementApiControllerTest {
     }
 
     @Test
-    void throwExceptionTestWhenRetrieveGeographicSites(){
-        when(service.findAllGeographicSites()).thenThrow(RuntimeException.class);
-        ResponseEntity<GeographicSite> response = controller.retrieveGeographicSite();
-        assertEquals(HttpStatus.NOT_IMPLEMENTED, response.getStatusCode());
+    void testFetchGeographicSite() {
+        GeographicSite site = new GeographicSite();
+        // Add test data to sites list
+        when(service.findGeographicSiteByUUID("123")).thenReturn(site);
 
+        ResponseEntity<GeographicSite> response = controller.retrieveGeographicSite("123");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(site, response.getBody());
     }
+
     @Test
     void testCreateGeographicSite() {
         GeographicSite site = new GeographicSite();

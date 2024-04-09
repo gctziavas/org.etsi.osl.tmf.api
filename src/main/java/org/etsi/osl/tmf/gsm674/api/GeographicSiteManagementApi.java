@@ -170,7 +170,7 @@ public interface GeographicSiteManagementApi {
             produces = { "application/json" },
             consumes = { "application/json" },
             method = RequestMethod.GET)
-    default ResponseEntity<GeographicSite> retrieveGeographicSite() {
+    default ResponseEntity<GeographicSite> retrieveGeographicSite(@Parameter(description = "Identifier of the Geographic site",required=true) @PathVariable("id") String id) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
                 try {

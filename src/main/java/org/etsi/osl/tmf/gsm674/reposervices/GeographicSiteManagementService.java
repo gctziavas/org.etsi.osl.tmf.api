@@ -31,8 +31,10 @@ public class GeographicSiteManagementService {
         return (List<GeographicSite>) geographicSiteManagementRepository.findAll();
     }
 
-    public Optional<GeographicSite> findGeographicSiteByUUID(String uuid){
-        return geographicSiteManagementRepository.findByUuid(uuid);
+    public GeographicSite findGeographicSiteByUUID(String uuid){
+        Optional<GeographicSite> gs=geographicSiteManagementRepository.findByUuid(uuid);
+        return gs.orElse(null);
+
     }
 
    public GeographicSite createGeographicSite(GeographicSite geographicSite){

@@ -27,13 +27,27 @@ public class GeographicSiteManagementApiController implements GeographicSiteMana
         this.geographicSiteManagementService = geographicSiteManagementService;
     }
 
-//    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
     @Override
     public ResponseEntity<List<GeographicSite>> listGeographicSite() {
 
 
         try {
             return new ResponseEntity<>(geographicSiteManagementService.findAllGeographicSites(), HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error(COULD_NOT_SERIALIZE, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
+    @Override
+    public ResponseEntity<GeographicSite> retrieveGeographicSite(@PathVariable("id") String id) {
+
+
+        try {
+            return new ResponseEntity<>(geographicSiteManagementService.findGeographicSiteByUUID(id), HttpStatus.OK);
 
         } catch (Exception e) {
             log.error(COULD_NOT_SERIALIZE, e);
