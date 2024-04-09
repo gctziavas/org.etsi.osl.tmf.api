@@ -740,7 +740,7 @@ public class SwaggerDocumentationConfig {
 				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth"))
 				.info(new Info()
 						.title("TMF 674 Geographic Site Management")
-						.description("## TMF API Reference: TMF674 - Geographic Site Management  ### Release : 20.0 - April 2020 ")
+						.description("## TMF API Reference: TMF674 - Geographic Site Management  ")
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
@@ -758,7 +758,7 @@ public class SwaggerDocumentationConfig {
 
 		return GroupedOpenApi.builder()
 				.group("tmf-api-674-Geographic Site Management-v4.0.0")
-				.addOpenApiCustomizer( this.stm653OpenAPI() )
+				.addOpenApiCustomizer( this.gsm674OpenAPI() )
 				.packagesToScan("org.etsi.osl.tmf.gsm674.api")
 				.build();
 

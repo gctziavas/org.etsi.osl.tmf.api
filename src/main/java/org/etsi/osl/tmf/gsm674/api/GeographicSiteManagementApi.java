@@ -56,18 +56,6 @@ public interface GeographicSiteManagementApi {
             consumes = { "application/json" },
             method = RequestMethod.POST)
     default ResponseEntity<GeographicSite> createGeographicSite(@Parameter(description = "The geographic site to be created" ,required=true )  @Valid @RequestBody GeographicSite geographicSite) {
-        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-            if (getAcceptHeader().get().contains("application/json")) {
-                try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}", GeographicSite.class), HttpStatus.NOT_IMPLEMENTED);
-                } catch (IOException e) {
-                    log.error("Couldn't serialize response for content type application/json", e);
-                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            }
-        } else {
-            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
-        }
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -86,10 +74,6 @@ public interface GeographicSiteManagementApi {
             consumes = { "application/json" },
             method = RequestMethod.DELETE)
     default ResponseEntity<Void> deleteGeographicSite(@Parameter(description = "Identifier of the Geographic site",required=true) @PathVariable("id") String id) {
-        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-        } else {
-            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
-        }
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -109,19 +93,7 @@ public interface GeographicSiteManagementApi {
             consumes = { "application/json" },
             method = RequestMethod.GET)
     default ResponseEntity<List<GeographicSite>> listGeographicSite() {
-        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-            if (getAcceptHeader().get().contains("application/json")) {
-                try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("[ {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}, {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
-                } catch (IOException e) {
-                    log.error("Couldn't serialize response for content type application/json", e);
-                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            }
-        } else {
-            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+               return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
 
@@ -140,18 +112,6 @@ public interface GeographicSiteManagementApi {
             consumes = { "application/json" },
             method = RequestMethod.PATCH)
     default ResponseEntity<GeographicSite> patchGeographicalSite(@Parameter(description = "Identifier of the Geographic site",required=true) @PathVariable("id") String id,@Parameter(description = "The Service Level Specification to be updated" ,required=true )  @Valid @RequestBody GeographicSite geographicSite) {
-        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-            if (getAcceptHeader().get().contains("application/json")) {
-                try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("{  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}", GeographicSite.class), HttpStatus.NOT_IMPLEMENTED);
-                } catch (IOException e) {
-                    log.error("Couldn't serialize response for content type application/json", e);
-                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            }
-        } else {
-            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
-        }
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
@@ -171,18 +131,6 @@ public interface GeographicSiteManagementApi {
             consumes = { "application/json" },
             method = RequestMethod.GET)
     default ResponseEntity<GeographicSite> retrieveGeographicSite(@Parameter(description = "Identifier of the Geographic site",required=true) @PathVariable("id") String id) {
-        if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-            if (getAcceptHeader().get().contains("application/json")) {
-                try {
-                    return new ResponseEntity<>(getObjectMapper().get().readValue("[ {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]}, {  \"@baseType\" : \"@baseType\",  \"validFor\" : {    \"startDateTime\" : \"2000-01-23T04:56:07.000+00:00\",    \"endDateTime\" : \"2000-01-23T04:56:07.000+00:00\"  },  \"@type\" : \"@type\",  \"name\" : \"name\",  \"description\" : \"description\",  \"href\" : \"href\",  \"id\" : \"id\",  \"@schemaLocation\" : \"@schemaLocation\",  \"objective\" : [ {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  }, {    \"@referredType\" : \"@referredType\",    \"href\" : \"href\",    \"id\" : \"id\"  } ]} ]", GeographicSite.class), HttpStatus.NOT_IMPLEMENTED);
-                } catch (IOException e) {
-                    log.error("Couldn't serialize response for content type application/json", e);
-                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            }
-        } else {
-            log.warn("ObjectMapper or HttpServletRequest not configured in default GeographicSiteManagementApi interface so no example is generated");
-        }
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
