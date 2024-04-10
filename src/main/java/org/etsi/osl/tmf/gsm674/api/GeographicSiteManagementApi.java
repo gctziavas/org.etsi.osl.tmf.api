@@ -71,7 +71,6 @@ public interface GeographicSiteManagementApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
     @RequestMapping(value = "/geographicSite/{id}",
             produces = { "application/json" },
-            consumes = { "application/json" },
             method = RequestMethod.DELETE)
     default ResponseEntity<Void> deleteGeographicSite(@Parameter(description = "Identifier of the Geographic site",required=true) @PathVariable("id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
@@ -90,7 +89,6 @@ public interface GeographicSiteManagementApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
     @RequestMapping(value = "/geographicSite",
             produces = { "application/json" },
-            consumes = { "application/json" },
             method = RequestMethod.GET)
     default ResponseEntity<List<GeographicSite>> listGeographicSite() {
                return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
@@ -128,7 +126,6 @@ public interface GeographicSiteManagementApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
     @RequestMapping(value = "/geographicSite/{id}",
             produces = { "application/json" },
-            consumes = { "application/json" },
             method = RequestMethod.GET)
     default ResponseEntity<GeographicSite> retrieveGeographicSite(@Parameter(description = "Identifier of the Geographic site",required=true) @PathVariable("id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
