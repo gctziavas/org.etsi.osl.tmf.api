@@ -58,7 +58,7 @@ public class GeographicSiteManagementService {
 
    private GeographicSite updateFields(GeographicSite newSite, GeographicSite existingSite){
 
-        if(newSite.getName()!=null) existingSite.setCalendar(newSite.getCalendar());
+        if(newSite.getName()!=null) existingSite.setName(newSite.getName());
         if(newSite.getDescription()!=null) existingSite.setDescription(newSite.getDescription());
         if(newSite.getCode()!=null) existingSite.setCode(newSite.getCode());
         if (newSite.getStatus()!=null) existingSite.setStatus(newSite.getStatus());
@@ -67,7 +67,15 @@ public class GeographicSiteManagementService {
             for(GeographicSiteRelationship n : newSite.getGeographicSiteRelationship()){
                  if(n.getUuid()==null){
                     existingSite.addGeographicSiteRelationship(n);
-                }
+                }else {
+                     for (GeographicSiteRelationship oldGeographicRelationship : existingSite.getGeographicSiteRelationship()){
+                         if (n.getUuid().equals(oldGeographicRelationship.getUuid())){
+                             if (n.getRole() !=null) oldGeographicRelationship.setRole(n.getRole());
+                             if (n.getRelationshipType() !=null) oldGeographicRelationship.setRelationshipType(n.getRelationshipType());
+                             if (n.getValidFor() !=null) oldGeographicRelationship.setValidFor(n.getValidFor());
+                         }
+                     }
+                 }
             }
         }
 
@@ -75,6 +83,15 @@ public class GeographicSiteManagementService {
            for(CalendarPeriod c: newSite.getCalendar()){
                if(c.getUuid()==null){
                    existingSite.addCalendarPeriod(c);
+               } else {
+                   for (CalendarPeriod oldCalendarPeriod: existingSite.getCalendar()){
+                       if (c.getUuid().equals(oldCalendarPeriod.getUuid())){
+                           if( c.getDay() !=null) oldCalendarPeriod.setDay(c.getDay());
+                           if( c.getStatus() !=null) oldCalendarPeriod.setStatus(c.getStatus());
+                           if( c.getTimeZone() !=null) oldCalendarPeriod.setTimeZone(c.getTimeZone());
+                           if( c.getHourPeriod() !=null) oldCalendarPeriod.setHourPeriod(c.getHourPeriod());
+                       }
+                   }
                }
            }
         }
@@ -91,6 +108,13 @@ public class GeographicSiteManagementService {
             for(RelatedParty party: newSite.getRelatedParties()){
                 if(party.getUuid()==null){
                     existingSite.addRelatedParty(party);
+                } else {
+                    for (RelatedParty rp: existingSite.getRelatedParties()){
+                        if(party.getUuid().equals(rp.getUuid())){
+                            if (party.getRole() !=null) rp.setRole(party.getRole());
+                            if (party.getName() !=null) rp.setName(party.getName());
+                        }
+                    }
                 }
             }
         }
