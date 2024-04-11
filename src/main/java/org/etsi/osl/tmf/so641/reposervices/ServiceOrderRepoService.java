@@ -539,6 +539,7 @@ public class ServiceOrderRepoService {
 		
 		ServiceOrder so = this.findByUuid(id);
 		boolean stateChanged = false;
+		boolean expectedCompletionDateChanged = false;
 
 		//logger.info("so:" + so.toString());		
 		for (ServiceOrderItem oi : so.getOrderItem() ) {
@@ -590,7 +591,7 @@ public class ServiceOrderRepoService {
 
 		if ( serviceOrderUpd.getExpectedCompletionDate()!= null ) {
 			so.setExpectedCompletionDate(serviceOrderUpd.getExpectedCompletionDate());
-
+			expectedCompletionDateChanged = true;
 		}
 
 		if ( serviceOrderUpd.getStartDate()!= null ) {
@@ -655,8 +656,15 @@ public class ServiceOrderRepoService {
 			so.addNoteItem(noteItem);				
 		}
 		
-		
-		
+		// Update each Service's end date to the updated Service Order's expected completion date
+		if (expectedCompletionDateChanged) {
+			List<String> services = serviceRepoService.getServicesFromOrderID(id);
+
+			for (String serviceId : services) {
+				org.etsi.osl.tmf.sim638.model.Service service = serviceRepoService.findByUuid(serviceId);
+				service.setEndDate(so.getExpectedCompletionDate());
+			}
+		}
 
 		
 

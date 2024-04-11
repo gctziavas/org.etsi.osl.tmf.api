@@ -33,6 +33,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.RoutesBuilder;
@@ -355,9 +356,19 @@ public class ServiceOrderIntegrationTest {
 		ServiceOrder sspeccr1SO = JsonUtils.toJsonObj(sspectextSO, ServiceOrder.class);
 
 		assertThat(sspeccr1SO).isNotNull();
-		
-		
-		
+
+		// Ensure that all Services' end dates were updated correctly
+		boolean allSupportingServicesEndDatesUpdatedToServiceOrderExpectedCompletionDate = true;
+		List<String> services = serviceRepoService.getServicesFromOrderID(responseSO.getId());
+
+		for (String serviceId : services) {
+			Service service = serviceRepoService.findByUuid(serviceId);
+			if (!service.getEndDate().equals(responseSOUpd.getExpectedCompletionDate())) {
+				allSupportingServicesEndDatesUpdatedToServiceOrderExpectedCompletionDate = false;
+				break;
+			}
+		}
+		assertThat(allSupportingServicesEndDatesUpdatedToServiceOrderExpectedCompletionDate).isTrue();
 	}
 
 	@WithMockUser(username="osadmin", roles = {"USER"})
