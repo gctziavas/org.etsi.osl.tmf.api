@@ -661,6 +661,8 @@ public class ServiceOrderRepoService {
 			List<String> services = serviceRepoService.getServicesFromOrderID(id);
 
 			for (String serviceId : services) {
+				logger.debug("Will delegate updated SO expected completion date " + so.getExpectedCompletionDate() + " to service with id = " + serviceId);		
+
 				org.etsi.osl.tmf.sim638.model.Service service = serviceRepoService.findByUuid(serviceId);
 				service.setEndDate(so.getExpectedCompletionDate());
 			}
