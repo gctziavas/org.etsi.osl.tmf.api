@@ -25,14 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,30 +38,16 @@ import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.EValueType;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
-import org.etsi.osl.tmf.common.model.service.Characteristic;
-import org.etsi.osl.tmf.common.model.service.Note;
-import org.etsi.osl.tmf.common.model.service.ResourceRef;
-import org.etsi.osl.tmf.common.model.service.ServiceRef;
+import org.etsi.osl.tmf.common.model.service.*;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
+import org.etsi.osl.tmf.so641.api.NotFoundException;
 import org.etsi.osl.tmf.so641.api.ServiceOrderApiRouteBuilderEvents;
-import org.etsi.osl.tmf.so641.model.ServiceOrder;
-import org.etsi.osl.tmf.so641.model.ServiceOrderActionType;
-import org.etsi.osl.tmf.so641.model.ServiceOrderAttributeValueChangeEvent;
-import org.etsi.osl.tmf.so641.model.ServiceOrderAttributeValueChangeNotification;
-import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
-import org.etsi.osl.tmf.so641.model.ServiceOrderCreateEvent;
-import org.etsi.osl.tmf.so641.model.ServiceOrderCreateNotification;
-import org.etsi.osl.tmf.so641.model.ServiceOrderItem;
-import org.etsi.osl.tmf.so641.model.ServiceOrderRelationship;
-import org.etsi.osl.tmf.so641.model.ServiceOrderStateChangeEvent;
-import org.etsi.osl.tmf.so641.model.ServiceOrderStateChangeNotification;
-import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
-import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
+import org.etsi.osl.tmf.so641.model.*;
 import org.etsi.osl.tmf.so641.repo.ServiceOrderRepository;
 import org.etsi.osl.tmf.util.KrokiClient;
 import org.hibernate.Hibernate;
@@ -319,7 +298,20 @@ public class ServiceOrderRepoService {
 	}
 
     @Transactional
-	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate) {
+	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate) throws NotFoundException {
+		// Ensure that all Services Specifications exist
+		List <ServiceOrderItem> serviceOrderItemList = serviceOrderCreate.getOrderItem();
+		for (ServiceOrderItem serviceOrderItem: serviceOrderItemList) {
+			ServiceRestriction serviceRestriction = serviceOrderItem.getService();
+			ServiceSpecificationRef serviceSpecificationRef = serviceRestriction.getServiceSpecification();
+			String serviceSpecificationId = serviceSpecificationRef.getId();
+
+			ServiceSpecification serviceSpecification = serviceSpecRepoService.findByUuid(serviceSpecificationId);
+
+			if (serviceSpecification == null)
+				throw new NotFoundException(400, "There is no Service Specification with Id: " + serviceSpecificationId);
+		}
+
 		ServiceOrder so = new ServiceOrder();
 		so.setOrderDate(OffsetDateTime.now(ZoneOffset.UTC));
 		so.setCategory(serviceOrderCreate.getCategory());
@@ -827,10 +819,13 @@ public class ServiceOrderRepoService {
 	}
 	
 	public String addServiceOrderReturnEager(@Valid ServiceOrderCreate serviceOrderCreate) {
-		ServiceOrder so = this.addServiceOrder(serviceOrderCreate);
 		try {
+			ServiceOrder so = this.addServiceOrder(serviceOrderCreate);
 			return this.getServiceOrderEagerAsString( so.getUuid());
 		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
