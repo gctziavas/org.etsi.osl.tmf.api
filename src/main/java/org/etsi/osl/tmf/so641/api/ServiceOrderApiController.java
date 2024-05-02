@@ -143,6 +143,9 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 				return new ResponseEntity<ServiceOrder>(c, HttpStatus.OK);				
 			
 
+		} catch (NotFoundException e) {
+			log.error("Couldn't create Service Order. ", e);
+			return new ResponseEntity<ServiceOrder>(HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			log.error("Couldn't serialize response for content type application/json", e);
 			return new ResponseEntity<ServiceOrder>(HttpStatus.INTERNAL_SERVER_ERROR);

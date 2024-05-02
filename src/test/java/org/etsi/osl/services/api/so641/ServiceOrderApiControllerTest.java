@@ -91,6 +91,15 @@ public class ServiceOrderApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
+    public void testCreateServiceOrderWithNonExistingServiceSpecification() throws Exception {
+
+        createServiceOrderWithNonExistingServiceSpecification();
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+    }
+
+
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
     public void testDeleteServiceOrder() throws Exception {
 
         String response = createServiceOrder();
@@ -277,5 +286,36 @@ public class ServiceOrderApiControllerTest {
         ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response, ServiceSpecification.class);
 
         return responsesSpec;
+    }
+
+
+    private void createServiceOrderWithNonExistingServiceSpecification() throws Exception {
+
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS);
+
+        ServiceOrderCreate serviceOrder = new ServiceOrderCreate();
+        serviceOrder.setCategory("Test Category");
+        serviceOrder.setDescription("A Test Service Order");
+        serviceOrder.setRequestedStartDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
+        serviceOrder.setRequestedCompletionDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
+
+        ServiceOrderItem soi = new ServiceOrderItem();
+        serviceOrder.getOrderItem().add(soi);
+        soi.setState(ServiceOrderStateType.ACKNOWLEDGED);
+
+        ServiceRestriction serviceRestriction = new ServiceRestriction();
+        ServiceSpecificationRef aServiceSpecificationRef = new ServiceSpecificationRef();
+        aServiceSpecificationRef.setId("A random non-existing Id");
+        aServiceSpecificationRef.setName("A random non-existing name");
+
+        serviceRestriction.setServiceSpecification(aServiceSpecificationRef);
+        serviceRestriction.setName("aServiceRestriction");
+        soi.setService(serviceRestriction);
+
+        mvc
+            .perform(MockMvcRequestBuilders.post("/serviceOrdering/v4/serviceOrder")
+                .with( SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(serviceOrder)))
+        .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
     }
 }
