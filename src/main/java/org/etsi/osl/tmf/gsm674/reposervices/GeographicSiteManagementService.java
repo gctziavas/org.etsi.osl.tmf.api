@@ -58,17 +58,16 @@ public class GeographicSiteManagementService {
 
    private GeographicSite updateFields(GeographicSite newSite, GeographicSite existingSite){
 
-        if(newSite.getName()!=null) existingSite.setName(newSite.getName());
         if(newSite.getDescription()!=null) existingSite.setDescription(newSite.getDescription());
         if(newSite.getCode()!=null) existingSite.setCode(newSite.getCode());
         if (newSite.getStatus()!=null) existingSite.setStatus(newSite.getStatus());
 
-        if(newSite.getGeographicSiteRelationship()!=null){
-            for(GeographicSiteRelationship n : newSite.getGeographicSiteRelationship()){
+        if(newSite.getSiteRelationship() !=null){
+            for(GeographicSiteRelationship n : newSite.getSiteRelationship()){
                  if(n.getUuid()==null){
-                    existingSite.addGeographicSiteRelationship(n);
+                    existingSite.addSiteRelationshipItem(n);
                 }else {
-                     for (GeographicSiteRelationship oldGeographicRelationship : existingSite.getGeographicSiteRelationship()){
+                     for (GeographicSiteRelationship oldGeographicRelationship : existingSite.getSiteRelationship()){
                          if (n.getUuid().equals(oldGeographicRelationship.getUuid())){
                              if (n.getRole() !=null) oldGeographicRelationship.setRole(n.getRole());
                              if (n.getRelationshipType() !=null) oldGeographicRelationship.setRelationshipType(n.getRelationshipType());
@@ -82,7 +81,7 @@ public class GeographicSiteManagementService {
         if(newSite.getCalendar()!=null){
            for(CalendarPeriod c: newSite.getCalendar()){
                if(c.getUuid()==null){
-                   existingSite.addCalendarPeriod(c);
+                   existingSite.addCalendarItem(c);
                } else {
                    for (CalendarPeriod oldCalendarPeriod: existingSite.getCalendar()){
                        if (c.getUuid().equals(oldCalendarPeriod.getUuid())){
@@ -96,20 +95,20 @@ public class GeographicSiteManagementService {
            }
         }
 
-        if(newSite.getPlaceRefOrValue()!=null){
-            for(PlaceRefOrValue p: newSite.getPlaceRefOrValue()){
+        if(newSite.getPlace()!=null){
+            for(PlaceRefOrValue p: newSite.getPlace()){
                 if (p.getUuid()==null){
-                    existingSite.addPlaceRefOrValue(p);
+                    existingSite.addPlaceItem(p);
                 }
             }
         }
 
-        if(newSite.getRelatedParties()!=null){
-            for(RelatedParty party: newSite.getRelatedParties()){
+        if(newSite.getRelatedParty()!=null){
+            for(RelatedParty party: newSite.getRelatedParty()){
                 if(party.getUuid()==null){
-                    existingSite.addRelatedParty(party);
+                    existingSite.addRelatedPartyItem(party);
                 } else {
-                    for (RelatedParty rp: existingSite.getRelatedParties()){
+                    for (RelatedParty rp: existingSite.getRelatedParty()){
                         if(party.getUuid().equals(rp.getUuid())){
                             if (party.getRole() !=null) rp.setRole(party.getRole());
                             if (party.getName() !=null) rp.setName(party.getName());

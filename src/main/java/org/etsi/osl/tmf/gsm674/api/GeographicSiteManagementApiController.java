@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 @Controller
-@RequestMapping("/geographicSiteManagement/v4/")
+@RequestMapping("/geographicSiteManagement/v5/")
 public class GeographicSiteManagementApiController implements GeographicSiteManagementApi{
 
     private static final String COULD_NOT_SERIALIZE="Couldn't serialize response for content type application/json";
