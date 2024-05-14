@@ -24,7 +24,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 
 import java.util.Optional;
 
-
+@Generated
 @jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-24T14:24:54.867613034Z[Etc/UTC]", comments = "Generator version: 7.6.0-SNAPSHOT")
 @Validated
 @Tag(name = "notification listener", description = "Notifications for Resource Lifecycle and event notifications")
