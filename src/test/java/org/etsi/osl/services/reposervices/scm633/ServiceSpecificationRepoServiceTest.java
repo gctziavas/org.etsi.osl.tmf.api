@@ -2,7 +2,7 @@
  * @Author: Eduardo Santos
  * @Date:   2024-05-30 12:52:02
  * @Last Modified by:   Eduardo Santos
- * @Last Modified time: 2024-05-30 12:52:39
+ * @Last Modified time: 2024-05-31 13:30:14
  */
 
 package org.etsi.osl.services.reposervices.scm633;
@@ -194,14 +194,6 @@ public class ServiceSpecificationRepoServiceTest {
 
         // Order Service Specification Characteristics list by characterists' name
         Collections.sort(serviceSpecCharacteristicsList, Comparator.comparing(ServiceSpecCharacteristic::getName));
-
-        int i = 0;
-        for (ServiceSpecCharacteristic s : serviceSpecCharacteristicsList) {
-            System.out.println("s: " + s.getName() + ", index of s: " + i);
-            i += 1;
-        }
-
-        System.out.println("serviceSpecCharacteristicsList: " + serviceSpecCharacteristicsList);
 
         // Assert that the Service Specification Characterists are the ones desired
         assertEquals(27, serviceSpec.getServiceSpecCharacteristic().size());

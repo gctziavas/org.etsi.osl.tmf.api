@@ -2,7 +2,7 @@
  * @Author: Eduardo Santos
  * @Date:   2024-05-30 12:49:06
  * @Last Modified by:   Eduardo Santos
- * @Last Modified time: 2024-05-30 12:49:54
+ * @Last Modified time: 2024-05-31 13:27:02
  */
 
  /*-
@@ -27,46 +27,30 @@
 
 package org.etsi.osl.tmf.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.yaml.snakeyaml.Yaml;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.etsi.osl.model.nfv.NetworkServiceDescriptor;
 import org.etsi.osl.model.nfv.ConstituentVxF;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class is responsible for parsing available primitives from a Network Service
 * from its Network Service Descriptor (NSD) and Virtual Network Function Descriptor (VNFD).
 */
 public class PrimitivesParser {
+
+    private static final transient Log logger = LogFactory.getLog(PrimitivesParser.class.getName());
+
     public static Map<String, String> cpdToVduMap = new HashMap<String, String>();
-
-    /*
-    public static void main(String[] args) {
-        NetworkServiceDescriptor nsd = getNetworkServiceDescriptor();
-        
-        // Access the first element only, to handle the case where there are duplicate descriptor fields
-        ConstituentVxF vxf = nsd.getConstituentVxF().get(0);
-        
-        JSONObject nsdJson = processNSD(nsd);
-        JSONObject vnfdJson = processVxF(vxf);
-
-        JSONObject vnfs = extractVNFIds(nsdJson);
-        
-        vnfs = mapVDUsToVNFs(vnfdJson, vnfs);
-
-        JSONObject vduPrimitives = extractVDUPrimitives(vnfdJson, vnfs);
-
-        JSONObject allPrimitives = extractVNFPrimitives(vnfdJson, vduPrimitives);
-
-        System.out.println("All primitives: " + allPrimitives.toString(2));
-
-    }
-    */
 
 
     /**
@@ -87,8 +71,6 @@ public class PrimitivesParser {
             if (vxf.getVxfref() == null) {
                 throw new NullPointerException("vxf.getVxfref() is null");
             }
-
-            System.out.println("vxf.getVxfref(): " + vxf.getVxfref());
             
             JSONObject nsdJson = PrimitivesParser.processNSD(nsd);
             JSONObject vnfdJson = PrimitivesParser.processVxF(vxf);
@@ -101,11 +83,11 @@ public class PrimitivesParser {
     
             allPrimitives = PrimitivesParser.extractVNFPrimitives(vnfdJson, vduPrimitives);
         } catch (NullPointerException e) {
-            System.err.println("Error: " + e.getMessage());
+            logger.error("Error extracting primitives: " + e.getMessage());
             e.printStackTrace();
             // allPrimitives is already initialized to an empty JSONObject
         } catch (Exception e) {
-            System.err.println("An unexpected error occurred.");
+            logger.error("Error extracting primitives.");
             e.printStackTrace();
         }
 
@@ -113,35 +95,6 @@ public class PrimitivesParser {
         
     }
     
-
-    
-    /**
-     * Retrieves a NetworkServiceDescriptor object from a JSON file.
-    * This method reads a JSON representation of a NetworkServiceDescriptor from a specified file path,
-    * deserializes it into a NetworkServiceDescriptor object, and returns it.
-    *
-    * @return The deserialized NetworkServiceDescriptor object, or null if an error occurs during file reading or deserialization.
-    */
-    public static NetworkServiceDescriptor getNetworkServiceDescriptor() {
-        // This method should contain logic to retrieve and return a NetworkServiceDescriptor object
-        NetworkServiceDescriptor nsd = null;
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-
-            // Read the JSON file into a NetworkServiceDescriptor object
-            nsd = mapper.readValue(
-                    new File(
-                            "/home/ubuntu/openslice/org.etsi.osl.tmf.api/src/test/resources/ServiceSpecificationRepoServiceTests/companyNSD/testNsd.json"),
-                    NetworkServiceDescriptor.class);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        
-        return nsd;
-    }
-
 
     /**
      * Converts a NetworkServiceDescriptor's descriptor from YAML string to a JSONObject.
@@ -503,7 +456,7 @@ public class PrimitivesParser {
                             .getJSONArray("day1-2");
 
         if (day1_2 == null || day1_2.length() == 0) {
-            System.err.println("Day 1-2 configuration array is missing or empty.");
+            logger.error("Error: Day 1-2 configuration array is missing or empty.");
 
             // Return an empty JSONObject if no data is present
             return new JSONObject();  
