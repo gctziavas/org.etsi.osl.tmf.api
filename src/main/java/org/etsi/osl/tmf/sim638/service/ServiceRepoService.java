@@ -19,13 +19,7 @@
  */
 package org.etsi.osl.tmf.sim638.service;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -760,30 +754,30 @@ public class ServiceRepoService {
      * @param service The service object containing the characteristics.
      * @param n       The characteristic object to be checked and potentially updated.
      */
-    public void updateNSLCMCharacteristic(Service service, Characteristic n) {
+    public Service updateNSLCMCharacteristic(Service service, Characteristic n) {
         // Create an object mapper for JSON serialization/deserialization
         ObjectMapper primitivesObjectMapper = new ObjectMapper();
 
         // Retrieve the service characteristic based on the name
-        Characteristic NSLCMCharacteristic = service.getServiceCharacteristicByName(n.getName());
+        Characteristic aNSLCMCharacteristic = service.getServiceCharacteristicByName(n.getName());
 
         // Retrieve the current value as a string directly from the service characteristic
-        String NSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+        String aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
 
         // Check if the current service characteristic value is null or explicitly "null" and initialize if needed
-        if (NSLCMCharacteristicValue == null || "null".equals(NSLCMCharacteristicValue) || NSLCMCharacteristicValue == "") {
+        if (aNSLCMCharacteristicValue == null || "null".equals(aNSLCMCharacteristicValue) || aNSLCMCharacteristicValue.equals("")) {
             service.getServiceCharacteristicByName(n.getName()).getValue().setValue("[]");
         }
 
         // Check if the current characteristic value is not null and not explicitly "null"
         if (n.getValue().getValue() != null || !"null".equals(n.getValue().getValue())) {
-			NSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+			aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
 
             ArrayList<String> arrayList = null;
 
             // Deserialize the current value back to an array list
             try {
-                arrayList = primitivesObjectMapper.readValue(NSLCMCharacteristicValue, new TypeReference<ArrayList<String>>() {});
+                arrayList = primitivesObjectMapper.readValue(aNSLCMCharacteristicValue, new TypeReference<ArrayList<String>>() {});
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -795,11 +789,13 @@ public class ServiceRepoService {
 
             // Update the characteristic with the newly modified list
             try {
-                NSLCMCharacteristic.setValue(new Any(primitivesObjectMapper.writeValueAsString(arrayList), n.getValue().getAlias()));
+                aNSLCMCharacteristic.setValue(new Any(primitivesObjectMapper.writeValueAsString(arrayList), n.getValue().getAlias()));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         }
+
+		return service;
     }
 
 

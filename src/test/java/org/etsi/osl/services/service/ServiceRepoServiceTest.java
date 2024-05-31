@@ -2,7 +2,7 @@
  * @Author: Eduardo Santos
  * @Date:   2024-05-29 09:52:16
  * @Last Modified by:   Eduardo Santos
- * @Last Modified time: 2024-05-29 15:46:03
+ * @Last Modified time: 2024-05-31 15:01:52
  */
 package org.etsi.osl.services.service;
 
@@ -181,8 +181,6 @@ public class ServiceRepoServiceTest {
                     }
             }                       
         }
-
-        System.out.println("service is: " + service);
     }
 
     
@@ -223,8 +221,6 @@ public class ServiceRepoServiceTest {
                     }
             }                       
         }
-
-        System.out.println("service is: " + service);
     }
 
 
@@ -256,8 +252,6 @@ public class ServiceRepoServiceTest {
 
                                     serviceRepoService.updateNSLCMCharacteristic(service, n);
 
-                                    System.out.println("service.getServiceCharacteristicByName(n.getName()).getValue(): " + service.getServiceCharacteristicByName(n.getName()).getValue());
-
                                     assertEquals(
                                             "[\"existingValue\",\"{\\\"queuePosition\\\":0,\\\"lcmOperationType\\\":\\\"instantiate\\\",\\\"detailed-status\\\":\\\"Done\\\",\\\"operationState\\\":\\\"COMPLETED\\\",\\\"errorMessage\\\":null,\\\"nsInstanceId\\\":\\\"420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"_admin\\\":{\\\"projects_write\\\":[\\\"92636b50-d607-4801-98b5-f0da541363be\\\"],\\\"created\\\":1.7169792184842422E9,\\\"modified\\\":1.7169794444025614E9,\\\"worker\\\":\\\"d6f95b754d12\\\",\\\"projects_read\\\":[\\\"92636b50-d607-4801-98b5-f0da541363be\\\"]},\\\"detailedStatus\\\":null,\\\"stage\\\":\\\"\\\",\\\"operationParams\\\":{\\\"nsInstanceId\\\":\\\"420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"ssh_keys\\\":[\\\"\\\"],\\\"lcmOperationType\\\":\\\"instantiate\\\",\\\"nsdId\\\":\\\"338d3a8c-af70-446a-af37-ed8bb97a6641\\\",\\\"nsName\\\":\\\"Service_Order_65bcf307-1a47-4a48-b211-be94c3390b81\\\",\\\"vimAccountId\\\":\\\"479356bf-72ff-4dfd-8483-5c23f48dd0bc\\\"},\\\"startTime\\\":1.7169792184841862E9,\\\"links\\\":{\\\"nsInstance\\\":\\\"/osm/nslcm/v1/ns_instances/420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"self\\\":\\\"/osm/nslcm/v1/ns_lcm_op_occs/e0836187-7d4a-49ac-a317-fc4108ed2f93\\\"},\\\"_id\\\":\\\"e0836187-7d4a-49ac-a317-fc4108ed2f93\\\",\\\"id\\\":\\\"e0836187-7d4a-49ac-a317-fc4108ed2f93\\\",\\\"isAutomaticInvocation\\\":false,\\\"isCancelPending\\\":false,\\\"statusEnteredTime\\\":1.7169794444025595E9}\"]", 
                                             service.getServiceCharacteristicByName(n.getName()).getValue().getValue()
@@ -268,8 +262,6 @@ public class ServiceRepoServiceTest {
                     }
             }                       
         }
-
-        System.out.println("service is: " + service);
     }
 
 
