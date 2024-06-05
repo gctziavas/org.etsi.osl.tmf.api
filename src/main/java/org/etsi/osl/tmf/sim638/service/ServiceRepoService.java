@@ -494,6 +494,7 @@ public class ServiceRepoService {
                                 charChangedForNotes += n.getName() + ", "; 
 							  }
                               if ( n.getName().toUpperCase().contains(  "PRIMITIVE::" ) ){
+								serviceCharacteristicChanged = true;
                                 serviceCharacteristicChangedContainsPrimitive = true;
                               }
 
