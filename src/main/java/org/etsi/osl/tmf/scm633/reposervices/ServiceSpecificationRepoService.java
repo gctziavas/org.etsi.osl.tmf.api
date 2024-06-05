@@ -75,11 +75,13 @@ import org.etsi.osl.tmf.stm653.model.ServiceTestSpecificationUpdate;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestSpecificationRepoService;
 import org.etsi.osl.tmf.util.AttachmentUtil;
 import org.etsi.osl.tmf.util.KrokiClient;
+import org.etsi.osl.tmf.util.PrimitivesParser;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -1209,6 +1211,14 @@ public class ServiceSpecificationRepoService {
 
 				logger.error("nsdid getConstituentVxF null returned: " + nsd.toString() );
 			}
+
+			/******************** Begin Primitives Handling ********************/
+
+			JSONObject allPrimitives = PrimitivesParser.extractPrimitives(nsd);
+    
+            addServiceSpecCharacteristic(serviceSpec, "PrimitivesList", "NSPrimitives", new Any(allPrimitives.toString(), ""), EValueType.TEXT);
+
+            /********************* End Primitives Handling *********************/
 			
 			
 			ResourceSpecificationRef resourceSpecificationItemRef = new ResourceSpecificationRef();
