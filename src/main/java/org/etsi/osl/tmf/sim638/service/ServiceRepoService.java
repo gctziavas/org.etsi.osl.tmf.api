@@ -22,6 +22,7 @@ package org.etsi.osl.tmf.sim638.service;
 import java.io.UnsupportedEncodingException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.apache.commons.logging.Log;
@@ -192,7 +194,7 @@ public class ServiceRepoService {
 								                result.put("serviceOrder", new ArrayList<Object>() ) ;							            		
 							            	}
 							            	ArrayList< Object> rpList =  (ArrayList< Object>) result.get( "serviceOrder" );
-							            	LinkedHashMap<String, Object> rp = new LinkedHashMap<String, Object>();
+							            	LinkedHashMap<String, Object> rp = new LinkedHashMap<>();
 							            	rp.put("id", tuple[i]);							            	
 							            	rpList.add(rp);
 							            }
@@ -358,7 +360,7 @@ public class ServiceRepoService {
 	public Service updateService(String id, @Valid ServiceUpdate servUpd, boolean triggerServiceActionQueue, Service updatedFromParentService, Service updatedFromChildService ) {
 		//Service service = this.findByUuid(id);
 		Service service = this.getServiceEager(id);
-		
+
 		
 		if ( service == null ) {
 			logger.error("Service cannot be found in registry, UUID: " + id  );
@@ -464,6 +466,7 @@ public class ServiceRepoService {
 
 		boolean serviceCharacteristicChanged = false;
 		boolean serviceCharacteristicChangedContainsPrimitive = false;
+		boolean serviceCharacteristicChangedContainsNSLCM;
 		
 		String charChangedForNotes = "";
 		//List<Characteristic> childCharacteristicsChanged = new ArrayList<>();
@@ -474,6 +477,7 @@ public class ServiceRepoService {
 		
 		if ( servUpd.getServiceCharacteristic()!=null ) {
 			for (Characteristic n : servUpd.getServiceCharacteristic()) {
+				serviceCharacteristicChangedContainsNSLCM = false;
 				
 					if ( service.getServiceCharacteristicByName( n.getName() )!= null ) {
 						
@@ -493,13 +497,27 @@ public class ServiceRepoService {
 								serviceCharacteristicChanged = true;
                                 serviceCharacteristicChangedContainsPrimitive = true;
                               }
+
+							  // Check if the name contains "NSLCM"
+							  if (n.getName().toUpperCase().contains("NSLCM")) {
+							  	// Flag to indicate that service characteristic with NSLCM is present
+							  	serviceCharacteristicChangedContainsNSLCM = true;
+  
+							  	// Update the NSLCM Characteristic
+							  	updateNSLCMCharacteristic(service, n);
+							  }
+
 								
 							}
 						}
 						
-						 service.getServiceCharacteristicByName( n.getName() ).setValue( 
-								 new Any( n.getValue().getValue(), n.getValue().getAlias()  )
-								 );
+						 // As the NSLCM Characteristic was already updated, skip that one
+						 if (!serviceCharacteristicChangedContainsNSLCM) {
+							service.getServiceCharacteristicByName( n.getName() ).setValue( 
+									new Any( n.getValue().getValue(), n.getValue().getAlias()  )
+									);
+						 }
+
 					} else {
 						service.addServiceCharacteristicItem(n);
 						if ( !n.getName().contains("::") ) { //it is not a child characteristic
@@ -730,6 +748,57 @@ public class ServiceRepoService {
 		
 		return service;
 	}
+
+	/**
+     * Updates the NSLCM characteristic within a given service.
+     *
+     * @param service The service object containing the characteristics.
+     * @param n       The characteristic object to be checked and potentially updated.
+     */
+    public Service updateNSLCMCharacteristic(Service service, Characteristic n) {
+        // Create an object mapper for JSON serialization/deserialization
+        ObjectMapper primitivesObjectMapper = new ObjectMapper();
+
+        // Retrieve the service characteristic based on the name
+        Characteristic aNSLCMCharacteristic = service.getServiceCharacteristicByName(n.getName());
+
+        // Retrieve the current value as a string directly from the service characteristic
+        String aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+
+        // Check if the current service characteristic value is null or explicitly "null" and initialize if needed
+        if (aNSLCMCharacteristicValue == null || "null".equals(aNSLCMCharacteristicValue) || aNSLCMCharacteristicValue.equals("")) {
+            service.getServiceCharacteristicByName(n.getName()).getValue().setValue("[]");
+        }
+
+        // Check if the current characteristic value is not null and not explicitly "null"
+        if (n.getValue().getValue() != null || !"null".equals(n.getValue().getValue())) {
+			aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+
+            ArrayList<String> arrayList = null;
+
+            // Deserialize the current value back to an array list
+            try {
+                arrayList = primitivesObjectMapper.readValue(aNSLCMCharacteristicValue, new TypeReference<ArrayList<String>>() {});
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
+            // Add the new value to the list if it's not already present and is not null
+            if (!arrayList.contains(n.getValue().getValue()) && n.getValue().getValue() != null) {
+                arrayList.add(n.getValue().getValue());
+            }
+
+            // Update the characteristic with the newly modified list
+            try {
+                aNSLCMCharacteristic.setValue(new Any(primitivesObjectMapper.writeValueAsString(arrayList), n.getValue().getAlias()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+
+		return service;
+    }
+
 
 	/**
 	 * @param service
