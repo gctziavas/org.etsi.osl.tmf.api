@@ -146,7 +146,10 @@ public class PrimitivesParser {
         if (descriptor.trim().startsWith("[")) {
             // It's JSON
             vnfdJson = new JSONObject(descriptor.substring(1, descriptor.length() - 1));
-        } else {
+        } else if (descriptor.trim().startsWith("{")) {
+          // It's JSON
+          vnfdJson = new JSONObject(descriptor);
+      } else{
             // It's YAML
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(descriptor);
