@@ -1117,9 +1117,9 @@ public class ServiceRepoService {
     
     
     @Transactional  
-    public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {      
-      logger.debug("resourceCreatedEvent"); 
-      Resource res = resNotif.getEvent().getEvent().getResource();
+    public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {  
+      Resource res = resNotif.getEvent().getEvent().getResource();    
+      logger.debug("resourceCreatedEvent for: " + res.getName()); 
       updateServiceFromresourceChange(res);
     }
     
@@ -1127,8 +1127,8 @@ public class ServiceRepoService {
     @Transactional
     public void resourceStateChangedEvent(@Valid ResourceStateChangeNotification resNotif) {
 
-      logger.debug("resourceStateChangedEvent");
       Resource res = resNotif.getEvent().getEvent().getResource();
+      logger.debug("resourceStateChangedEvent for: " + res.getName()); 
       updateServiceFromresourceChange(res);
     }
       
@@ -1173,10 +1173,18 @@ public class ServiceRepoService {
     }
 
     private void updateResourceFromKubernetesLabel(Resource res) {
+      logger.debug("updateResourceFromKubernetesLabel for: " + res.getName()); 
+      
       if (res.getResourceCharacteristicByName("org.etsi.osl.serviceId") != null) {
+
+
+        logger.debug("org.etsi.osl.serviceId found ");
         String serviceId = res.getResourceCharacteristicByName("org.etsi.osl.serviceId").getValue().getValue();
+        logger.debug("rserviceId: " + serviceId); 
+        
         Service aService = findByUuid( serviceId ); 
         if ( aService !=null ) {
+          logger.debug("aService found "); 
           Boolean resourceFoundInSupportedResourcesOfService = false; 
           for (ResourceRef as : aService.getSupportingResource()) {
             if ( as.getId().equals( res.getId() )) {
@@ -1184,7 +1192,8 @@ public class ServiceRepoService {
               break;
             }
           }
-          
+
+          logger.debug("resourceFoundInSupportedResourcesOfService= " + resourceFoundInSupportedResourcesOfService);
           if ( !resourceFoundInSupportedResourcesOfService ) {
             ServiceUpdate supd = new ServiceUpdate();
             
