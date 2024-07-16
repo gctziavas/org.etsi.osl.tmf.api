@@ -75,20 +75,22 @@ import org.etsi.osl.tmf.stm653.model.ServiceTestSpecificationUpdate;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestSpecificationRepoService;
 import org.etsi.osl.tmf.util.AttachmentUtil;
 import org.etsi.osl.tmf.util.KrokiClient;
+import org.etsi.osl.tmf.util.PrimitivesParser;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.etsi.osl.model.ConstituentVxF;
-import org.etsi.osl.model.ExperimentOnBoardDescriptor;
-import org.etsi.osl.model.NetworkServiceDescriptor;
+import org.etsi.osl.model.nfv.ConstituentVxF;
+import org.etsi.osl.model.nfv.ExperimentOnBoardDescriptor;
+import org.etsi.osl.model.nfv.NetworkServiceDescriptor;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
@@ -570,10 +572,11 @@ public class ServiceSpecificationRepoService {
 					
 					/**
 					 * Also,
-					 * we will add by default all the characteristics of this service to the related bundle parent service 
+					 * we will add by default all the characteristics of this service to the related bundle parent service
+					 * Removed to try new approach with rules 
 					 */
 					
-					serviceSpec = copyCharacteristicsOfServiceId(  ar.getId(), serviceSpec);
+					//serviceSpec = copyCharacteristicsOfServiceId(  ar.getId(), serviceSpec);
 					
 				}
 			}
@@ -1141,7 +1144,7 @@ public class ServiceSpecificationRepoService {
 			return null;
 		}
 
-		logger.error("nsdid returned: " + nsd.getName());
+		logger.debug("nsdid returned: " + nsd.getName());
 		
 		List<ServiceSpecification> newRfservices = new ArrayList<>(); 
 		
@@ -1208,6 +1211,14 @@ public class ServiceSpecificationRepoService {
 
 				logger.error("nsdid getConstituentVxF null returned: " + nsd.toString() );
 			}
+
+			/******************** Begin Primitives Handling ********************/
+
+			JSONObject allPrimitives = PrimitivesParser.extractPrimitives(nsd);
+    
+            addServiceSpecCharacteristic(serviceSpec, "PrimitivesList", "NSPrimitives", new Any(allPrimitives.toString(), ""), EValueType.TEXT);
+
+            /********************* End Primitives Handling *********************/
 			
 			
 			ResourceSpecificationRef resourceSpecificationItemRef = new ResourceSpecificationRef();
@@ -1410,9 +1421,10 @@ public class ServiceSpecificationRepoService {
 		serviceSpec.setType("ResourceFacingServiceSpecification");
 
 		
+		
 		for (ResourceSpecificationCharacteristic sourceChar : rSpec.getResourceSpecCharacteristic()) {
 			ServiceSpecCharacteristic serviceSpecCharacteristicItem = copyResourceCharacteristic( sourceChar );
-			serviceSpecCharacteristicItem.setName( rSpec.getName() + "::" +sourceChar.getName() );			
+//			serviceSpecCharacteristicItem.setName( rSpec.getName() + "::" +sourceChar.getName() );			
 			serviceSpec.addServiceSpecCharacteristicItem(serviceSpecCharacteristicItem );		
 		}
 

@@ -38,6 +38,7 @@ import java.net.URI;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.Attachment;
@@ -69,10 +70,13 @@ import org.etsi.osl.tmf.rcm634.reposervices.ResourceCandidateRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCatalogRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCategoryRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -92,7 +96,7 @@ import net.minidev.json.JSONObject;
 @RunWith(SpringRunner.class)
 @Transactional
 @SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-//@AutoConfigureTestDatabase //this automatically uses h2
+@AutoConfigureTestDatabase //this automatically uses h2
 @AutoConfigureMockMvc 
 @ActiveProfiles("testing")
 //@TestPropertySource(
@@ -102,10 +106,11 @@ public class ResourceCatalogIntegrationTest {
 
 	private static final transient Log logger = LogFactory.getLog( ResourceCatalogIntegrationTest.class.getName());
 
-	private static final int FIXED_BOOTSTRAPS_SPECS = 3;
-	private static final int FIXED_BOOTSTRAPS_CATEGORIES = 2;
+	private static final int FIXED_BOOTSTRAPS_SPECS = 7;
+	private static final int FIXED_BOOTSTRAPS_CATEGORIES = 3;
 	private static final int FIXED_BOOTSTRAPS_PHYSICAL_SPECS = 1;
-	private static final int FIXED_BOOTSTRAPS_LOGICAL_SPECS = 2;
+	private static final int FIXED_BOOTSTRAPS_NETWORK_SPECS = 3;
+	private static final int FIXED_BOOTSTRAPS_LOGICAL_SPECS = 6;
 	
     @Autowired
     private MockMvc mvc;
@@ -137,9 +142,8 @@ public class ResourceCatalogIntegrationTest {
 	
 	@Test
 	public void _countDefaultProperties() {
-
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES );
 		assertThat( candidateRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
@@ -148,7 +152,7 @@ public class ResourceCatalogIntegrationTest {
 		assertThat( categRepoService.findByName( "Network Resources" )  ).isNotNull() ;
 
 		ResourceCategory categ = categRepoService.findByName( "Network Resources" );
-		assertThat( categ.getResourceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( categ.getResourceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_NETWORK_SPECS );
 	}
 	
 
@@ -376,12 +380,11 @@ public class ResourceCatalogIntegrationTest {
 		assertThat( parentRootCategory.getCategoryRefs().get(0).getId() ).isEqualTo( child1Subcategory.getId() );
 		
 		/**
-		 * add to a resource catalog and delete the service catalog, to chech that categories are still there
+		 * add to a resource catalog and delete the service catalog, to check that categories are still there
 		 * 
 		 */
-
-		ResourceCatalog catalog = catalogRepoService.findByName( "Catalog" ); 
-		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( 2 );
+		ResourceCatalog catalog = catalogRepoService.findByName( "Catalog" );
+		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES );
 		ResourceCatalogUpdate scu = new ResourceCatalogUpdate();
 		scu.setName( catalog.getName() );
 		for (ResourceCategoryRef iref : catalog.getCategoryRefs()) {
@@ -392,7 +395,7 @@ public class ResourceCatalogIntegrationTest {
 		scu.addCategoryItem( categoryItem );
 		catalog = catalogRepoService.updateCatalog( catalog.getId(), scu);
 
-		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( 3 );
+		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 1 );
 		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
@@ -841,7 +844,7 @@ public class ResourceCatalogIntegrationTest {
 		String physsspectext = IOUtils.toString(in, "UTF-8");
 		PhysicalResourceSpecificationCreate physspeccr2 = JsonUtils.toJsonObj( physsspectext,  PhysicalResourceSpecificationCreate.class);
 		phyresponsesSpec1 = (PhysicalResourceSpecification) createResourceSpec( physspeccr2);
-		
+
 		
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 3 );
 		assertThat( specRepoService.findAllPhysical().size() ).isEqualTo( FIXED_BOOTSTRAPS_PHYSICAL_SPECS + 2 );

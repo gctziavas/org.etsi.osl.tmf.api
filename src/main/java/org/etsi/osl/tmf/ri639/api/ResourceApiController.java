@@ -21,7 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import org.etsi.osl.model.UserRoleType;
+import org.etsi.osl.model.nfv.UserRoleType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 @jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-07-08T09:52:18.013684600+03:00[Europe/Athens]")

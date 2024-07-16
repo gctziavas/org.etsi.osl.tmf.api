@@ -20,18 +20,22 @@
 package org.etsi.osl.tmf.sim638.api;
 
 import java.io.IOException;
-
+import java.util.Date;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.tmf.common.model.Notification;
 import org.etsi.osl.tmf.ri639.model.ResourceAttributeValueChangeNotification;
+import org.etsi.osl.tmf.ri639.model.ResourceCreateNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
 import org.etsi.osl.tmf.sim638.model.ServiceActionQueueItem;
 import org.etsi.osl.tmf.sim638.model.ServiceCreate;
@@ -42,7 +46,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import org.etsi.osl.model.DeploymentDescriptor;
+import org.etsi.osl.model.nfv.DeploymentDescriptor;
+import org.etsi.osl.model.nfv.ExperimentMetadata;
+import org.etsi.osl.model.nfv.Product;
+import org.etsi.osl.model.nfv.ValidationJob;
+import org.etsi.osl.model.nfv.ValidationStatus;
+import org.etsi.osl.model.nfv.VxFMetadata;
 
 @Configuration
 //@RefreshScope
@@ -93,11 +102,13 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
     @Value("${EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED}")
     private String EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED = "";
 
-
-
     //services care to take this event in case they are related to a specific resource (see CRs)
     @Value("${EVENT_RESOURCE_STATE_CHANGED}")
     private String EVENT_RESOURCE_STATE_CHANGED = "";
+    
+
+    @Value("${EVENT_RESOURCE_CREATE}")
+    private String EVENT_RESOURCE_CREATE = "";
 
 	@Autowired
 	private ProducerTemplate template;
@@ -108,6 +119,9 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 		
+	  
+      
+      
 		from( CATALOG_ADD_SERVICE )
 		.log(LoggingLevel.INFO, log, CATALOG_ADD_SERVICE + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
@@ -128,7 +142,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		.log(LoggingLevel.INFO, log, CATALOG_UPD_SERVICE + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ServiceUpdate.class, true)
-		.bean( serviceRepoService, "updateService(${header.serviceid}, ${body}, ${header.propagateToSO} )")
+		.bean( serviceRepoService, "updateService(${header.serviceid}, ${body}, ${header.triggerServiceActionQueue} )")
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 		
@@ -186,22 +200,58 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		.bean( serviceRepoService, "nfvCatalogNSResourceChanged(${body})");
 		
 
+
         from( EVENT_RESOURCE_STATE_CHANGED )
         .log(LoggingLevel.INFO, log, EVENT_RESOURCE_STATE_CHANGED + " message received and will be processed for service inventory!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .unmarshal().json( JsonLibrary.Jackson, ResourceStateChangeNotification.class, true)
         .bean( serviceRepoService, "resourceStateChangedEvent(${body})");
         
+
+        from( EVENT_RESOURCE_CREATE )
+        .errorHandler(deadLetterChannel("direct:retriesDeadLetters")
+            .maximumRedeliveries(5)
+            .redeliveryDelay(1000).useOriginalMessage()
+            .logExhausted(true)
+            .logHandled(true)
+            .retriesExhaustedLogLevel(LoggingLevel.ERROR)
+            .retryAttemptedLogLevel(LoggingLevel.ERROR))     
+        .log(LoggingLevel.INFO, log, EVENT_RESOURCE_CREATE + " message received and will be processed for service inventory!")
+        .to("log:DEBUG?showBody=true&showHeaders=true")
+        .unmarshal().json( JsonLibrary.Jackson, ResourceCreateNotification.class, true)
+        .bean( serviceRepoService, "resourceCreatedEvent(${body})");
+        
+        
+        
+        
         from( EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED )
+        .errorHandler(deadLetterChannel("direct:retriesDeadLetters")
+            .maximumRedeliveries(5)
+            .redeliveryDelay(1000).useOriginalMessage()
+            .logExhausted(true)
+            .logHandled(true)
+            .retriesExhaustedLogLevel(LoggingLevel.ERROR)
+            .retryAttemptedLogLevel(LoggingLevel.ERROR))        
+          
         .log(LoggingLevel.INFO, log, EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED + " message received and will be processed for service inventory!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .unmarshal().json( JsonLibrary.Jackson, ResourceAttributeValueChangeNotification.class, true)
         .bean( serviceRepoService, "resourceAttrChangedEvent(${body})");
 		
         
+        
+        /**
+         * dead Letter Queue msgs if everything fails to connect
+         */
+        from("direct:retriesDeadLetters")
+        //.setBody()
+        //.body(String.class)
+        //.process( ErroneousValidationProcessor )
+        .to("log:DEBUG?showBody=true&showHeaders=true")
+        .to("stream:out");
 	}
 	
-	
+	   
 	static String toJsonString(Object object) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

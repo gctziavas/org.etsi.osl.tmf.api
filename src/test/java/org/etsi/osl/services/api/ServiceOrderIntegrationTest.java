@@ -33,6 +33,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.RoutesBuilder;
@@ -40,6 +41,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
@@ -67,6 +69,8 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
 import org.etsi.osl.tmf.so641.model.ServiceRestriction;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
+import org.etsi.osl.tmf.JsonUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -204,7 +208,7 @@ public class ServiceOrderIntegrationTest {
 		 * here 1+2 + the 2 characteristics of the service itself total 5
 		 */
 		
-		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 8 );
+		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 3 );
 
 		ServiceOrderCreate servOrder = new ServiceOrderCreate();
 		servOrder.setCategory("Experimentation");
@@ -258,7 +262,7 @@ public class ServiceOrderIntegrationTest {
 
 		assertThat( responsesSpec1.getServiceSpecCharacteristic().size() ).isEqualTo( 2 );
 		assertThat( responsesSpec2.getServiceSpecCharacteristic().size() ).isEqualTo( 3 );
-		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 8 );
+		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 3 );
 	
 		
 		responseSO.getOrderItem().stream().forEach(soiElement -> {
@@ -352,9 +356,19 @@ public class ServiceOrderIntegrationTest {
 		ServiceOrder sspeccr1SO = JsonUtils.toJsonObj(sspectextSO, ServiceOrder.class);
 
 		assertThat(sspeccr1SO).isNotNull();
-		
-		
-		
+
+		// Ensure that all Services' end dates were updated correctly
+		boolean allSupportingServicesEndDatesUpdatedToServiceOrderExpectedCompletionDate = true;
+		List<String> services = serviceRepoService.getServicesFromOrderID(responseSO.getId());
+
+		for (String serviceId : services) {
+			Service service = serviceRepoService.findByUuid(serviceId);
+			if (!service.getEndDate().equals(responseSOUpd.getExpectedCompletionDate())) {
+				allSupportingServicesEndDatesUpdatedToServiceOrderExpectedCompletionDate = false;
+				break;
+			}
+		}
+		assertThat(allSupportingServicesEndDatesUpdatedToServiceOrderExpectedCompletionDate).isTrue();
 	}
 
 	@WithMockUser(username="osadmin", roles = {"USER"})

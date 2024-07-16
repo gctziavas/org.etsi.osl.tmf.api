@@ -21,6 +21,7 @@ package org.etsi.osl.tmf.sim638.repo;
 
 import java.util.List;
 import java.util.Optional;
+import org.etsi.osl.tmf.sim638.model.ServiceActionQueueAction;
 import org.etsi.osl.tmf.sim638.model.ServiceActionQueueItem;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -34,5 +35,12 @@ public interface ServiceActionQueueRepository extends CrudRepository<ServiceActi
 	
 	Optional<ServiceActionQueueItem> findByUuid(String id);
 
-	List<ServiceActionQueueItem> findByOrderByInsertedDate();
+	List<ServiceActionQueueItem> findFirst10ByOrderByInsertedDate();
+
+  List<ServiceActionQueueItem> findByServiceRefIdAndAction(String serviceRefId,
+      ServiceActionQueueAction action);
+  
+
+  void deleteByServiceRefIdAndAction(String serviceRefId,
+      ServiceActionQueueAction action);
 }

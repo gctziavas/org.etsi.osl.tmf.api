@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import org.etsi.osl.model.NetworkServiceDescriptor;
+import org.etsi.osl.model.nfv.NetworkServiceDescriptor;
 
 @Configuration
 //@RefreshScope

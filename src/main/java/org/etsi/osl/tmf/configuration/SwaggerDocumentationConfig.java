@@ -728,7 +728,41 @@ public class SwaggerDocumentationConfig {
 	    		.build();
 	
 	}
-	
+	/**
+	 * TMF 674 Geographic Site Management
+	 * @return
+	 */
+
+
+	@Bean
+	public OpenApiCustomizer gsm674OpenAPI() {
+		return openApi -> openApi
+				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth"))
+				.info(new Info()
+						.title("TMF 674 Geographic Site Management")
+						.description("## TMF API Reference: TMF674 - Geographic Site Management  ")
+						.version("4.0.0")
+						.license(new License()
+								.name("Apache 2.0")
+								.url("http://openslice.io")))
+				.externalDocs(new ExternalDocumentation()
+						.description("TMF API Tables")
+						.url("https://www.tmforum.org/oda/open-apis/table"));
+	}
+
+	@Bean
+	public GroupedOpenApi gsm674(){
+
+		SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+		SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+
+		return GroupedOpenApi.builder()
+				.group("tmf-api-674-Geographic Site Management-v4.0.0")
+				.addOpenApiCustomizer( this.gsm674OpenAPI() )
+				.packagesToScan("org.etsi.osl.tmf.gsm674.api")
+				.build();
+
+	}
 
 
 	/**

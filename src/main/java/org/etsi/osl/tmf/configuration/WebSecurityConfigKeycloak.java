@@ -149,7 +149,7 @@ public class WebSecurityConfigKeycloak {
 		}
 
 		public IssuerProperties get(URL issuerUri) throws MisconfigurationException {
-			final var issuerProperties = Stream.of(issuers).filter(iss -> issuerUri.equals(iss.getUri())).toList();
+			final var issuerProperties = Stream.of(issuers).filter(iss -> issuerUri.toString().equals(iss.getUri().toString())).toList();
 			if (issuerProperties.size() == 0) {
 				throw new MisconfigurationException(
 						"Missing authorities mapping properties for %s".formatted(issuerUri.toString()));
