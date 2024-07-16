@@ -1144,7 +1144,7 @@ public class ServiceSpecificationRepoService {
 			return null;
 		}
 
-		logger.error("nsdid returned: " + nsd.getName());
+		logger.debug("nsdid returned: " + nsd.getName());
 		
 		List<ServiceSpecification> newRfservices = new ArrayList<>(); 
 		

@@ -34,6 +34,7 @@ import org.yaml.snakeyaml.Yaml;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,10 +108,20 @@ public class PrimitivesParser {
     public static JSONObject processNSD(NetworkServiceDescriptor nsd) {
         // Parse the NSD descriptor from string to YAML
         Yaml yaml = new Yaml();
-        Map<String, Object> yamlMap = yaml.load(nsd.getDescriptor());
-
-        // Parse the NSD descriptor from YAML to JSONObject
-        JSONObject nsdJson = new JSONObject(yamlMap);
+        JSONObject nsdJson;
+        
+        Object obj = yaml.load(nsd.getDescriptor());
+        
+        if ( obj instanceof ArrayList) {
+          // Parse the NSD descriptor from YAML to JSONObject          
+          nsdJson = new JSONObject( (ArrayList<Object>)obj );
+          
+        }else {
+          Map<String, Object> yamlMap = ( Map<String, Object> ) obj;
+          // Parse the NSD descriptor from YAML to JSONObject
+          nsdJson = new JSONObject(yamlMap);
+        }
+        
 
         return nsdJson;
     }
@@ -135,7 +146,10 @@ public class PrimitivesParser {
         if (descriptor.trim().startsWith("[")) {
             // It's JSON
             vnfdJson = new JSONObject(descriptor.substring(1, descriptor.length() - 1));
-        } else {
+        } else if (descriptor.trim().startsWith("{")) {
+          // It's JSON
+          vnfdJson = new JSONObject(descriptor);
+      } else{
             // It's YAML
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(descriptor);
@@ -164,8 +178,14 @@ public class PrimitivesParser {
         
         // Attach the empty array to the JSONObject under the key "vnfs"
         vnfs.put("vnfs", vnfsArray);
-
-        JSONArray nsdArray = nsdJson.getJSONObject("nsd").getJSONArray("nsd");
+        JSONArray nsdArray = null;
+        if ( nsdJson.has("nsd") ) {
+          nsdArray = nsdJson.getJSONObject("nsd").getJSONArray("nsd");
+        } else {
+          nsdArray  = new JSONArray();
+          nsdArray.put(nsdJson);
+        }
+        
 
         // Assuming that there might be multiple 'nsd' entries, iterate over them
         processNSDEntries(nsdArray, vnfsArray);

@@ -818,6 +818,7 @@ public class ServiceRepoService {
 //		this.updateService( parentServiceId, servUpd, false, null, childService);
 //	}
 
+    @Transactional  
 	public String getServiceEagerAsString(String id) throws JsonProcessingException {
 		Service s = this.getServiceEager(id);
 		ObjectMapper mapper = new ObjectMapper();
@@ -837,7 +838,8 @@ public class ServiceRepoService {
 		
 		return res;
 	}
-	
+
+    @Transactional  
 	public Service getServiceEager(String id) {
 		if ( id == null || id.equals("")) {
 			return null;
@@ -904,6 +906,7 @@ public class ServiceRepoService {
 	/**
 	 * @return
 	 */
+    @Transactional  
 	public List<ServiceActionQueueItem> findAllServiceActionQueueItems() {
 
 		return (List<ServiceActionQueueItem>) this.serviceActionQueueRepo.findFirst10ByOrderByInsertedDate();
@@ -934,6 +937,7 @@ public class ServiceRepoService {
 	 * @param id
 	 * @return
 	 */
+    @Transactional  
 	public Void deleteServiceActionQueueItemByUuid(String id) {
 		
 		Optional<ServiceActionQueueItem> optso = this.serviceActionQueueRepo.findByUuid(id);
@@ -1077,40 +1081,46 @@ public class ServiceRepoService {
 
     @Transactional	
 	public void  resourceAttrChangedEvent(@Valid ResourceAttributeValueChangeNotification resNotif) {
+      try {
+        
+        logger.debug("ResourceAttributeValueChangeNotification"); 
+        Resource res = resNotif.getEvent().getEvent().getResource();
+        logger.info("Will update services related to this resource with id = " + res.getId() );
+        
+        var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
+        
+        for (Service as : aservices) {
+            
+            Service aService = findByUuid(as.getId()); 
+            
+            //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
+                
+  
+                ServiceUpdate supd = new ServiceUpdate();
+                
+                //copy characteristics from resource to service
+                
+                for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
+                  Characteristic cNew = new Characteristic();
+                  cNew.setName( rChar.getName());
+                  cNew.value( new Any( rChar.getValue() ));                
+                  supd.addServiceCharacteristicItem( cNew );  
+                }
+                
+                
+                Note n = new Note();
+                n.setText("Supporting Resource Attribute Changed with id: " + res.getId());
+                n.setAuthor( "SIM638-API" );
+                n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+                supd.addNoteItem( n );                  
+                
+                this.updateService( aService.getId(), supd , true, null, null); //update the service            
+            //}
+        }
       
-      logger.debug("ResourceAttributeValueChangeNotification"); 
-      Resource res = resNotif.getEvent().getEvent().getResource();
-      logger.info("Will update services related to this resource with id = " + res.getId() );
-      
-      var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
-      
-      for (Service as : aservices) {
-          
-          Service aService = findByUuid(as.getId()); 
-          
-          //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
-              
 
-              ServiceUpdate supd = new ServiceUpdate();
-              
-              //copy characteristics from resource to service
-              
-              for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
-                Characteristic cNew = new Characteristic();
-                cNew.setName( rChar.getName());
-                cNew.value( new Any( rChar.getValue() ));                
-                supd.addServiceCharacteristicItem( cNew );  
-              }
-              
-              
-              Note n = new Note();
-              n.setText("Supporting Resource Attribute Changed with id: " + res.getId());
-              n.setAuthor( "SIM638-API" );
-              n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-              supd.addNoteItem( n );                  
-              
-              this.updateService( aService.getId(), supd , true, null, null); //update the service            
-          //}
+      }catch (Exception e) {
+        e.printStackTrace();
       }
       
     }
@@ -1118,20 +1128,32 @@ public class ServiceRepoService {
     
     @Transactional  
     public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {  
-      Resource res = resNotif.getEvent().getEvent().getResource();    
-      logger.debug("resourceCreatedEvent for: " + res.getName()); 
-      updateServiceFromresourceChange(res);
+      try {
+        Resource res = resNotif.getEvent().getEvent().getResource();    
+        logger.debug("resourceCreatedEvent for: " + res.getName()); 
+        updateServiceFromresourceChange(res);
+      }catch (Exception e) {
+        e.printStackTrace();
+      }
+      
     }
     
 
     @Transactional
     public void resourceStateChangedEvent(@Valid ResourceStateChangeNotification resNotif) {
+      try {
+        
+        Resource res = resNotif.getEvent().getEvent().getResource();
+        logger.debug("resourceStateChangedEvent for: " + res.getName()); 
+        updateServiceFromresourceChange(res);
 
-      Resource res = resNotif.getEvent().getEvent().getResource();
-      logger.debug("resourceStateChangedEvent for: " + res.getName()); 
-      updateServiceFromresourceChange(res);
+      }catch (Exception e) {
+        e.printStackTrace();
+      }
+    
     }
-      
+
+    @Transactional  
     private void updateServiceFromresourceChange(Resource res) {
 
       logger.info("Will update services related to this resource with id = " + res.getId() );
@@ -1172,6 +1194,7 @@ public class ServiceRepoService {
 
     }
 
+    @Transactional  
     private void updateResourceFromKubernetesLabel(Resource res) {
       logger.debug("updateResourceFromKubernetesLabel for: " + res.getName()); 
       
