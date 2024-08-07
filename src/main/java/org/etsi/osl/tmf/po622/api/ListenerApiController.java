@@ -30,7 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-10-30T10:29:21.184964400+02:00[Europe/Athens]")
 
 @Controller("ListenerApiController622")
-@RequestMapping("/productOrder/v4/")
+@RequestMapping("/productOrderingManagement/v4/")
 public class ListenerApiController implements ListenerApi {
 
     private final ObjectMapper objectMapper;

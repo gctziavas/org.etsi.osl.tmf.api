@@ -25,6 +25,7 @@
 package org.etsi.osl.tmf.po622.api;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,7 +80,7 @@ public interface ProductOrderApi {
         produces = { "application/json;charset=utf-8" }, 
         consumes = { "application/json;charset=utf-8" },
         method = RequestMethod.POST)
-    default ResponseEntity<ProductOrder> createProductOrder(@Parameter(description = "The ProductOrder to be created" ,required=true )  @Valid @RequestBody ProductOrderCreate body
+    default ResponseEntity<ProductOrder> createProductOrder(Principal principal, @Parameter(description = "The ProductOrder to be created" ,required=true )  @Valid @RequestBody ProductOrderCreate body
 ) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {

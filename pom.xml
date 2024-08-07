@@ -13,6 +13,8 @@
 	<artifactId>org.etsi.osl.tmf.api</artifactId>
 	<name>org.etsi.osl.tmf.api</name>
 
+	<version>${org.etsi.osl.tmf.api.version>}</version>
+
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
