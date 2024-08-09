@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
@@ -37,12 +38,17 @@ import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.pcm620.model.BundledProductSpecification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristic;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristicValue;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreate;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationRelationship;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationUpdate;
 import org.etsi.osl.tmf.pcm620.repo.ProductSpecificationRepository;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -61,7 +67,9 @@ public class ProductSpecificationRepoService {
 	@Autowired
 	ProductSpecificationRepository prodsOfferingRepo;
 	
-	
+
+    @Autowired
+    ServiceSpecificationRepoService serviceSpecificationRepoService;
 
 	private SessionFactory sessionFactory;
 
@@ -428,7 +436,7 @@ public class ProductSpecificationRepoService {
 		}
 		
 		
-
+		
 
 		/**
 		 * Update ProductSpecificationRelationship list
@@ -548,7 +556,7 @@ public class ProductSpecificationRepoService {
 		}
 		
 		/**
-		 * Update ResourceSpecificationRef list
+		 * Update ServiceSpecificationRef list
 		 */
 		if (prodSpecUpd.getServiceSpecification()  != null) {
 
@@ -569,6 +577,7 @@ public class ProductSpecificationRepoService {
 
 				if (!idexists) {
 					prodSpec.getServiceSpecification().add(ar);
+					prodSpec = copyConfigurableCharacteristics( prodSpec, ar );					
 					idAddedUpdated.put(ar.getUuid(), true);
 				}
 			}
@@ -597,5 +606,65 @@ public class ProductSpecificationRepoService {
 
 		return prodSpec;
 	}
+
+  private ProductSpecification copyConfigurableCharacteristics(ProductSpecification prodSpec,
+      ServiceSpecificationRef ar) {
+
+    ServiceSpecification sourceSpec = serviceSpecificationRepoService.findByUuid(ar.getId());
+    
+    if ( sourceSpec != null ) {
+      for (ServiceSpecCharacteristic ssc : sourceSpec.getServiceSpecCharacteristic()) {
+        if (ssc.isConfigurable()!= null && ssc.isConfigurable()) {
+          if ( prodSpec.findProdCharacteristicByName( ssc.getName() ) == null ) {
+            
+            ProductSpecificationCharacteristic cnew = new ProductSpecificationCharacteristic();          
+            cnew.setName(  cnew.getName() ); 
+            cnew.setDescription( cnew.getDescription());
+            cnew.isUnique(cnew.isIsUnique())
+            .extensible(cnew.isExtensible())
+            .maxCardinality(cnew.getMaxCardinality())
+            .minCardinality(cnew.getMinCardinality())
+            .valueType(cnew.getValueType());
+            for (ServiceSpecCharacteristicValue r : ssc.getServiceSpecCharacteristicValue()) {
+              ProductSpecificationCharacteristicValue pcval = new ProductSpecificationCharacteristicValue();
+              pcval.isDefault(r.isIsDefault())
+              .rangeInterval(r.getRangeInterval())
+              .regex(r.getRegex())              
+              .unitOfMeasure(r.getUnitOfMeasure())
+              .valueFrom(r.getValueFrom()+"")
+              .valueTo(r.getValueTo()+"")
+              .valueType(r.getValueType())
+              .value( new Any( r.getValue() )  );              
+              
+              cnew.addProductSpecCharacteristicValueItem( pcval  );
+            }
+            
+            prodSpec.getProductSpecCharacteristic().add( cnew );           
+            
+          }
+        } 
+      }           
+  }
+    
+    return prodSpec;
+  }
+
+  public ProductSpecification addServiceSpecToProductSpec(ProductSpecification responseProdSpec, ServiceSpecification serviceSpec) {
+
+    ServiceSpecificationRef serviceSpecRef = new ServiceSpecificationRef();
+    serviceSpecRef.setId( serviceSpec.getId() );
+    serviceSpecRef.setName( serviceSpec.getName());
+    serviceSpecRef.setVersion(serviceSpec.getVersion());
+    serviceSpecRef.setReferredType(serviceSpec.getType());
+    
+    ProductSpecificationUpdate pSpecUpd = new ProductSpecificationUpdate();
+    pSpecUpd.addServiceSpecificationItem(serviceSpecRef);
+    if (responseProdSpec.getServiceSpecification()!=null) {
+      pSpecUpd.getServiceSpecification().addAll( responseProdSpec.getServiceSpecification() );      
+    }
+    responseProdSpec = updateProductSpecificationDataFromAPIcall(responseProdSpec, pSpecUpd);
+    
+    return responseProdSpec;
+  }
 	
 }

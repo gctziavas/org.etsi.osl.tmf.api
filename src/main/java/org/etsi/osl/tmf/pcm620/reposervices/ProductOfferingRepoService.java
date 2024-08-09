@@ -26,21 +26,34 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.am651.model.AgreementRef;
+import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
+import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.pcm620.model.BundledProductOffering;
 import org.etsi.osl.tmf.pcm620.model.ProductOffering;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingCreate;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceRef;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingUpdate;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecification;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristic;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristicValue;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristicValueUse;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreate;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationRef;
 import org.etsi.osl.tmf.pcm620.repo.ProductOfferingRepository;
+import org.etsi.osl.tmf.pcm620.repo.ProductSpecificationRepository;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -58,8 +71,12 @@ public class ProductOfferingRepoService {
 
 	@Autowired
 	ProductOfferingRepository prodsOfferingRepo;
-	
-	
+
+    @Autowired
+    ProductSpecificationRepoService prodSpecRepoService;
+
+    @Autowired
+    ServiceSpecificationRepoService serviceSpecificationRepoService;
 
 	private SessionFactory sessionFactory;
 
@@ -320,6 +337,7 @@ public class ProductOfferingRepoService {
 
 		if ( prodOfferingUpd.getProductSpecification() != null ) {
 			prodOffering.setProductSpecification( prodOfferingUpd.getProductSpecification()  );
+            prodOffering = copyCharacteristicsFromProdSpec( prodOffering,  prodOfferingUpd.getProductSpecification()  );    
 		}
 
 
@@ -542,5 +560,74 @@ public class ProductOfferingRepoService {
 
 		return prodOffering;
 	}
+
+  private ProductOffering copyCharacteristicsFromProdSpec(ProductOffering prodOffering,
+      @Valid ProductSpecificationRef productSpecRef) {
+
+    ProductSpecification prodSpec = prodSpecRepoService.findByUuid( productSpecRef.getId() );
+    
+    if (prodSpec!= null ) {
+      for (ProductSpecificationCharacteristic prodSpecChar : prodSpec.getProductSpecCharacteristic()) {
+        if ( prodOffering.findCharacteristicByName( prodSpecChar.getName() ) == null ) {
+          ProductSpecificationCharacteristicValueUse pcitem = new ProductSpecificationCharacteristicValueUse();
+          pcitem.name( prodSpecChar.getName() );
+          pcitem.setDescription(prodSpecChar.getDescription());
+          pcitem
+          .maxCardinality(prodSpecChar.getMaxCardinality())
+          .minCardinality(prodSpecChar.getMinCardinality())
+          .valueType(prodSpecChar.getValueType());
+
+          for (ProductSpecificationCharacteristicValue r : prodSpecChar.getProductSpecCharacteristicValue()) {
+            ProductSpecificationCharacteristicValue pcval = new ProductSpecificationCharacteristicValue();
+            pcval.isDefault(r.isIsDefault())
+            .rangeInterval(r.getRangeInterval())
+            .regex(r.getRegex())              
+            .unitOfMeasure(r.getUnitOfMeasure())
+            .valueFrom(r.getValueFrom()+"")
+            .valueTo(r.getValueTo()+"")
+            .valueType(r.getValueType())
+            .value( new Any( r.getValue() )  );              
+            pcitem.addProductSpecCharacteristicValueItem( pcval );
+            
+          }
+          
+          
+          prodOffering.addProdSpecCharValueUseItem(pcitem );
+        }        
+      }
+    }
+
+    return prodOffering;
+  }
+
+  public ProductOffering createRetrieveProductOfferingBasedOnServiceSpec(String id) {
+
+    ServiceSpecification serviceSpec = serviceSpecificationRepoService.findByUuid(id);
+    ProductSpecificationCreate psc = new ProductSpecificationCreate();
+    psc.setName(serviceSpec.getName());
+    psc.setDescription(serviceSpec.getDescription());
+    
+    ProductSpecification responseProdSpec = prodSpecRepoService.addProductSpecification(psc);    
+    
+    responseProdSpec = prodSpecRepoService.addServiceSpecToProductSpec( responseProdSpec, serviceSpec );    
+    
+    ProductOffering pOffer = this.prodOfferingFromPrdSpec( responseProdSpec );
+    
+    return pOffer;
+  }
+
+  private ProductOffering prodOfferingFromPrdSpec(ProductSpecification responseProdSpec) {
+    ProductSpecificationRef prodSpecRef = new ProductSpecificationRef();
+    prodSpecRef.setId(responseProdSpec.getId());
+    prodSpecRef.setName(responseProdSpec.getName());
+    
+    ProductOfferingCreate pefCre = new ProductOfferingCreate();
+    pefCre.setName( responseProdSpec.getName());
+    pefCre.productSpecification(prodSpecRef);
+    
+    ProductOffering pOffer = this.addProductOffering(pefCre);
+    
+    return pOffer;
+  }
 	
 }

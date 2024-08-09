@@ -309,6 +309,36 @@ public class ProductOrderRepoServiceTest {
       assertThat(responseGraph).isNotNull();
     }
   }
+  
+  
+  @WithMockUser(username = "osadmin", roles = {"ADMIN", "USER"})
+  @Test
+  public void testCreateProductOfferingFromServiceSpec() throws Exception {
+    ServiceSpecification serviceSpec = createServiceSpecification();
+    
+    String response = mvc
+        .perform(MockMvcRequestBuilders.post("/productCatalogManagement/v4/productOffering/fromServiceSpecId/" + serviceSpec.getId())
+            .with(SecurityMockMvcRequestPostProcessors.csrf()))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    
+    ProductOffering respOff = JsonUtils.toJsonObj(response, ProductOffering.class);
+
+    assertThat(respOff).isNotNull();
+    assertThat( respOff.getName() ).isEqualTo( "Test Spec2" );
+    assertThat( respOff.getProductSpecification() ).isNotNull();
+    assertThat( respOff.getProductSpecification().getName()  ).isEqualTo( "Test Spec2" );
+    
+    ProductSpecification prodSpec = productSpecificationRepoService.findByUuid( respOff.getProductSpecification().getId() );
+    assertThat( prodSpec.getName() ).isEqualTo( "Test Spec2" );
+    assertThat( prodSpec.getServiceSpecification().size() ).isEqualTo( 1 );
+    assertThat( prodSpec.getProductSpecCharacteristic().size() ).isEqualTo( 2 );    
+
+    assertThat( respOff.getProdSpecCharValueUse().size() ).isEqualTo( 2 );    
+    
+    
+  }
 
 
   private String createProductOrder() throws Exception {
@@ -399,4 +429,27 @@ public class ProductOrderRepoServiceTest {
 
     return responsesSpec;
   }
+  
+  private ServiceSpecification createServiceSpecification() throws Exception{
+
+    File sspec = new File( "src/test/resources/testServiceSpec2.json" );
+    InputStream in = new FileInputStream( sspec );
+    String sspectext = IOUtils.toString(in, "UTF-8");
+    ServiceSpecificationCreate serviceSpecificationCreate = JsonUtils.toJsonObj( sspectext,  ServiceSpecificationCreate.class);
+
+    String response = mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")
+                    .with( SecurityMockMvcRequestPostProcessors.csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content( JsonUtils.toJson( serviceSpecificationCreate ) ))
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+
+    ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response,  ServiceSpecification.class);
+    assertThat( responsesSpec.getName() ).isEqualTo( "Test Spec2" );
+    
+
+    return responsesSpec;
+}
 }
