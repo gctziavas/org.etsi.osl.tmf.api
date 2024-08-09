@@ -26,6 +26,7 @@ package org.etsi.osl.tmf.po622.api;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,7 @@ import org.etsi.osl.tmf.po622.model.ProductOrderUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -111,7 +113,7 @@ public interface ProductOrderApi {
     @RequestMapping(value = "/productOrder/{id}",
         produces = { "application/json;charset=utf-8" }, 
         method = RequestMethod.DELETE)
-    default ResponseEntity<Void> deleteProductOrder(@Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id
+    default ResponseEntity<Void> deleteProductOrder(Principal principal,@Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id
 ) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
         } else {
@@ -134,9 +136,11 @@ public interface ProductOrderApi {
     @RequestMapping(value = "/productOrder",
         produces = { "application/json;charset=utf-8" }, 
         method = RequestMethod.GET)
-    default ResponseEntity<List<ProductOrder>> listProductOrder(@Parameter(description = "Comma-separated properties to be provided in response") @Valid @RequestParam(value = "fields", required = false) String fields
+    default ResponseEntity<List<ProductOrder>> listProductOrder(Principal principal,@Parameter(description = "Comma-separated properties to be provided in response") @Valid @RequestParam(value = "fields", required = false) String fields
 ,@Parameter(description = "Requested index for start of resources to be provided in response") @Valid @RequestParam(value = "offset", required = false) Integer offset
-,@Parameter(description = "Requested number of resources to be provided in response") @Valid @RequestParam(value = "limit", required = false) Integer limit
+,@Parameter(description = "Requested number of resources to be provided in response") @Valid @RequestParam(value = "limit", required = false) Integer limit,
+@Parameter(description = "Requested starttime for start of resources to be provided in response") @Valid @RequestParam(value = "starttime", required = false) Date starttime,
+@Parameter(description = "Requested endtime for start of resources to be provided in response") @Valid @RequestParam(value = "endtime", required = false) Date endtime 
 ) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
             if (getAcceptHeader().get().contains("application/json")) {
@@ -168,7 +172,7 @@ public interface ProductOrderApi {
         produces = { "application/json;charset=utf-8" }, 
         consumes = { "application/json;charset=utf-8" },
         method = RequestMethod.PATCH)
-    default ResponseEntity<ProductOrder> patchProductOrder(@Parameter(description = "The ProductOrder to be updated" ,required=true )  @Valid @RequestBody ProductOrderUpdate body
+    default ResponseEntity<ProductOrder> patchProductOrder(Principal principal,@Parameter(description = "The ProductOrder to be updated" ,required=true )  @Valid @RequestBody ProductOrderUpdate body
 ,@Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id
 ) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
@@ -200,7 +204,7 @@ public interface ProductOrderApi {
     @RequestMapping(value = "/productOrder/{id}",
         produces = { "application/json;charset=utf-8" }, 
         method = RequestMethod.GET)
-    default ResponseEntity<ProductOrder> retrieveProductOrder(@Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id
+    default ResponseEntity<ProductOrder> retrieveProductOrder(Principal principal, @Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id
 ,@Parameter(description = "Comma-separated properties to provide in response") @Valid @RequestParam(value = "fields", required = false) String fields
 ) {
         if(getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
@@ -217,5 +221,46 @@ public interface ProductOrderApi {
         }
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
+    
+    @Operation(summary = "Get a SVG image with product order item services relationship graph", operationId = "getImageProductOrderItemRelationshipGraph", 
+        description = "This operation returns a SVG image with Product order item services relationship graph", tags={ "productOrder", })
+@ApiResponses(value = { 
+
+    @ApiResponse(responseCode = "302", description = "Success" ),
+    //@ApiResponse(responseCode ="200", description = "Success" ),
+    @ApiResponse(responseCode = "400", description = "Bad Request" ),
+    @ApiResponse(responseCode = "401", description = "Unauthorized" ),
+    @ApiResponse(responseCode = "403", description = "Forbidden" ),
+    @ApiResponse(responseCode = "404", description = "Not Found" ),
+    @ApiResponse(responseCode = "405", description = "Method Not allowed" ),
+    @ApiResponse(responseCode = "409", description = "Conflict" ),
+    @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
+@RequestMapping(value ="/productOrder/{id}/item/{itemid}/relationship_graph",        
+    produces = MediaType.ALL_VALUE ,
+    method = RequestMethod.GET)
+ResponseEntity<Void> getImageProductOrderItemRelationshipGraph(
+        @Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id,
+        @Parameter(description = "Identifier of the ProductOrderItem",required=true) @PathVariable("itemid") String itemid);
+
+
+@Operation(summary = "Get a SVG image with Product order notes activity graph", operationId = "getImageProductOrderNotesGraph", 
+        description = "This operation returns a SVG image with Product order notes activity  graph", tags={ "productOrder", })
+@ApiResponses(value = { 
+
+    @ApiResponse(responseCode = "302", description = "Success" ),
+    //@ApiResponse(responseCode ="200", description = "Success" ),
+    @ApiResponse(responseCode = "400", description = "Bad Request" ),
+    @ApiResponse(responseCode = "401", description = "Unauthorized" ),
+    @ApiResponse(responseCode = "403", description = "Forbidden" ),
+    @ApiResponse(responseCode = "404", description = "Not Found" ),
+    @ApiResponse(responseCode = "405", description = "Method Not allowed" ),
+    @ApiResponse(responseCode = "409", description = "Conflict" ),
+    @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
+@RequestMapping(value ="/productOrder/{id}/notes_graph",        
+    produces = MediaType.ALL_VALUE ,
+    method = RequestMethod.GET)
+ResponseEntity<Void> getImageProductOrderNotesGraph(
+        @Parameter(description = "Identifier of the ProductOrder",required=true) @PathVariable("id") String id);
+
 
 }

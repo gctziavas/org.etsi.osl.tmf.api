@@ -35,6 +35,7 @@ public interface ProductOrderRepository extends CrudRepository<ProductOrder, Lon
 
 
 	Optional<ProductOrder> findByUuid(String id);
+	
 	Iterable<ProductOrder> findByState( ProductOrderStateType state);
 	@Query("SELECT por FROM ProductOrder por JOIN FETCH por.relatedParty rp WHERE rp.name = ?1 AND  rp.role = ?2 ORDER BY por.orderDate DESC")	
 	Iterable<ProductOrder> findByRolenameAndRoleType(String rolename, UserPartRoleType requester);

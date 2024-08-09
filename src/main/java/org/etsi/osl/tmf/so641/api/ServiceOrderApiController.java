@@ -152,7 +152,7 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 		}
 	}
 
-	@PreAuthorize("hasAnyAuthority('ROLE_USER')" )
+	@PreAuthorize("hasAnyAuthority('ROLE_ADMIN')" )
 	@Override
 	public ResponseEntity<Void> deleteServiceOrder(
 			Principal principal,			
