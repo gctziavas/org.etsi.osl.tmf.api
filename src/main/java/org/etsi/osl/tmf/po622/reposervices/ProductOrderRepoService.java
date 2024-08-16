@@ -357,7 +357,11 @@ public class ProductOrderRepoService {
         so.getNote().addAll(productOrderCreate.getNote());
     }
     
-    so.setState( productOrderCreate.getState() );
+    if ( productOrderCreate.getState() != null ) {
+      so.setState( productOrderCreate.getState() );      
+    } else {
+      so.setState( ProductOrderStateType.INITIAL );
+    }
     
     
       
