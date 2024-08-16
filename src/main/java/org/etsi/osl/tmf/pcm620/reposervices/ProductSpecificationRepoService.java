@@ -208,6 +208,8 @@ public class ProductSpecificationRepoService {
 		return optionalCat.orElse(null);
 	}
 
+
+    @Transactional
 	public ProductSpecification findByUuidEager(String id) {
 		Session session = sessionFactory.openSession();
 		Transaction tx = session.beginTransaction(); // instead of begin transaction, is it possible to continue?
@@ -215,16 +217,18 @@ public class ProductSpecificationRepoService {
 		try {
 			dd = session.get(ProductSpecification.class, id);
 			if (dd == null) {
+	            session.close();
 				return this.findByUuid(id);// last resort
 			}
 			Hibernate.initialize(dd.getAttachment());
 			Hibernate.initialize(dd.getRelatedParty()  );
 			Hibernate.initialize(dd.getBundledProductSpecification() );
 			Hibernate.initialize(dd.getResourceSpecification() );
-			Hibernate.initialize(dd.getServiceSpecification() );
+            Hibernate.initialize(dd.getServiceSpecification() );
+            Hibernate.initialize(dd.getProductSpecificationRelationship() );
 			for (ProductSpecificationCharacteristic schar : dd.getProductSpecCharacteristic() ) {
 				Hibernate.initialize(schar.getProductSpecCharacteristicValue() );
-
+				Hibernate.initialize(schar.getProductSpecCharRelationship() );
 			}
 			
 
@@ -618,13 +622,13 @@ public class ProductSpecificationRepoService {
           if ( prodSpec.findProdCharacteristicByName( ssc.getName() ) == null ) {
             
             ProductSpecificationCharacteristic cnew = new ProductSpecificationCharacteristic();          
-            cnew.setName(  cnew.getName() ); 
-            cnew.setDescription( cnew.getDescription());
-            cnew.isUnique(cnew.isIsUnique())
-            .extensible(cnew.isExtensible())
-            .maxCardinality(cnew.getMaxCardinality())
-            .minCardinality(cnew.getMinCardinality())
-            .valueType(cnew.getValueType());
+            cnew.setName(  ssc.getName() ); 
+            cnew.setDescription( ssc.getDescription());
+            cnew.isUnique(ssc.isIsUnique())
+            .extensible(ssc.isExtensible())
+            .maxCardinality(ssc.getMaxCardinality())
+            .minCardinality(ssc.getMinCardinality())
+            .valueType(ssc.getValueType());
             for (ServiceSpecCharacteristicValue r : ssc.getServiceSpecCharacteristicValue()) {
               ProductSpecificationCharacteristicValue pcval = new ProductSpecificationCharacteristicValue();
               pcval.isDefault(r.isIsDefault())
@@ -665,6 +669,15 @@ public class ProductSpecificationRepoService {
     responseProdSpec = updateProductSpecificationDataFromAPIcall(responseProdSpec, pSpecUpd);
     
     return responseProdSpec;
+  }
+  
+  public ProductSpecification updateOrAddProductSpecification(String id, ProductSpecificationCreate productSpecificatioCreate) {
+    ProductSpecification serviceSpec = updateProductSpecification(id, productSpecificatioCreate );
+    if ( serviceSpec == null ) {            
+            serviceSpec = addProductSpecification( productSpecificatioCreate );
+    }
+    
+    return serviceSpec;  
   }
 	
 }

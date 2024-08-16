@@ -67,6 +67,7 @@ import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.etsi.osl.tmf.so641.api.NotFoundException;
+import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
 import org.etsi.osl.tmf.util.KrokiClient;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
@@ -111,6 +112,9 @@ public class ProductOrderRepoService {
 
   @Autowired
   ServiceRepoService serviceRepoService;
+
+  @Autowired
+  ServiceOrderRepoService serviceOrderRepoService;
 
   private SessionFactory sessionFactory;
 
@@ -222,8 +226,8 @@ public class ProductOrderRepoService {
               }
               
           }           
-          sql += "  FROM ProductOrder sor "
-                  + "JOIN sor.relatedParty rp ";
+          sql += "  FROM ProductOrder por "
+                  + "JOIN por.relatedParty rp ";
           
           if (allParams.size() > 0) {
               sql += " WHERE rp.role = 'REQUESTER' AND ";
@@ -353,6 +357,10 @@ public class ProductOrderRepoService {
         so.getNote().addAll(productOrderCreate.getNote());
     }
     
+    so.setState( productOrderCreate.getState() );
+    
+    
+      
     
     
 
@@ -510,7 +518,7 @@ public class ProductOrderRepoService {
   
   }
   
-  
+  @Transactional
   public ProductOrder getProductOrderEager(String id) {
 
     Session session = sessionFactory.openSession();
@@ -527,9 +535,12 @@ public class ProductOrderRepoService {
             Hibernate.initialize(s.getRelatedParty());
             Hibernate.initialize(s.getProductOrderItem() );
             Hibernate.initialize(s.getNote() );
+            Hibernate.initialize(s.getChannel());
             for (ProductOrderItem soi : s.getProductOrderItem()) {
-                Hibernate.initialize( soi.getProduct().getProductCharacteristic() );
-                Hibernate.initialize( soi.getProductOffering()  );
+              if ( soi.getProduct() != null ) {
+                Hibernate.initialize( soi.getProduct().getProductCharacteristic() );                
+              }
+              Hibernate.initialize( soi.getProductOffering()  );
             }
             
             tx.commit();
@@ -539,7 +550,7 @@ public class ProductOrderRepoService {
         
         return s;
     } catch (Exception e) {
-        // TODO: handle exception
+      e.printStackTrace();
     }
 
     session.close();
@@ -548,6 +559,7 @@ public class ProductOrderRepoService {
     
 }
 
+  @Transactional
   public String getProductOrderEagerAsString(String id) throws JsonProcessingException {
     ProductOrder s = this.getProductOrderEager(id);
     ObjectMapper mapper = new ObjectMapper();

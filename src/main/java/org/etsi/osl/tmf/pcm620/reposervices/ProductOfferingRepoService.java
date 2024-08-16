@@ -222,6 +222,8 @@ public class ProductOfferingRepoService {
 		try {
 			dd = session.get(ProductOffering.class, id);
 			if (dd == null) {
+			    tx.rollback();
+	            session.close();
 				return this.findByUuid(id);// last resort
 			}
 			Hibernate.initialize(dd.getAttachment());
@@ -238,6 +240,7 @@ public class ProductOfferingRepoService {
 			Hibernate.initialize(dd.getProductOfferingTerm() );
 			Hibernate.initialize(dd.getServiceCandidate() );
 			Hibernate.initialize(dd.getResourceCandidate() );
+            Hibernate.initialize(dd.getChannel());
 
 			tx.commit();
 		} finally {

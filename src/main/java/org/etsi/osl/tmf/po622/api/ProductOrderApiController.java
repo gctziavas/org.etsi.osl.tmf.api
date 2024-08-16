@@ -147,6 +147,7 @@ public class ProductOrderApiController implements ProductOrderApi {
   }
 
   @Override
+  @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
   public ResponseEntity<List<ProductOrder>> listProductOrder(Principal principal,
       @Valid String fields, @Valid Integer offset, @Valid Integer limit, @Valid Date starttime,
       @Valid Date endtime) {
