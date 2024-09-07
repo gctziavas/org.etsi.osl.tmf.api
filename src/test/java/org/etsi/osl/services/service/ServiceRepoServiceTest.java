@@ -43,6 +43,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("testing")
@@ -174,7 +177,22 @@ public class ServiceRepoServiceTest {
 
                                     serviceRepoService.updateNSLCMCharacteristic(service, n);
 
-                                    assertEquals("[\"null\"]", service.getServiceCharacteristicByName(n.getName()).getValue().getValue());
+                                    try {
+                                        ArrayNode expected = (ArrayNode) objectMapper.readTree(
+                                            "[]"
+                                        );
+                                        ArrayNode actual = (ArrayNode) objectMapper.readTree(
+                                            service.getServiceCharacteristicByName(n.getName()).getValue().getValue()
+                                        );
+
+                                        assertEquals(
+                                            expected,
+                                            actual
+                                        );
+                                        break;
+                                    } catch (JsonProcessingException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }   
@@ -211,10 +229,22 @@ public class ServiceRepoServiceTest {
 
                                     serviceRepoService.updateNSLCMCharacteristic(service, n);
 
-                                    assertEquals(
-                                            "[\"{\\\"queuePosition\\\":0,\\\"lcmOperationType\\\":\\\"instantiate\\\",\\\"detailed-status\\\":\\\"Done\\\",\\\"operationState\\\":\\\"COMPLETED\\\",\\\"errorMessage\\\":null,\\\"nsInstanceId\\\":\\\"420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"_admin\\\":{\\\"projects_write\\\":[\\\"92636b50-d607-4801-98b5-f0da541363be\\\"],\\\"created\\\":1.7169792184842422E9,\\\"modified\\\":1.7169794444025614E9,\\\"worker\\\":\\\"d6f95b754d12\\\",\\\"projects_read\\\":[\\\"92636b50-d607-4801-98b5-f0da541363be\\\"]},\\\"detailedStatus\\\":null,\\\"stage\\\":\\\"\\\",\\\"operationParams\\\":{\\\"nsInstanceId\\\":\\\"420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"ssh_keys\\\":[\\\"\\\"],\\\"lcmOperationType\\\":\\\"instantiate\\\",\\\"nsdId\\\":\\\"338d3a8c-af70-446a-af37-ed8bb97a6641\\\",\\\"nsName\\\":\\\"Service_Order_65bcf307-1a47-4a48-b211-be94c3390b81\\\",\\\"vimAccountId\\\":\\\"479356bf-72ff-4dfd-8483-5c23f48dd0bc\\\"},\\\"startTime\\\":1.7169792184841862E9,\\\"links\\\":{\\\"nsInstance\\\":\\\"/osm/nslcm/v1/ns_instances/420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"self\\\":\\\"/osm/nslcm/v1/ns_lcm_op_occs/e0836187-7d4a-49ac-a317-fc4108ed2f93\\\"},\\\"_id\\\":\\\"e0836187-7d4a-49ac-a317-fc4108ed2f93\\\",\\\"id\\\":\\\"e0836187-7d4a-49ac-a317-fc4108ed2f93\\\",\\\"isAutomaticInvocation\\\":false,\\\"isCancelPending\\\":false,\\\"statusEnteredTime\\\":1.7169794444025595E9}\"]",
+                                    try {
+                                        ArrayNode expected = (ArrayNode) objectMapper.readTree(
+                                            "[{\"queuePosition\":0,\"lcmOperationType\":\"instantiate\",\"detailed-status\":\"Done\",\"operationState\":\"COMPLETED\",\"errorMessage\":null,\"nsInstanceId\":\"420fa806-f2f8-405e-8348-11e4fcd13f25\",\"_admin\":{\"projects_write\":[\"92636b50-d607-4801-98b5-f0da541363be\"],\"created\":1.7169792184842422E9,\"modified\":1.7169794444025614E9,\"worker\":\"d6f95b754d12\",\"projects_read\":[\"92636b50-d607-4801-98b5-f0da541363be\"]},\"detailedStatus\":null,\"stage\":\"\",\"operationParams\":{\"nsInstanceId\":\"420fa806-f2f8-405e-8348-11e4fcd13f25\",\"ssh_keys\":[\"\"],\"lcmOperationType\":\"instantiate\",\"nsdId\":\"338d3a8c-af70-446a-af37-ed8bb97a6641\",\"nsName\":\"Service_Order_65bcf307-1a47-4a48-b211-be94c3390b81\",\"vimAccountId\":\"479356bf-72ff-4dfd-8483-5c23f48dd0bc\"},\"startTime\":1.7169792184841862E9,\"links\":{\"nsInstance\":\"/osm/nslcm/v1/ns_instances/420fa806-f2f8-405e-8348-11e4fcd13f25\",\"self\":\"/osm/nslcm/v1/ns_lcm_op_occs/e0836187-7d4a-49ac-a317-fc4108ed2f93\"},\"_id\":\"e0836187-7d4a-49ac-a317-fc4108ed2f93\",\"id\":\"e0836187-7d4a-49ac-a317-fc4108ed2f93\",\"isAutomaticInvocation\":false,\"isCancelPending\":false,\"statusEnteredTime\":1.7169794444025595E9}]"
+                                        );
+                                        ArrayNode actual = (ArrayNode) objectMapper.readTree(
                                             service.getServiceCharacteristicByName(n.getName()).getValue().getValue()
-                                            );
+                                        );
+
+                                        assertEquals(
+                                            expected,
+                                            actual
+                                        );
+                                        break;
+                                    } catch (JsonProcessingException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }   
@@ -247,15 +277,27 @@ public class ServiceRepoServiceTest {
                                 // Check if the name contains "NSLCM" in any case
                                 if (n.getName().toUpperCase().contains("NSLCM")) {
                                     
-                                    // Set the value of NSLCM to null
-                                    service.getServiceCharacteristicByName(n.getName()).getValue().setValue("[\"existingValue\"]");
+                                    // Set the value of NSLCM
+                                    service.getServiceCharacteristicByName(n.getName()).getValue().setValue("[{\"test\": 2}]");
 
                                     serviceRepoService.updateNSLCMCharacteristic(service, n);
 
-                                    assertEquals(
-                                            "[\"existingValue\",\"{\\\"queuePosition\\\":0,\\\"lcmOperationType\\\":\\\"instantiate\\\",\\\"detailed-status\\\":\\\"Done\\\",\\\"operationState\\\":\\\"COMPLETED\\\",\\\"errorMessage\\\":null,\\\"nsInstanceId\\\":\\\"420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"_admin\\\":{\\\"projects_write\\\":[\\\"92636b50-d607-4801-98b5-f0da541363be\\\"],\\\"created\\\":1.7169792184842422E9,\\\"modified\\\":1.7169794444025614E9,\\\"worker\\\":\\\"d6f95b754d12\\\",\\\"projects_read\\\":[\\\"92636b50-d607-4801-98b5-f0da541363be\\\"]},\\\"detailedStatus\\\":null,\\\"stage\\\":\\\"\\\",\\\"operationParams\\\":{\\\"nsInstanceId\\\":\\\"420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"ssh_keys\\\":[\\\"\\\"],\\\"lcmOperationType\\\":\\\"instantiate\\\",\\\"nsdId\\\":\\\"338d3a8c-af70-446a-af37-ed8bb97a6641\\\",\\\"nsName\\\":\\\"Service_Order_65bcf307-1a47-4a48-b211-be94c3390b81\\\",\\\"vimAccountId\\\":\\\"479356bf-72ff-4dfd-8483-5c23f48dd0bc\\\"},\\\"startTime\\\":1.7169792184841862E9,\\\"links\\\":{\\\"nsInstance\\\":\\\"/osm/nslcm/v1/ns_instances/420fa806-f2f8-405e-8348-11e4fcd13f25\\\",\\\"self\\\":\\\"/osm/nslcm/v1/ns_lcm_op_occs/e0836187-7d4a-49ac-a317-fc4108ed2f93\\\"},\\\"_id\\\":\\\"e0836187-7d4a-49ac-a317-fc4108ed2f93\\\",\\\"id\\\":\\\"e0836187-7d4a-49ac-a317-fc4108ed2f93\\\",\\\"isAutomaticInvocation\\\":false,\\\"isCancelPending\\\":false,\\\"statusEnteredTime\\\":1.7169794444025595E9}\"]", 
+                                    try {
+                                        ArrayNode expected = (ArrayNode) objectMapper.readTree(
+                                            "[{\"test\": 2}, {\"queuePosition\":0,\"lcmOperationType\":\"instantiate\",\"detailed-status\":\"Done\",\"operationState\":\"COMPLETED\",\"errorMessage\":null,\"nsInstanceId\":\"420fa806-f2f8-405e-8348-11e4fcd13f25\",\"_admin\":{\"projects_write\":[\"92636b50-d607-4801-98b5-f0da541363be\"],\"created\":1.7169792184842422E9,\"modified\":1.7169794444025614E9,\"worker\":\"d6f95b754d12\",\"projects_read\":[\"92636b50-d607-4801-98b5-f0da541363be\"]},\"detailedStatus\":null,\"stage\":\"\",\"operationParams\":{\"nsInstanceId\":\"420fa806-f2f8-405e-8348-11e4fcd13f25\",\"ssh_keys\":[\"\"],\"lcmOperationType\":\"instantiate\",\"nsdId\":\"338d3a8c-af70-446a-af37-ed8bb97a6641\",\"nsName\":\"Service_Order_65bcf307-1a47-4a48-b211-be94c3390b81\",\"vimAccountId\":\"479356bf-72ff-4dfd-8483-5c23f48dd0bc\"},\"startTime\":1.7169792184841862E9,\"links\":{\"nsInstance\":\"/osm/nslcm/v1/ns_instances/420fa806-f2f8-405e-8348-11e4fcd13f25\",\"self\":\"/osm/nslcm/v1/ns_lcm_op_occs/e0836187-7d4a-49ac-a317-fc4108ed2f93\"},\"_id\":\"e0836187-7d4a-49ac-a317-fc4108ed2f93\",\"id\":\"e0836187-7d4a-49ac-a317-fc4108ed2f93\",\"isAutomaticInvocation\":false,\"isCancelPending\":false,\"statusEnteredTime\":1.7169794444025595E9}]"
+                                        );
+                                        ArrayNode actual = (ArrayNode) objectMapper.readTree(
                                             service.getServiceCharacteristicByName(n.getName()).getValue().getValue()
-                                            );
+                                        );
+
+                                        assertEquals(
+                                            expected,
+                                            actual
+                                        );
+                                        break;
+                                    } catch (JsonProcessingException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }   
