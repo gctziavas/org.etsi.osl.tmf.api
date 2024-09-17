@@ -5,13 +5,19 @@
 	<parent>
 		<groupId>org.etsi.osl</groupId>
 		<artifactId>org.etsi.osl.main</artifactId>
-		<version>1.0.0</version>
+		<version>2024Q4-SNAPSHOT</version>
 		<relativePath>../org.etsi.osl.main</relativePath>
 	</parent>
 
 
 	<artifactId>org.etsi.osl.tmf.api</artifactId>
 	<name>org.etsi.osl.tmf.api</name>
+	<version>${org.etsi.osl.tmf.api.version}</version>
+
+	<organization>
+		<name>OpenSlice by ETSI</name>
+		<url>https://osl.etsi.org</url>
+	</organization>
 
 
 	<properties>
