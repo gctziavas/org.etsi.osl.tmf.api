@@ -60,6 +60,7 @@ import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
 import org.etsi.osl.tmf.ri639.repo.ResourceRepository;
 import org.etsi.osl.tmf.sim638.model.Service;
+import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -91,6 +92,9 @@ public class ResourceRepoService {
 
   @Autowired
   ResourceApiRouteBuilderEvents resourceApiRouteBuilder;
+  
+  @Autowired
+  ServiceRepoService serviceRepoService;
 
   @Autowired
   public ResourceRepoService(EntityManagerFactory factory) {
@@ -445,6 +449,8 @@ public class ResourceRepoService {
 
 
     resource = this.resourceRepo.save(resource);
+    this.serviceRepoService.updateServicesHavingThisSupportingResource(resource);
+    
     if (resourceCharacteristicChanged) {
       raiseResourceAttributeValueChangeEventNotification(resource);
     } else if (resourceStateChanged) {
