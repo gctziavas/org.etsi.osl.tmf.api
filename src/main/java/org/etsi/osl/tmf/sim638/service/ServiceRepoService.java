@@ -1111,11 +1111,9 @@ public class ServiceRepoService {
 	
 
     @Transactional	
-	public void  resourceAttrChangedEvent(@Valid ResourceAttributeValueChangeNotification resNotif) {
+	public void  updateServicesHavingThisSupportingResource(@Valid Resource res) {
       try {
         
-        logger.debug("ResourceAttributeValueChangeNotification"); 
-        Resource res = resNotif.getEvent().getEvent().getResource();
         logger.info("Will update services related to this resource with id = " + res.getId() );
         
         var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
