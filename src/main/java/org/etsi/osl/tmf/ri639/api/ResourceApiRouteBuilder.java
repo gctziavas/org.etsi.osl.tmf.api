@@ -73,14 +73,14 @@ public class ResourceApiRouteBuilder extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 		
-		//from( CATALOG_ADD_RESOURCE )
-		//.log(LoggingLevel.INFO, log, CATALOG_ADD_RESOURCE + " message received!")
-		//.to("log:DEBUG?showBody=true&showHeaders=true")
-		//.unmarshal().json( JsonLibrary.Jackson, ResourceCreate.class, true)
-		//.bean( resourceRepoService, "addResource(${body})")
-		//.marshal()
-		//.json( JsonLibrary.Jackson)
-		//.convertBodyTo( String.class );
+		from( CATALOG_ADD_RESOURCE )
+		.log(LoggingLevel.INFO, log, CATALOG_ADD_RESOURCE + " message received!")
+		.to("log:DEBUG?showBody=true&showHeaders=true")
+		.unmarshal().json( JsonLibrary.Jackson, ResourceCreate.class, true)
+		.bean( resourceRepoService, "addResource(${body})")
+		.marshal()
+		.json( JsonLibrary.Jackson)
+		.convertBodyTo( String.class );
 		
 		from( CATALOG_GET_RESOURCE_BY_ID )
 		.log(LoggingLevel.INFO, log, CATALOG_GET_RESOURCE_BY_ID + " message received!")
@@ -88,13 +88,13 @@ public class ResourceApiRouteBuilder extends RouteBuilder {
 		.bean( resourceRepoService, "getResourceEagerAsString")
 		.convertBodyTo( String.class );	
 				
-		//from( CATALOG_UPD_RESOURCE )
-		//.log(LoggingLevel.INFO, log, CATALOG_UPD_RESOURCE + " message received!")
-		//.to("log:DEBUG?showBody=true&showHeaders=true")
-		//.unmarshal().json( JsonLibrary.Jackson, ResourceUpdate.class, true)
-		//.bean( resourceRepoService, "updateResource(${header.resourceId}, ${body}, ${header.triggerServiceActionQueue} )")
-		//.marshal().json( JsonLibrary.Jackson)
-		//.convertBodyTo( String.class );		
+		from( CATALOG_UPD_RESOURCE )
+		.log(LoggingLevel.INFO, log, CATALOG_UPD_RESOURCE + " message received!")
+		.to("log:DEBUG?showBody=true&showHeaders=true")
+		.unmarshal().json( JsonLibrary.Jackson, ResourceUpdate.class, true)
+		.bean( resourceRepoService, "updateResource(${header.resourceId}, ${body}, ${header.triggerServiceActionQueue} )")
+		.marshal().json( JsonLibrary.Jackson)
+		.convertBodyTo( String.class );		
 
 		from( CATALOG_RESOURCES_OF_PARTNERS )
 		.log(LoggingLevel.INFO, log, CATALOG_RESOURCES_OF_PARTNERS + " message received!")
@@ -103,13 +103,13 @@ public class ResourceApiRouteBuilder extends RouteBuilder {
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 		
-		//from( CATALOG_UPDADD_RESOURCE )
-		//.log(LoggingLevel.INFO, log, CATALOG_UPDADD_RESOURCE + " message received!")
-		//.to("log:DEBUG?showBody=true&showHeaders=true")
-		//.unmarshal().json( JsonLibrary.Jackson, ResourceCreate.class, true)
-		//.bean( resourceRepoService, "addOrUpdateResourceByNameCategoryVersion(${header.aname},${header.acategory}, ${header.aversion}, ${body})")
-		//.marshal().json( JsonLibrary.Jackson)
-		//.convertBodyTo( String.class );
+		from( CATALOG_UPDADD_RESOURCE )
+		.log(LoggingLevel.INFO, log, CATALOG_UPDADD_RESOURCE + " message received!")
+		.to("log:DEBUG?showBody=true&showHeaders=true")
+		.unmarshal().json( JsonLibrary.Jackson, ResourceCreate.class, true)
+		.bean( resourceRepoService, "addOrUpdateResourceByNameCategoryVersion(${header.aname},${header.acategory}, ${header.aversion}, ${body})")
+		.marshal().json( JsonLibrary.Jackson)
+		.convertBodyTo( String.class );
 	}
 	
 
