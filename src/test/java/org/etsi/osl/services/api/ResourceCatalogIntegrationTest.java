@@ -106,11 +106,11 @@ public class ResourceCatalogIntegrationTest {
 
 	private static final transient Log logger = LogFactory.getLog( ResourceCatalogIntegrationTest.class.getName());
 
-	private static final int FIXED_BOOTSTRAPS_SPECS = 7;
+	private static final int FIXED_BOOTSTRAPS_SPECS = 9;
 	private static final int FIXED_BOOTSTRAPS_CATEGORIES = 3;
 	private static final int FIXED_BOOTSTRAPS_PHYSICAL_SPECS = 1;
 	private static final int FIXED_BOOTSTRAPS_NETWORK_SPECS = 3;
-	private static final int FIXED_BOOTSTRAPS_LOGICAL_SPECS = 6;
+	private static final int FIXED_BOOTSTRAPS_LOGICAL_SPECS = 8;
 	
     @Autowired
     private MockMvc mvc;
