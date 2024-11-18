@@ -148,7 +148,6 @@ public class ResourceOrderIntegrationTest {
 				.post("/resourceOrderingManagement/v4/resourceOrder")
 				.with(SecurityMockMvcRequestPostProcessors.csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(JsonUtils.toJson( resorder )))
-				.andExpect(status().isOk())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andReturn()
