@@ -58,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @Transactional
 @SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-//@AutoConfigureTestDatabase //this automatically uses h2
+@AutoConfigureTestDatabase //this automatically uses h2
 @AutoConfigureMockMvc
 @ActiveProfiles("testing")
 //@TestPropertySource(
