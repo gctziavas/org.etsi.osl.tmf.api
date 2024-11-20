@@ -48,12 +48,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.Valid;
 
-//@RunWith(SpringRunner.class)
-//@ActiveProfiles("testing")
-//@Transactional
-//@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-//@AutoConfigureMockMvc
-//@AutoConfigureTestDatabase
+@RunWith(SpringRunner.class)
+@ActiveProfiles("testing")
+@Transactional
+@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
+@AutoConfigureMockMvc
+@AutoConfigureTestDatabase
 public class ServiceSpecificationRepoServiceTest {
 
     @Autowired
@@ -69,7 +69,7 @@ public class ServiceSpecificationRepoServiceTest {
 
     private static ResourceSpecification resourceNSD;
 
-    //@BeforeClass
+    @BeforeClass
     public static void setupBeforeClass() {
         // Load NSD from JSON file to NetworkServiceDescriptor.class
         try {
@@ -94,7 +94,7 @@ public class ServiceSpecificationRepoServiceTest {
         resourceNSD.setDescription(nsd.getShortDescription());
     }
 
-    //@Before
+    @Before
     public void setupBefore() {
         when(serviceSpecificationApiRouteBuilderNSD.retrieveNSD(anyString())).thenReturn(nsd);
         when(resourceSpecRepoService.addResourceSpec(any())).thenReturn(resourceNSD);
@@ -107,7 +107,7 @@ public class ServiceSpecificationRepoServiceTest {
      * This test verifies that the method retrieveNSD correctly returns a non-null NetworkServiceDescriptor
      * and that the specFromNSDID method does not return null in such a case.
      */
-    //@Test
+    @Test
     public void testSpecFromNSDIDReturnsNonNullWhenRetrieveNSDReturnsNonNull() {
         // Setup
         String id = "testId";
@@ -127,7 +127,7 @@ public class ServiceSpecificationRepoServiceTest {
      * 
      * This test verifies that the method retrieveNSD correctly returns null when it is expected to.
      */
-    //@Test
+    @Test
     public void testRetrieveNSDReturnsNull() {
         // When retrieveNSD return null
         String id = "SomeId";
@@ -148,7 +148,7 @@ public class ServiceSpecificationRepoServiceTest {
      * has the correct name, version, and description. It also checks that the correct number
      * of ServiceSpecification objects are created.
      */
-    //@Test
+    @Test
     public void testServiceSpecificationBaseProperties() {
         String testId = "validId";
 
@@ -177,7 +177,7 @@ public class ServiceSpecificationRepoServiceTest {
      * that this object has the expected characteristics, including the correct name, value, and alias 
      * for each characteristic.
      */
-    //@Test
+    @Test
     public void testServiceSpecificationCharacteristics() {
         String testId = "validId";
 
