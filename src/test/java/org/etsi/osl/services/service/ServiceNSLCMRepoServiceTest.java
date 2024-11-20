@@ -37,21 +37,25 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
+import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @RunWith(SpringRunner.class)
+@Transactional
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
+@AutoConfigureTestDatabase //this automatically uses h2
+@AutoConfigureMockMvc
 @ActiveProfiles("testing")
-@SpringBootTest(classes = OpenAPISpringBoot.class)
-//@DataJpaTest
-public class ServiceRepoServiceTest {
+public class ServiceNSLCMRepoServiceTest {
 
     @Mock
     private ServiceRepository serviceRepository;
