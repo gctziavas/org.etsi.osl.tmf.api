@@ -440,6 +440,8 @@
 				<configuration>
                 <!-- Disable parallel execution -->
                 	<parallel>none</parallel>
+                	<runOrder>alphabetical</runOrder>
+                	<forkCount>1</forkCount>
             	</configuration>
 			</plugin>
 			<plugin>
