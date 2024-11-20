@@ -82,7 +82,7 @@ public class ServiceSpecificationApiControllerTest {
     }
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testDeleteServiceSpecification() throws Exception {
 
         assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
@@ -102,7 +102,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testListServiceSpecification() throws Exception {
 
         String response = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification")
@@ -127,7 +127,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testPatchServiceSpecification() throws Exception {
 
         String response = createServiceSpecification();
@@ -164,7 +164,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testRetrieveServiceSpecification() throws Exception {
 
         String response = createServiceSpecification();
@@ -186,7 +186,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testGetAttachment() throws Exception {
 
         // Create a Service Specification
@@ -233,7 +233,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testGetAttachmentWithFilename() throws Exception {
 
         // Create a Service Specification
@@ -259,7 +259,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testRetrieveServiceSpecificationDescriptor() throws Exception {
 
         // Test a non-existing spec
@@ -271,7 +271,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
-    //@Test
+    @Test
     public void testSpecFromTestSpec() throws Exception {
 
         // Creeate a Test Spec
@@ -316,7 +316,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-    //@Test
+    @Test
     public void testGetImageSpecificationRelationshipGraph() throws Exception {
 
         // Create a Service Specification
@@ -334,7 +334,7 @@ public class ServiceSpecificationApiControllerTest {
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN"})
-    //@Test
+    @Test
     public void testSpecFromResourceSpec() throws Exception {
 
         File rspec = new File( "src/test/resources/testResourceSpec.json" );
