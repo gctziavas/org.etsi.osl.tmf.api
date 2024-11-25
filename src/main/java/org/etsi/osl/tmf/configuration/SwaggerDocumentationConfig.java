@@ -73,7 +73,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	             
@@ -109,7 +109,7 @@ public class SwaggerDocumentationConfig {
 	            		  .description("## TMF API Reference: TMF620 - Product Catalog Management  ### Release : 19.0 - June 2019  Product Catalog API is one of Catalog Management API Family. Product Catalog API goal is to provide a catalog of products.   ### Operations Product Catalog API performs the following operations on the resources : - Retrieve an entity or a collection of entities depending on filter criteria - Partial update of an entity (including updating rules) - Create an entity (including default values and creation rules) - Delete an entity - Manage notification of events")
 	                      
 		              .version("4.0.0")
-		              .license(new License().name("Apache 2.0").url("http://openslice.io")))
+		              .license(new License().name("Apache 2.0").url("https://osl.etsi.org")))
 					.externalDocs(new ExternalDocumentation()
 							.description("TMF API Tables")
 							.url("https://www.tmforum.org/oda/open-apis/table"));	     
@@ -148,7 +148,7 @@ public class SwaggerDocumentationConfig {
 						.version("1.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -183,7 +183,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -217,7 +217,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -255,7 +255,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -291,7 +291,7 @@ public class SwaggerDocumentationConfig {
 						.version("2.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -328,7 +328,7 @@ public class SwaggerDocumentationConfig {
 						.version("2.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -366,7 +366,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -403,7 +403,7 @@ public class SwaggerDocumentationConfig {
 						.version("2.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -442,7 +442,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -479,7 +479,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -516,7 +516,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -555,7 +555,7 @@ public class SwaggerDocumentationConfig {
 //			            .version("3.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -594,7 +594,7 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -633,7 +633,7 @@ public class SwaggerDocumentationConfig {
 			            .version("1.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -671,7 +671,7 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -709,7 +709,7 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -744,7 +744,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));
@@ -781,10 +781,10 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Openslice")
-						.url("http://openslice.io"));	  	                  
+						.url("https://osl.etsi.org"));	  	                  
 	  }
 	
 	@Bean
@@ -826,10 +826,10 @@ public class SwaggerDocumentationConfig {
 			            .version("1.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Openslice")
-						.url("http://openslice.io"));	  	                  
+						.url("https://osl.etsi.org"));	  	                  
 	  }
 	
 	@Bean
@@ -845,6 +845,38 @@ public class SwaggerDocumentationConfig {
 	    		.build();
 	
 	}
+
+	/**
+	 * TMF 628 Performance Management
+	 * @return
+	 */
+	@Bean
+	public OpenApiCustomizer pm628OpenAPI() {
+		return openApi -> openApi
+				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
+				.info(new Info().title("TMF628 Performance Management API")
+						.description("TMF628 Performance Management API")
+						.version("5.0.0")
+						.license(new License()
+								.name("Apache 2.0")
+								.url("https://osl.etsi.org")))
+				.externalDocs(new ExternalDocumentation()
+						.description("TMF API Tables")
+						.url("https://www.tmforum.org/oda/open-apis/table"));	             
+	  }
+	
+    @Bean
+    public GroupedOpenApi pm628(){
+
+	  	SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+	  	SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+        return GroupedOpenApi.builder()
+        		.group("tmf-api-628-PerformanceManagement-v5.0.0")
+        		.addOpenApiCustomizer( this.pm628OpenAPI() )
+        		.packagesToScan("org.etsi.osl.tmf.pm628.api")
+        		.build();
+
+    }
 	
 	
 //	@Bean
