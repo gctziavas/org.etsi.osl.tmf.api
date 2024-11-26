@@ -51,7 +51,7 @@ import jakarta.validation.Valid;
  * Handles HTTP requests for creating, retrieving, updating, and deleting resources.
  */
 @Controller
-@RequestMapping("/ResourceActivationAndConfiguration/v4/")
+@RequestMapping("/resourceActivationAndConfiguration/v4/")
 public class ResourceActivationApiController implements ResourceActivationApi {
 
     private final ObjectMapper objectMapper;

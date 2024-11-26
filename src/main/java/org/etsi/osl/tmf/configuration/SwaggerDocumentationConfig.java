@@ -877,6 +877,40 @@ public class SwaggerDocumentationConfig {
         		.build();
 
     }
+
+	/**
+	 * TMF 702 Resource Activation Management 
+	 * @return
+	 */
+	@Bean
+	public OpenApiCustomizer ram7020penAPI() {
+		
+		
+		return openApi -> openApi
+				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
+	            .info(new Info().title("TMF 702 Resource Activation and Configuration")
+	            	.description("## TMF API Reference: TMF702 - Resource Activation \n\n### Release : 19.5 - December 2019\n\nResource Activation  API goal is to provide the ability to activate Resources.\n\n### Operations\nResource Activation and Configuration API performs the following operations on the resources :\n- Retrieve an entity or a collection of entities depending on filter criteria\n- Partial update of an entity (including updating rules)\n- Create an entity (including default values and creation rules)\n- Delete an entity (for administration purposes)\n- Manage notification of events")
+		            .version("4.0.0")
+					.license(new License().name("Apache 2.0").url("https://osl.etsi.org")))
+				.externalDocs(new ExternalDocumentation()
+					.description("TMF API Tables")
+					.url("https://www.tmforum.org/oda/open-apis/table"));	     
+			             
+	  }
+    
+		
+	@Bean
+	public GroupedOpenApi ram702() {
+
+		SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+		SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+		return GroupedOpenApi.builder()
+				.group("tmf-api-702-Resource Activation and Configuration-v4.0.0")
+				.addOpenApiCustomizer( this.ram7020penAPI() )
+				.packagesToScan("org.etsi.osl.tmf.ram702.api")
+				.build();
+
+  }
 	
 	
 //	@Bean
