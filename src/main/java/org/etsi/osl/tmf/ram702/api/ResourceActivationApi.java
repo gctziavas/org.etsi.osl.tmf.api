@@ -50,10 +50,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
-import org.etsi.osl.tmf.ram702.utils.JSONResponseUtils;
-
 @Tag(name = "resource", description = "The resource Activation API")
 public interface ResourceActivationApi {
+
+    public static final String RESOURCE_JSON_RESPONSE = "{}";
+                
+    public static final String RESOURCE_LIST_JSON_RESPONSE = "[{}]";
 
     Logger log = LoggerFactory.getLogger(ResourceActivationApi.class);
 
@@ -100,7 +102,7 @@ public interface ResourceActivationApi {
                 try {
                     return new ResponseEntity<>(
                         getObjectMapper().get().readValue(
-                            JSONResponseUtils.RESOURCE_JSON_RESPONSE, Resource.class
+                            RESOURCE_JSON_RESPONSE, Resource.class
                         ),
                         HttpStatus.NOT_IMPLEMENTED
                     );
@@ -190,7 +192,7 @@ public interface ResourceActivationApi {
                 try {
                     return new ResponseEntity<>(
                         getObjectMapper().get().readValue(
-                            JSONResponseUtils.RESOURCE_LIST_JSON_RESPONSE,
+                            RESOURCE_LIST_JSON_RESPONSE,
                             new TypeReference<List<Resource>>() {}
                         ),
                         HttpStatus.NOT_IMPLEMENTED
@@ -244,7 +246,7 @@ public interface ResourceActivationApi {
                 try {
                     return new ResponseEntity<>(
                         getObjectMapper().get().readValue(
-                            JSONResponseUtils.RESOURCE_JSON_RESPONSE, Resource.class
+                            RESOURCE_JSON_RESPONSE, Resource.class
                         ),
                         HttpStatus.NOT_IMPLEMENTED
                     );
@@ -296,7 +298,7 @@ public interface ResourceActivationApi {
                 try {
                     return new ResponseEntity<>(
                         getObjectMapper().get().readValue(
-                            JSONResponseUtils.RESOURCE_JSON_RESPONSE, Resource.class
+                            RESOURCE_JSON_RESPONSE, Resource.class
                         ),
                         HttpStatus.NOT_IMPLEMENTED
                     );

@@ -34,8 +34,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.etsi.osl.tmf.ri639.model.ResourceCreate;
 import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
-import org.etsi.osl.tmf.ram702.reposervices.ResourceActivationRepoService;
-
+import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -63,7 +62,7 @@ public class ResourceActivationApiRouteBuilder extends RouteBuilder {
 	private ProducerTemplate template;
 
 	@Autowired
-	ResourceActivationRepoService resourceRepoService;
+	ResourceRepoService resourceRepoService;
 	
 	@Override
 	public void configure() throws Exception {

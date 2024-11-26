@@ -30,8 +30,7 @@ import org.etsi.osl.tmf.common.model.UserPartRoleType;
 import org.etsi.osl.tmf.ri639.model.Resource;
 import org.etsi.osl.tmf.ri639.model.ResourceCreate;
 import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
-import org.etsi.osl.tmf.ram702.reposervices.ResourceActivationRepoService;
-
+import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
 import org.etsi.osl.tmf.util.AddUserAsOwnerToRelatedParties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,14 +51,14 @@ import jakarta.validation.Valid;
  * Handles HTTP requests for creating, retrieving, updating, and deleting resources.
  */
 @Controller
-@RequestMapping("/resourceActivationManagement/v4/")
+@RequestMapping("/ResourceActivationAndConfiguration/v4/")
 public class ResourceActivationApiController implements ResourceActivationApi {
 
     private final ObjectMapper objectMapper;
     private final HttpServletRequest request;
 
     @Autowired
-    private ResourceActivationRepoService resourceRepoService;
+    private ResourceRepoService resourceRepoService;
 
 
     /**
@@ -104,7 +103,7 @@ public class ResourceActivationApiController implements ResourceActivationApi {
                 );
 
                 Resource createdResource = resourceRepoService.addResource(resource);
-                return new ResponseEntity<>(createdResource, HttpStatus.CREATED);
+                return new ResponseEntity<>(createdResource, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
@@ -125,15 +124,12 @@ public class ResourceActivationApiController implements ResourceActivationApi {
     @Override
     public ResponseEntity<Void> deleteResource(String id) {
         try {
-            resourceRepoService.deleteByUuid(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (ApiException e) {
-            log.error("Resource not found with id {}", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 if resource not found
-        } catch (Exception e) {
-            log.error("Error deleting resource with id {}", id, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 500 for any other errors
-        }
+
+			return new ResponseEntity<Void>( resourceRepoService.deleteByUuid(id), HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("Couldn't serialize response for content type application/json", e);
+			return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
     }
 
 
@@ -185,22 +181,9 @@ public class ResourceActivationApiController implements ResourceActivationApi {
         @Valid ResourceUpdate resource,
         String id
     ) {
-        try {
-            // Call the updateResource method from the service class to update the resource
-            Resource updatedResource = resourceRepoService.updateResource(id, resource, true);
-    
-            // Return the updated resource with 200 OK status
-            return new ResponseEntity<>(updatedResource, HttpStatus.OK);
-    
-        } catch (ResourceNotFoundException e) {
-            log.error("Resource not found with id {}", id, e);
-            // Return 404 Not Found if the resource is not found
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            log.error("Error updating resource with id {}", id, e);
-            // Return 500 Internal Server Error for any other unexpected exceptions
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Resource c = resourceRepoService.updateResource(id, resource, true);
+
+		return new ResponseEntity< Resource >(c, HttpStatus.OK);
     }
 
 
@@ -220,22 +203,12 @@ public class ResourceActivationApiController implements ResourceActivationApi {
         @Valid String fields
     ) {
         try {
-            // Call the service method to retrieve the resource
-            Resource resource = resourceRepoService.findByUuid(id);
-    
-            // Return the resource with 200 OK status
-            return new ResponseEntity<>(resource, HttpStatus.OK);
-    
-        } catch (ResourceNotFoundException e) {
-            log.error("Resource not found with id {}", id, e);
-            // Return 404 Not Found if the resource is not found
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    
-        } catch (Exception e) {
-            log.error("Error retrieving resource with id {}", id, e);
-            // Return 500 Internal Server Error for any unexpected exceptions
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
+			return new ResponseEntity<Resource>( resourceRepoService.findByUuid(id), HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("Couldn't serialize response for content type application/json", e);
+			return new ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
     }
 }
 
