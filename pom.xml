@@ -9,11 +9,11 @@
 		<relativePath>../org.etsi.osl.main</relativePath>
 	</parent>
 
+	<version>${org.etsi.osl.tmf.api.version>}</version>
 
 	<artifactId>org.etsi.osl.tmf.api</artifactId>
 	<name>org.etsi.osl.tmf.api</name>
 
-	<version>${org.etsi.osl.tmf.api.version>}</version>
 
 
 	<properties>
