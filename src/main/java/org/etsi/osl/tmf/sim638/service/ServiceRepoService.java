@@ -32,6 +32,8 @@ import java.util.Optional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -760,43 +762,72 @@ public class ServiceRepoService {
         ObjectMapper primitivesObjectMapper = new ObjectMapper();
 
         // Retrieve the service characteristic based on the name
-        Characteristic aNSLCMCharacteristic = service.getServiceCharacteristicByName(n.getName());
+        Characteristic aNSLCMStatusesCharacteristic = service.getServiceCharacteristicByName(n.getName());
 
-        // Retrieve the current value as a string directly from the service characteristic
-        String aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+        // Retrieve the current NSLCM statuses, and extract the new status 
+		// to be appended
+		String aNSLCMStatusesBeforeUpdate = service
+				.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+		String aNSLCMNewStatus = n.getValue().getValue();
 
-        // Check if the current service characteristic value is null or explicitly "null" and initialize if needed
-        if (aNSLCMCharacteristicValue == null || "null".equals(aNSLCMCharacteristicValue) || aNSLCMCharacteristicValue.equals("")) {
-            service.getServiceCharacteristicByName(n.getName()).getValue().setValue("[]");
-        }
+        // Check if the current NSLCM statuses value is null or explicitly "null" 
+		// and, if thats the case start an empty JSON array (this takes place when initializing the characteristic)
+        if ( aNSLCMStatusesBeforeUpdate == null ||
+			aNSLCMStatusesBeforeUpdate.isEmpty() ||
+			aNSLCMStatusesBeforeUpdate.equals("null")
+		){
+			try {
+				service.getServiceCharacteristicByName(n.getName()).getValue().setValue(
+					primitivesObjectMapper.writeValueAsString(primitivesObjectMapper.createArrayNode())
+				);
+			} catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+		}
 
         // Check if the current characteristic value is not null and not explicitly "null"
-        if (n.getValue().getValue() != null || !"null".equals(n.getValue().getValue())) {
-			aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
-
-            ArrayList<String> arrayList = null;
-
-            // Deserialize the current value back to an array list
+        if ( aNSLCMNewStatus != null &&
+			!aNSLCMNewStatus.isEmpty() &&
+			!aNSLCMNewStatus.equals("null")
+		) {
             try {
-                arrayList = primitivesObjectMapper.readValue(aNSLCMCharacteristicValue, new TypeReference<ArrayList<String>>() {});
+				// Deserialize the current statuses back to an array list
+				ArrayNode nslcmStatusesJsonArray = (ArrayNode) primitivesObjectMapper.readTree(
+					service.getServiceCharacteristicByName(n.getName()).getValue().getValue()
+				);
+
+				// Map the current status to json
+				JsonNode currenNSLCMStatus = primitivesObjectMapper.readTree(n.getValue().getValue());
+
+				// Add the new status to the list if it's not already present and is not null
+				if (!containsNode(nslcmStatusesJsonArray, currenNSLCMStatus)) {
+					nslcmStatusesJsonArray.add(currenNSLCMStatus);
+				}
+
+				// Finally, map the statuses list to a Json encoded one
+				aNSLCMStatusesCharacteristic.setValue(
+					new Any(primitivesObjectMapper.writeValueAsString(nslcmStatusesJsonArray), n.getValue().getAlias())
+				);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
+		}
+		return service;
+    }
 
-            // Add the new value to the list if it's not already present and is not null
-            if (!arrayList.contains(n.getValue().getValue()) && n.getValue().getValue() != null) {
-                arrayList.add(n.getValue().getValue());
-            }
-
-            // Update the characteristic with the newly modified list
-            try {
-                aNSLCMCharacteristic.setValue(new Any(primitivesObjectMapper.writeValueAsString(arrayList), n.getValue().getAlias()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
+	/**
+     * Helper method to check if an ArrayNode contains a specific JsonNode.
+     * This method uses Jackson's `equals()` for deep equality.
+	 * @param arrayNode Array of Json Nodes
+     * @param jsonNode	the object encoded as Jsons
+     */
+    private static boolean containsNode(ArrayNode arrayNode, JsonNode jsonNode) {
+        for (JsonNode node : arrayNode) {
+            if (node.equals(jsonNode)) {
+                return true;
             }
         }
-
-		return service;
+        return false;
     }
 
 
@@ -1080,11 +1111,9 @@ public class ServiceRepoService {
 	
 
     @Transactional	
-	public void  resourceAttrChangedEvent(@Valid ResourceAttributeValueChangeNotification resNotif) {
+	public void  updateServicesHavingThisSupportingResource(@Valid Resource res) {
       try {
         
-        logger.debug("ResourceAttributeValueChangeNotification"); 
-        Resource res = resNotif.getEvent().getEvent().getResource();
         logger.info("Will update services related to this resource with id = " + res.getId() );
         
         var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
@@ -1247,8 +1276,6 @@ public class ServiceRepoService {
       }
       
     }
-    
-    
     
 	
 }

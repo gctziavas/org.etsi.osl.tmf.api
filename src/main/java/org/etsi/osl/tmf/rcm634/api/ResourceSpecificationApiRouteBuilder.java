@@ -35,8 +35,8 @@ public class ResourceSpecificationApiRouteBuilder extends RouteBuilder {
 	private String CATALOG_GET_RESOURCESPEC_BY_ID = "";
 
 
-	@Value("${CATALOG_GET_RESOURCESPEC_BY_ΝAME_CATEGORY}")
-	private String CATALOG_GET_RESOURCESPEC_BY_ΝAME_CATEGORY = "";
+	@Value("${CATALOG_GET_RESOURCESPEC_BY_NAME_CATEGORY}")
+	private String CATALOG_GET_RESOURCESPEC_BY_NAME_CATEGORY = "";
 	
     @Autowired
     private ProducerTemplate template;
@@ -79,8 +79,8 @@ public class ResourceSpecificationApiRouteBuilder extends RouteBuilder {
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 		
-		from( CATALOG_GET_RESOURCESPEC_BY_ΝAME_CATEGORY )
-		.log(LoggingLevel.INFO, log, CATALOG_GET_RESOURCESPEC_BY_ΝAME_CATEGORY + " message received!")
+		from( CATALOG_GET_RESOURCESPEC_BY_NAME_CATEGORY )
+		.log(LoggingLevel.INFO, log, CATALOG_GET_RESOURCESPEC_BY_NAME_CATEGORY + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( resourceSpecificationRepoService, "findByNameAndCategoryAndVersionEager(${header.aname}, ${header.acategory}, ${header.aversion} )")
 		.marshal().json( JsonLibrary.Jackson)

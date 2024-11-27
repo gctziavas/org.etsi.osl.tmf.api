@@ -1,0 +1,271 @@
+{
+  "consumingApplicationId": "4000",
+  "creationTime": "2020-06-23T14:12:01.078Z",
+  "jobId": "400",
+  "jobPriority": 3,
+  "lastModifiedTime": "2020-06-23T14:12:01.079Z",
+  "outputFormat": "string",
+  "producingApplicationId": "NT_101",
+  "adminState": "locked",
+  "executionState": "acknowledged",
+  "fileTransferData": [
+    {
+      "fileFormat": "csv",
+      "fileLocation": "https://host:port/tmf-api/performanceManagement/v5/FileTransferData",
+      "transportProtocol": "ftp",
+      "compressionType": {
+        "compressionEnumType": "no_compression"
+      },
+      "packingType": {
+        "packingEnumType": "NO_PACKING"
+      },
+      "retentionPeriod": {
+        "amount": 1,
+        "units": "month"
+      },
+      "@baseType": "FileTransferData",
+      "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/fileTransferLocation",
+      "@type": "FileTransferData"
+    }
+  ],
+  "granularity": "g_1mn",
+  "performanceIndicatorGroupSpecification": [
+    {
+      "name": "My critical performance indicators",
+      "groupCategory": "CPUGroup",
+      "performanceIndicatorSpecification": [
+        {
+          "uuid": "5000",
+          "href": "https://host:port/tmf-api/performanceManagement/v5/performanceIndicatorSpecification/5000",
+          "@type": "PerformanceIndicatorSpecificationRef"
+        }
+      ],
+      "@baseType": "PerformanceIndicatorGroupSpecification",
+      "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/PerformanceIndicatorGroupSpecification.schema.json",
+      "@type": "PerformanceIndicatorGroupSpecification"
+    }
+  ],
+  "performanceIndicatorSpecification": [
+    {
+      "uuid": "101",
+      "href": "https://host:port/tmf-api/performanceManagement/v5/performanceIndicatorSpecification/101",
+      "derivationAlgorithm": "na",
+      "derivationMethod": "average",
+      "description": "The average CPU speed",
+      "indicatorCategory": "CPU",
+      "indicatorUnit": "GHz",
+      "name": "CPU Speed",
+      "perspective": "aggregation over a collection of systems",
+      "collectionType": "cumulative",
+      "indicatorType": "float",
+      "performanceIndicatorSpecRelationship": [
+        {
+          "uuid": "321",
+          "href": "https://host:port/tmf-api/performanceManagement/v5/performanceIndicatorSpecRelationship/321",
+          "relationshipType": "reliesOn",
+          "validFor": {
+            "endDateTime": "1985-04-12T23:20:50.52Z",
+            "startDateTime": "1985-04-12T23:20:50.52Z"
+          },
+          "@baseType": "PerformanceIndicatorSpecRelationship",
+          "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/PerformanceIndicatorSpecRelationship.schema.json",
+          "@type": "PerformanceIndicatorSpecRelationship"
+        }
+      ],
+      "validFor": {
+        "endDateTime": "1985-04-12T23:20:50.52Z",
+        "startDateTime": "1985-04-12T23:20:50.52Z"
+      },
+      "@baseType": "PerformanceIndicatorSpecification",
+      "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/PerformanceIndicatorSpecification.schema.json",
+      "@type": "PerformanceIndicatorSpecification"
+    }
+  ],
+  "reportingPeriod": "r_1mn",
+  "scheduleDefinition": [
+    {
+      "recurringFrequency": "weekly",
+      "scheduleDefinitionEndTime": "2020-06-23T14:12:01.080Z",
+      "scheduleDefinitionHourRange": "2",
+      "scheduleDefinitionStartTime": "2020-06-23T14:12:01.080Z",
+      "WeeklyScheduledDefinition": [
+        {
+          "dates": "2020-06-23T14:12:01.080Z",
+          "@baseType": "WeeklyScheduledDefinition",
+          "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/WeeklyScheduledDefinition.schema.json",
+          "@type": "WeeklyScheduledDefinition"
+        }
+      ],
+      "@baseType": "ScheduleDefinition",
+      "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/ScheduleDefinition.schema.json",
+      "@type": "ScheduleDefinition"
+    },
+    {
+      "recurringFrequency": "daily",
+      "scheduleDefinitionEndTime": "2026-06-23T14:12:01.080Z",
+      "scheduleDefinitionHourRange": "3",
+      "scheduleDefinitionStartTime": "2024-06-23T14:12:01.080Z",
+      "excludedDate": [
+        "2024-07-23T14:12:01.080Z",
+        "2024-08-23T14:12:01.080Z"
+      ],
+      "WeeklyScheduledDefinition": [
+        {
+          "dates": "2020-06-23T14:12:01.080Z",
+          "@baseType": "WeeklyScheduledDefinition",
+          "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/WeeklyScheduledDefinition.schema.json",
+          "@type": "WeeklyScheduledDefinition"
+        },
+        {
+          "dates": "2025-06-23T14:12:01.080Z",
+          "@baseType": "WeeklyScheduledDefinition",
+          "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/WeeklyScheduledDefinition.schema.json",
+          "@type": "WeeklyScheduledDefinition"
+        }
+      ],
+      "monthlyScheduleDayOfMonthDefinition": [
+        "2024-09-23T14:12:01.080Z",
+        "2024-10-23T14:12:01.080Z"
+      ],
+      "MonthlyScheduleDayOfWeekDefinition": {
+        "dayOfMonthRecurrence": [
+          {
+            "dates": "2025-06-23T14:12:01.080Z",
+            "@baseType": "DayOfMonthRecurrence",
+            "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/DayOfMonthRecurrence.schema.json",
+            "@type": "DayOfMonthRecurrence"
+          },
+          {
+            "dates": "2025-07-23T14:12:01.080Z",
+            "@baseType": "DayOfMonthRecurrence",
+            "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/DayOfMonthRecurrence.schema.json",
+            "@type": "DayOfMonthRecurrence"
+          }
+        ],
+        "recurringDaySequence": "first",
+        "@baseType": "MonthlyScheduleDayOfWeekDefinition",
+        "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/MonthlyScheduleDayOfWeekDefinition.schema.json",
+        "@type": "MonthlyScheduleDayOfWeekDefinition"
+      },
+      "dateScheduleDefintion": [
+        "2024-11-23T14:12:01.080Z",
+        "2024-12-23T14:12:01.080Z"
+      ],
+      "@baseType": "ScheduleDefinition",
+      "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/schemas/Tmf/common/ScheduleDefinition.schema.json",
+      "@type": "ScheduleDefinition"
+    }
+  ],
+  "trackingRecord": [
+    {
+      "href": "https://host:port/tmf-api/performanceManagement/v5/fileTransferLocation",
+      "description": "NT_101 tracking",
+      "systemId": "NT_101",
+      "time": "2020-06-23T17:55:51.671Z",
+      "user": "NP1",
+      "@baseType": "TrackingRecord",
+      "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/fileTransferLocation",
+      "@type": "TrackingRecord"
+    }
+  ],
+  "dataAccessEndpoint": [
+    {
+      "href": "https://host:port/tmf-api/performanceManagement/v5/dataAccessEndpoint/123-xxx",
+      "apiType": "REST",
+      "category": "topic",
+      "description": "Measurement collection job 123-xxx subscriber topic",
+      "endOperatingDate": "2022-05-13T10:13:42.971Z",
+      "name": "123-xxx subscriber topic",
+      "resourceVersion": "1.0",
+      "startOperatingDate": "2022-05-13T10:13:42.971Z",
+      "uri": "https://pubsub.googleapis.com/v1/",
+      "uriQueryFilter": {
+        "mappings": [
+          {
+            "filterTemplate": {
+              "name": "myRangeFilterSearch0",
+              "@type": "DataFilterTemplateRange",
+              "description": "A Test filter template"
+            },
+            "stringArray": {
+              "value": [
+                "field01",
+                "field02",
+                "field03"
+              ],
+              "@type": "DataFilterAttributeStringArray"
+            }
+          },
+          {
+            "filterTemplate": {
+              "name": "myRegExSampleSearch0",
+              "@type": "DataFilterTemplateRegex",
+              "description": "Another test filter template"
+            },
+            "stringArray": {
+              "value": [
+                "field11",
+                "field12",
+                "field13"
+              ],
+              "@type": "DataFilterAttributeStringArray"
+            }
+          },
+          {
+            "filterTemplate": {
+              "name": "myBooleanFilterSearch0",
+              "@type": "DataFilterTemplateBoolean"
+            },
+            "stringArray": {
+              "value": [
+                "field1",
+                "field2",
+                "field3"
+              ],
+              "@type": "DataFilterAttributeStringArray"
+            }
+          }
+        ],
+        "@type": "DataFilterMap"
+      },
+      "value": "myLogicalResourceValue",
+      "administrativeState": "locked",
+      "operationalState": "enable",
+      "resourceCharacteristic": [
+        {
+          "name": "myCharName",
+          "valueType": "string",
+          "characteristicRelationship": [
+            {
+              "relationshipType": "string",
+              "@baseType": "CharacteristicRelationship",
+              "@schemaLocation": "https://myschemas.com/CharacteristicRelationship.schema.json",
+              "@type": "CharacteristicRelationship"
+            }
+          ],
+          "@baseType": "Characteristic",
+          "@schemaLocation": "https://myschemas.com/StringCharacteristic.schema.json",
+          "@type": "StringCharacteristic"
+        }
+      ],
+      "resourceSpecification": {
+        "id": "1",
+        "href": "https://host:port/tmf-api/performanceManagement/v5/ResourceSpecification/1",
+        "name": "mySpecName",
+        "version": "1.0",
+        "@baseType": "ResourceSpecification",
+        "@schemaLocation": "https://mySchemas.com/ResourceSpecification.schema.json",
+        "@type": "ResourceSpecification",
+        "@referredType": "ResourceSpecification"
+      },
+      "resourceStatus": "standby",
+      "usageState": "idle",
+      "@baseType": "DataAccessEndpoint",
+      "@schemaLocation": "https://myschemas.com/dataAccessEndpoint",
+      "@type": "DataAccessEndpoint"
+    }
+  ],
+  "@baseType": "MeasurementCollectionJob",
+  "@schemaLocation": "https://host:port/tmf-api/performanceManagement/v5/fileTransferLocation",
+  "@type": "MeasurementCollectionJob"
+}

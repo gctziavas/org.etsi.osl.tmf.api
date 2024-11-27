@@ -40,7 +40,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-
+import jakarta.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -58,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @Transactional
 @SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-//@AutoConfigureTestDatabase //this automatically uses h2
+@AutoConfigureTestDatabase //this automatically uses h2
 @AutoConfigureMockMvc
 @ActiveProfiles("testing")
 //@TestPropertySource(
@@ -69,6 +69,7 @@ public class ServiceRepoServiceTest {
 
     @Autowired
     ServiceRepoService serviceRepoService;
+    
 
     @Autowired
     ResourceRepoService resourceRepoService;
@@ -230,42 +231,106 @@ public class ServiceRepoServiceTest {
 
 
 //    //  org.hibernate.exception.JDBCConnectionException: Unable to acquire JDBC Connection [HikariPool-1 - Connection is not available, request timed out after 30000ms.]
-//    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
-//    @Test
-//    public void testResourceStateChangedEvent() throws Exception {
-//        String response = createService();
-//        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
-//        String id = responsesService.getId();
-//        Set<ResourceRef> resourceRefSet = responsesService.getSupportingResource();
-//        List<ResourceRef> resourceRefList = new ArrayList<>(resourceRefSet);
-//
-//        assertThat(resourceRefList.size()).isEqualTo(1);
-//        ResourceRef firstResourceRef = resourceRefList.get(0);
-//
-//        Resource resource = resourceRepoService.findByUuid(firstResourceRef.getId());
-//
-//        ResourceStateChangeNotification resourceCreateNotification = new ResourceStateChangeNotification();
-//        ResourceStateChangeEvent event = new ResourceStateChangeEvent();
-//        event.getEvent().setResource(resource);
-//        resourceCreateNotification.setEvent(event);
-//
-//        serviceRepoService.resourceStateChangedEvent(resourceCreateNotification);
-//        Service updatedService = serviceRepoService.findByUuid(id);
-//
-//        Set<Note> noteSet = updatedService.getNote();
-//        List<Note> noteList = new ArrayList<>(noteSet);
-//
-//        boolean expectedNoteExists = false;
-//        for (Note n : noteList) {
-//            if ( n.getText().contains("State Changed with status:") && n.getAuthor().equals("SIM638-API")) {
-//                expectedNoteExists= true;
-//                break;
-//            }
-//        }
-//        assertThat( expectedNoteExists ).isTrue();
-//    }
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testResourceStateChangedEvent() throws Exception {
+        String response = createService();
+        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+        String id = responsesService.getId();
+        Set<ResourceRef> resourceRefSet = responsesService.getSupportingResource();
+        List<ResourceRef> resourceRefList = new ArrayList<>(resourceRefSet);
 
+        assertThat(resourceRefList.size()).isEqualTo(1);
+        ResourceRef firstResourceRef = resourceRefList.get(0);
 
+        Resource resource = resourceRepoService.findByUuid(firstResourceRef.getId());
+
+        ResourceStateChangeNotification resourceCreateNotification = new ResourceStateChangeNotification();
+        ResourceStateChangeEvent event = new ResourceStateChangeEvent();
+        event.getEvent().setResource(resource);
+        resourceCreateNotification.setEvent(event);
+
+        serviceRepoService.resourceStateChangedEvent(resourceCreateNotification);
+        Service updatedService = serviceRepoService.findByUuid(id);
+
+        Set<Note> noteSet = updatedService.getNote();
+        List<Note> noteList = new ArrayList<>(noteSet);
+
+        boolean expectedNoteExists = false;
+        for (Note n : noteList) {
+            if ( n.getText().contains("State Changed with status:") && n.getAuthor().equals("SIM638-API")) {
+                expectedNoteExists= true;
+                break;
+            }
+        }
+        assertThat( expectedNoteExists ).isTrue();
+    }
+
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testResourceAttrChangedEvent() throws Exception {
+        String response = createService();
+        Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
+        String id = responsesService.getId();
+        Set<ResourceRef> resourceRefSet = responsesService.getSupportingResource();
+        List<ResourceRef> resourceRefList = new ArrayList<>(resourceRefSet);
+
+        assertThat(resourceRefList.size()).isEqualTo(1);
+        ResourceRef firstResourceRef = resourceRefList.get(0);
+
+        Resource resource = resourceRepoService.findByUuid(firstResourceRef.getId());
+        assertThat( resource.getResourceCharacteristic().size()  ).isEqualTo( 0 );
+        
+        
+
+        @Valid ResourceAttributeValueChangeNotification resNotid = new ResourceAttributeValueChangeNotification();
+        ResourceAttributeValueChangeEvent  event = new ResourceAttributeValueChangeEvent();
+        event.getEvent().setResource(resource);
+        
+        resNotid.setEvent( event );
+
+        Service updatedService = serviceRepoService.findByUuid(id);
+
+        assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 6 );
+        assertThat( updatedService.getSupportingResource().size()  ).isEqualTo( 1);
+
+        ResourceUpdate resourceUpdate = new ResourceUpdate();
+
+        org.etsi.osl.tmf.ri639.model.Characteristic resCharacteristicItem = new org.etsi.osl.tmf.ri639.model.Characteristic();
+
+        resCharacteristicItem.setName( "newChar" );
+        resCharacteristicItem.setValue( new Any("myval0"));
+        resourceUpdate.addResourceCharacteristicItem(resCharacteristicItem);
+        
+        
+        System.out.println("STEP 1 - =========================================== " +serviceRepoService.toString() );
+        Resource nullResource = resourceRepoService.updateResource( resource.getId(), resourceUpdate, false);
+        resource = resourceRepoService.findByUuid(firstResourceRef.getId());        
+        assertThat( resource.getResourceCharacteristic().size()  ).isEqualTo( 1 );
+
+        Thread.sleep(1000);
+        
+        System.out.println("STEP 3 - =========================================== "  );
+        updatedService = serviceRepoService.findByUuid(id);
+        assertThat( updatedService.getSupportingResource().size()  ).isEqualTo( 1);
+        assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 7 );
+        
+        Set<Note> noteSet = updatedService.getNote();
+        List<Note> noteList = new ArrayList<>(noteSet);
+
+        boolean expectedNoteExists = false;
+        for (Note n : noteList) {
+            if ( n.getText().contains("Service Characteristic changed") && n.getAuthor().equals("API")) {
+                expectedNoteExists= true;
+                break;
+            }
+        }
+        assertThat( expectedNoteExists ).isTrue();
+    }
+
+    
+    
+    @Transactional
     private String createService() throws Exception {
         int servicesCount = serviceRepoService.findAll().size();
 
