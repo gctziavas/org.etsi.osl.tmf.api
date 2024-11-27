@@ -9,7 +9,7 @@ import javax.annotation.Generated;
 import java.util.Optional;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-05-15T07:30:16.936523289Z[Etc/UTC]", comments = "Generator version: 7.6.0-SNAPSHOT")
-@Controller
+@Controller("HubApiController628")
 @RequestMapping("/performance/v5")
 public class HubApiController implements HubApi {
 

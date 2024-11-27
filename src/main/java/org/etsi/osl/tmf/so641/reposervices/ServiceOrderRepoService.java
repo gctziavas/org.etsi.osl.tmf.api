@@ -44,6 +44,7 @@ import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
+import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.etsi.osl.tmf.so641.api.NotFoundException;
 import org.etsi.osl.tmf.so641.api.ServiceOrderApiRouteBuilderEvents;
@@ -538,9 +539,7 @@ public class ServiceOrderRepoService {
 			logger.debug( "(oi.getId() = "+oi.getId() );		
 			
 		}
-		if ( serviceOrderUpd.getState()!= null ) {
-
-			
+		if ( serviceOrderUpd.getState()!= null ) {			
 			
 			stateChanged = so.getState() != serviceOrderUpd.getState();
 			so.setState( serviceOrderUpd.getState() );
@@ -548,12 +547,6 @@ public class ServiceOrderRepoService {
 			if ( so.getState().equals( ServiceOrderStateType.COMPLETED )) {
 				so.setCompletionDate( OffsetDateTime.now(ZoneOffset.UTC));
 			}
-			
-			
-			
-			
-			
-			
 			
 		}
 		if ( serviceOrderUpd.getCategory()!= null ) {
@@ -654,9 +647,12 @@ public class ServiceOrderRepoService {
 
 			for (String serviceId : services) {
 				logger.debug("Will delegate updated SO expected completion date " + so.getExpectedCompletionDate() + " to service with id = " + serviceId);		
-
-				org.etsi.osl.tmf.sim638.model.Service service = serviceRepoService.findByUuid(serviceId);
-				service.setEndDate(so.getExpectedCompletionDate());
+				
+				
+				@Valid
+                ServiceUpdate servUpd = new ServiceUpdate();
+				servUpd.setEndDate(so.getExpectedCompletionDate());
+                serviceRepoService.updateService(serviceId, servUpd, false, null, null);
 			}
 		}
 

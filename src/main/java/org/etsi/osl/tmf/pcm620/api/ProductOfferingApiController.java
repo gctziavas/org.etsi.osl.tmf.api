@@ -166,6 +166,22 @@ public class ProductOfferingApiController implements ProductOfferingApi {
 			return new ResponseEntity<ProductOffering>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@Override
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')" )
+	public ResponseEntity<ProductOffering> createRetrieveProductOfferingBasedOnServiceSpec(
+	  String id) {
+	  try {
+
+        
+        return new ResponseEntity<ProductOffering>(productOfferingRepoService.createRetrieveProductOfferingBasedOnServiceSpec(id),
+                HttpStatus.OK);
+    } catch (Exception e) {
+        log.error("Couldn't serialize response for content type application/json", e);
+        return new ResponseEntity<ProductOffering>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+	}
 
     
 }

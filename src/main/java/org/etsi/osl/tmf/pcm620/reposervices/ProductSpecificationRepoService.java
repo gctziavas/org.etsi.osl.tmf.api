@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
@@ -37,12 +38,17 @@ import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.pcm620.model.BundledProductSpecification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristic;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCharacteristicValue;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreate;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationRelationship;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationUpdate;
 import org.etsi.osl.tmf.pcm620.repo.ProductSpecificationRepository;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -61,7 +67,9 @@ public class ProductSpecificationRepoService {
 	@Autowired
 	ProductSpecificationRepository prodsOfferingRepo;
 	
-	
+
+    @Autowired
+    ServiceSpecificationRepoService serviceSpecificationRepoService;
 
 	private SessionFactory sessionFactory;
 
@@ -200,6 +208,8 @@ public class ProductSpecificationRepoService {
 		return optionalCat.orElse(null);
 	}
 
+
+    @Transactional
 	public ProductSpecification findByUuidEager(String id) {
 		Session session = sessionFactory.openSession();
 		Transaction tx = session.beginTransaction(); // instead of begin transaction, is it possible to continue?
@@ -207,16 +217,18 @@ public class ProductSpecificationRepoService {
 		try {
 			dd = session.get(ProductSpecification.class, id);
 			if (dd == null) {
+	            session.close();
 				return this.findByUuid(id);// last resort
 			}
 			Hibernate.initialize(dd.getAttachment());
 			Hibernate.initialize(dd.getRelatedParty()  );
 			Hibernate.initialize(dd.getBundledProductSpecification() );
 			Hibernate.initialize(dd.getResourceSpecification() );
-			Hibernate.initialize(dd.getServiceSpecification() );
+            Hibernate.initialize(dd.getServiceSpecification() );
+            Hibernate.initialize(dd.getProductSpecificationRelationship() );
 			for (ProductSpecificationCharacteristic schar : dd.getProductSpecCharacteristic() ) {
 				Hibernate.initialize(schar.getProductSpecCharacteristicValue() );
-
+				Hibernate.initialize(schar.getProductSpecCharRelationship() );
 			}
 			
 
@@ -428,7 +440,7 @@ public class ProductSpecificationRepoService {
 		}
 		
 		
-
+		
 
 		/**
 		 * Update ProductSpecificationRelationship list
@@ -548,7 +560,7 @@ public class ProductSpecificationRepoService {
 		}
 		
 		/**
-		 * Update ResourceSpecificationRef list
+		 * Update ServiceSpecificationRef list
 		 */
 		if (prodSpecUpd.getServiceSpecification()  != null) {
 
@@ -569,6 +581,7 @@ public class ProductSpecificationRepoService {
 
 				if (!idexists) {
 					prodSpec.getServiceSpecification().add(ar);
+					prodSpec = copyConfigurableCharacteristics( prodSpec, ar );					
 					idAddedUpdated.put(ar.getUuid(), true);
 				}
 			}
@@ -597,5 +610,74 @@ public class ProductSpecificationRepoService {
 
 		return prodSpec;
 	}
+
+  private ProductSpecification copyConfigurableCharacteristics(ProductSpecification prodSpec,
+      ServiceSpecificationRef ar) {
+
+    ServiceSpecification sourceSpec = serviceSpecificationRepoService.findByUuid(ar.getId());
+    
+    if ( sourceSpec != null ) {
+      for (ServiceSpecCharacteristic ssc : sourceSpec.getServiceSpecCharacteristic()) {
+        if (ssc.isConfigurable()!= null && ssc.isConfigurable()) {
+          if ( prodSpec.findProdCharacteristicByName( ssc.getName() ) == null ) {
+            
+            ProductSpecificationCharacteristic cnew = new ProductSpecificationCharacteristic();          
+            cnew.setName(  ssc.getName() ); 
+            cnew.setDescription( ssc.getDescription());
+            cnew.isUnique(ssc.isIsUnique())
+            .extensible(ssc.isExtensible())
+            .maxCardinality(ssc.getMaxCardinality())
+            .minCardinality(ssc.getMinCardinality())
+            .valueType(ssc.getValueType());
+            for (ServiceSpecCharacteristicValue r : ssc.getServiceSpecCharacteristicValue()) {
+              ProductSpecificationCharacteristicValue pcval = new ProductSpecificationCharacteristicValue();
+              pcval.isDefault(r.isIsDefault())
+              .rangeInterval(r.getRangeInterval())
+              .regex(r.getRegex())              
+              .unitOfMeasure(r.getUnitOfMeasure())
+              .valueFrom(r.getValueFrom()+"")
+              .valueTo(r.getValueTo()+"")
+              .valueType(r.getValueType())
+              .value( new Any( r.getValue() )  );              
+              
+              cnew.addProductSpecCharacteristicValueItem( pcval  );
+            }
+            
+            prodSpec.getProductSpecCharacteristic().add( cnew );           
+            
+          }
+        } 
+      }           
+  }
+    
+    return prodSpec;
+  }
+
+  public ProductSpecification addServiceSpecToProductSpec(ProductSpecification responseProdSpec, ServiceSpecification serviceSpec) {
+
+    ServiceSpecificationRef serviceSpecRef = new ServiceSpecificationRef();
+    serviceSpecRef.setId( serviceSpec.getId() );
+    serviceSpecRef.setName( serviceSpec.getName());
+    serviceSpecRef.setVersion(serviceSpec.getVersion());
+    serviceSpecRef.setReferredType(serviceSpec.getType());
+    
+    ProductSpecificationUpdate pSpecUpd = new ProductSpecificationUpdate();
+    pSpecUpd.addServiceSpecificationItem(serviceSpecRef);
+    if (responseProdSpec.getServiceSpecification()!=null) {
+      pSpecUpd.getServiceSpecification().addAll( responseProdSpec.getServiceSpecification() );      
+    }
+    responseProdSpec = updateProductSpecificationDataFromAPIcall(responseProdSpec, pSpecUpd);
+    
+    return responseProdSpec;
+  }
+  
+  public ProductSpecification updateOrAddProductSpecification(String id, ProductSpecificationCreate productSpecificatioCreate) {
+    ProductSpecification serviceSpec = updateProductSpecification(id, productSpecificatioCreate );
+    if ( serviceSpec == null ) {            
+            serviceSpec = addProductSpecification( productSpecificatioCreate );
+    }
+    
+    return serviceSpec;  
+  }
 	
 }
