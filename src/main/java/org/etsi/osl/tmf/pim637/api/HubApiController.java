@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 
 @jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2024-08-04T00:27:07.324017400+03:00[Europe/Athens]")
-@RestController
+@RestController("HubApiController637")
 public class HubApiController implements HubApi {
 
     private static final Logger log = LoggerFactory.getLogger(HubApiController.class);
