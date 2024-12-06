@@ -127,7 +127,10 @@ public class ServiceRepoServiceTest {
     @Test
     public void testDeleteServiceActionQueueItemByUuid() throws Exception {
         ServiceActionQueueItem saqi = new ServiceActionQueueItem();
-        ServiceActionQueueItem saqiResponse = serviceRepoService.addServiceActionQueueItem(saqi);
+        String response = createService();
+        Service aservice = JsonUtils.toJsonObj(response,  Service.class);
+        
+        ServiceActionQueueItem saqiResponse = serviceRepoService.addServiceActionQueueItem(aservice, saqi);
         String uuid = saqiResponse.getUuid();
 
         serviceRepoService.deleteServiceActionQueueItemByUuid(uuid);
