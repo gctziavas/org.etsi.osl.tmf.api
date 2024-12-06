@@ -258,7 +258,7 @@ public class ServiceRepoServiceTest {
 
         boolean expectedNoteExists = false;
         for (Note n : noteList) {
-            if ( n.getText().contains("State Changed with status:") && n.getAuthor().equals("SIM638-API")) {
+            if ( n.getText().contains("Supporting Resource changed with") && n.getAuthor().equals("SIM638-API")) {
                 expectedNoteExists= true;
                 break;
             }
@@ -291,7 +291,7 @@ public class ServiceRepoServiceTest {
 
         Service updatedService = serviceRepoService.findByUuid(id);
 
-        assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 6 );
+        assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 7 );
         assertThat( updatedService.getSupportingResource().size()  ).isEqualTo( 1);
 
         ResourceUpdate resourceUpdate = new ResourceUpdate();
@@ -313,14 +313,14 @@ public class ServiceRepoServiceTest {
         System.out.println("STEP 3 - =========================================== "  );
         updatedService = serviceRepoService.findByUuid(id);
         assertThat( updatedService.getSupportingResource().size()  ).isEqualTo( 1);
-        assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 7 );
+        assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 8 );
         
         Set<Note> noteSet = updatedService.getNote();
         List<Note> noteList = new ArrayList<>(noteSet);
 
         boolean expectedNoteExists = false;
         for (Note n : noteList) {
-            if ( n.getText().contains("Service Characteristic changed") && n.getAuthor().equals("API")) {
+            if ( n.getText().contains("Supporting Resource changed with") && n.getAuthor().equals("API")) {
                 expectedNoteExists= true;
                 break;
             }
