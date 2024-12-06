@@ -1450,7 +1450,12 @@ public class ServiceSpecificationRepoService {
 		serviceSpecCharacteristicItem.setValidFor( sourceChar.getValidFor() );
 		for (ResourceSpecificationCharacteristicValue cv : sourceChar.getResourceSpecCharacteristicValue()) {
 			ServiceSpecCharacteristicValue serviceSpecCharacteristicValueItem = new ServiceSpecCharacteristicValue();
-			serviceSpecCharacteristicValueItem.setValue( new Any( cv.getValue().getValue(), cv.getValue().getAlias()));
+			if ( cv.getValue()!=null && cv.getValue().getValue()!=null) {
+	            serviceSpecCharacteristicValueItem.setValue( new Any( cv.getValue().getValue(), cv.getValue().getAlias()));			 
+			} else {
+			  serviceSpecCharacteristicValueItem.setValue( new Any( "", ""));
+			}
+			
 			serviceSpecCharacteristicValueItem.isDefault( cv.isIsDefault() );
 			serviceSpecCharacteristicValueItem.setUnitOfMeasure( cv.getUnitOfMeasure() );		
 			serviceSpecCharacteristicItem.addServiceSpecCharacteristicValueItem(serviceSpecCharacteristicValueItem );
