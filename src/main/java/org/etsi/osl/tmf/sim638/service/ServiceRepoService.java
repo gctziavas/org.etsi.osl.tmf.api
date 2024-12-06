@@ -24,11 +24,14 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -358,6 +361,22 @@ public class ServiceRepoService {
 	 * @param updatedFromChildService
 	 * @return
 	 */
+	/**
+	 * @param id
+	 * @param servUpd
+	 * @param triggerServiceActionQueue
+	 * @param updatedFromParentService
+	 * @param updatedFromChildService
+	 * @return
+	 */
+	/**
+	 * @param id
+	 * @param servUpd
+	 * @param triggerServiceActionQueue
+	 * @param updatedFromParentService
+	 * @param updatedFromChildService
+	 * @return
+	 */
 	@Transactional
 	public Service updateService(String id, @Valid ServiceUpdate servUpd, boolean triggerServiceActionQueue, Service updatedFromParentService, Service updatedFromChildService ) {
 		//Service service = this.findByUuid(id);
@@ -572,6 +591,28 @@ public class ServiceRepoService {
 		}
 		
 		
+		/**
+		 * Check here if the characteristics changed are of interest for LCM rules and further processing by the orchestrator 
+		 */
+		Characteristic lcmchar = service.getServiceCharacteristicByName("_LCM_CHARACTERISTICS_");
+        if ( lcmchar != null && lcmchar.getValue() != null && !lcmchar.getValue().getValue().equals("all") && !charChangedForNotes.equals("")) {
+          
+          // Split the strings into arrays of values
+          String[] arrayA = lcmchar.getValue().getValue().split(",");
+          String[] arrayB = charChangedForNotes.split(",");
+          // Convert strb values into a set for faster lookup
+          Set<String> setB = new HashSet<>(Arrays.asList(arrayB));
+          // Check if any value from stra exists in strb
+          boolean valueExists = false;
+          for (String value : arrayA) {
+              if (setB.contains(value)) {
+                valueExists = true; // A common value exists
+              }
+          }
+          if (!valueExists) {
+            serviceCharacteristicChanged=false;
+          }
+        }
 		
         if (charChangedForNotes.contains( "reconciledAt") ) { //this is just a sync message, so we need to igore such changes
           serviceCharacteristicChanged = false;
@@ -597,7 +638,13 @@ public class ServiceRepoService {
 		
 		service = this.serviceRepo.save( service );
 		
-		
+	    String requestedServiceAsJson = null;
+	    try {
+	      requestedServiceAsJson = mapper.writeValueAsString( service );
+	    } catch (JsonProcessingException e) {
+	      logger.error("cannot umarshall service: " + service.getName() );
+	      e.printStackTrace();
+	    }
 		
 		/**
 		 * Save in ServiceActionQueueItem
@@ -617,7 +664,7 @@ public class ServiceRepoService {
 		  }
 
 		  if ( saqi.getAction() != ServiceActionQueueAction.NONE  ) {
-		    this.addServiceActionQueueItem(saqi);					
+		    this.addServiceActionQueueItem(service, saqi);					
 		  }
 		}		
 
@@ -626,13 +673,13 @@ public class ServiceRepoService {
 		if  ( stateChanged  ) {
 			ServiceActionQueueItem saqi = new ServiceActionQueueItem();
 			saqi.setServiceRefId( id );
-			saqi.setOriginalServiceInJSON( originaServiceAsJson );			
+			saqi.setOriginalServiceInJSON( originaServiceAsJson );		
 			if ( service.getState().equals(  ServiceStateType.ACTIVE) ) {
 				saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE  );	
-				this.addServiceActionQueueItem(saqi);			
+				this.addServiceActionQueueItem(service, saqi);			
 			}else if ( previousState!=null && previousState.equals( ServiceStateType.ACTIVE) ) {
 				saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOINACTIVE  );
-				this.addServiceActionQueueItem(saqi);
+				this.addServiceActionQueueItem(service, saqi);
 			}
 		}		
 		
@@ -644,7 +691,7 @@ public class ServiceRepoService {
 			if ( serviceCharacteristicChangedContainsPrimitive ) {
 				saqi.setAction( ServiceActionQueueAction.EVALUATE_CHARACTERISTIC_CHANGED_MANODAY2  );					
 			}
-			this.addServiceActionQueueItem(saqi);
+			this.addServiceActionQueueItem(service, saqi);
 		}
 		
 		
@@ -665,12 +712,12 @@ public class ServiceRepoService {
                   ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
                   saqi.setServiceRefId(serviceRelationship.getService().getId());
                   try {
-                    saqi.setOriginalServiceInJSON( mapper.writeValueAsString( service ) ); //pass the child service as is
+                    saqi.setOriginalServiceInJSON( mapper.writeValueAsString( service ) ); //pass the child service as is 
                   } catch (JsonProcessingException e) {
                     e.printStackTrace();
                   }
                   saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_CHARACTERISTIC_CHANGED);
-                  this.addServiceActionQueueItem(saqi);
+                  this.addServiceActionQueueItem(service, saqi);
                 }
 
               }
@@ -685,7 +732,7 @@ public class ServiceRepoService {
                     e.printStackTrace();
                   }
                   saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_STATE_CHANGE );
-                  this.addServiceActionQueueItem(saqi);
+                  this.addServiceActionQueueItem(service, saqi);
                 }
               }
 
@@ -956,17 +1003,20 @@ public class ServiceRepoService {
 		return (List<ServiceActionQueueItem>) this.serviceActionQueueRepo.findFirst10ByOrderByInsertedDate();
 	}
 	
-	public ServiceActionQueueItem  addServiceActionQueueItem(@Valid ServiceActionQueueItem item) {
+	public ServiceActionQueueItem  addServiceActionQueueItem(Service service, @Valid ServiceActionQueueItem item) {
 		logger.debug("Will add ServiceActionQueueItem ServiceRefId: " + item.getServiceRefId() );
 		
+		Characteristic lcmchar = service.getServiceCharacteristicByName("_LCM_CHARACTERISTICS_");
+		if ( lcmchar == null || lcmchar.getValue() == null) {
+		    //find any similar action inqueue and delete them, so to keep this one as the most recent
+	        List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+	        logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
+	        this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+	          
+		}
+
+        return this.serviceActionQueueRepo.save( item);
 		
-		
-		//find any similar action inqueue and delete them, so to keep this one as the most recent
-		List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
-        logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
-        this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
-        
-		return this.serviceActionQueueRepo.save( item);
 	}
 
 	/**
