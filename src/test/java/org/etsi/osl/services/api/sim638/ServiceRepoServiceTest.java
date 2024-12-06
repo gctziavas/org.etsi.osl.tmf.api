@@ -320,7 +320,7 @@ public class ServiceRepoServiceTest {
 
         boolean expectedNoteExists = false;
         for (Note n : noteList) {
-            if ( n.getText().contains("Supporting Resource changed with") && n.getAuthor().equals("API")) {
+            if ( n.getText().contains("Supporting Resource changed with") && n.getAuthor().equals("SIM638-API")) {
                 expectedNoteExists= true;
                 break;
             }
