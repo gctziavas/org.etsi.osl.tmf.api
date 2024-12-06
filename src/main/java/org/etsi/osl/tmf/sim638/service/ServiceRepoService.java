@@ -578,8 +578,12 @@ public class ServiceRepoService {
         }
 		
 		if (serviceCharacteristicChanged) {
-
-          if (service.getServiceCharacteristicByName("_DETAILED_NOTES_") != null) {
+          
+          Characteristic noteCheck = service.getServiceCharacteristicByName("_DETAILED_NOTES_");
+          if ( noteCheck!= null 
+              && noteCheck.getValue() != null
+              && noteCheck.getValue().getValue() != null
+              && !noteCheck.getValue().getValue().equals("")) {
             Note noteItem = new Note();
             noteItem.setText("Service Characteristic changed: " + charChangedForNotes );
             noteItem.setAuthor("SIM638-API");
@@ -642,6 +646,11 @@ public class ServiceRepoService {
 			}
 			this.addServiceActionQueueItem(saqi);
 		}
+		
+		
+		
+		
+		
 		
         /*
          * Update any parent service
@@ -950,6 +959,8 @@ public class ServiceRepoService {
 	public ServiceActionQueueItem  addServiceActionQueueItem(@Valid ServiceActionQueueItem item) {
 		logger.debug("Will add ServiceActionQueueItem ServiceRefId: " + item.getServiceRefId() );
 		
+		
+		
 		//find any similar action inqueue and delete them, so to keep this one as the most recent
 		List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
         logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
@@ -1157,7 +1168,11 @@ public class ServiceRepoService {
                     supd.addServiceCharacteristicItem( cNew );  
                 }
                 
-                if (as.getServiceCharacteristicByName("_DETAILED_NOTES_") != null) {
+                Characteristic noteCheck = as.getServiceCharacteristicByName("_DETAILED_NOTES_");
+                if ( noteCheck!= null 
+                    && noteCheck.getValue() != null
+                    && noteCheck.getValue().getValue() != null
+                    && !noteCheck.getValue().getValue().equals("")) {
                   Note n = new Note();
                   n.setText(stateText + "Supporting Resource changed with id: " + res.getId());
                   n.setAuthor( "SIM638-API" );
