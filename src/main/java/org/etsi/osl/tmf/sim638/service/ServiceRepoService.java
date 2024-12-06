@@ -578,11 +578,15 @@ public class ServiceRepoService {
         }
 		
 		if (serviceCharacteristicChanged) {
-			Note noteItem = new Note();
-			noteItem.setText("Service Characteristic changed: " + charChangedForNotes );
-			noteItem.setAuthor("API");
-			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
-			service.addNoteItem(noteItem);		
+
+          if (service.getServiceCharacteristicByName("_DETAILED_NOTES_") != null) {
+            Note noteItem = new Note();
+            noteItem.setText("Service Characteristic changed: " + charChangedForNotes );
+            noteItem.setAuthor("SIM638-API");
+            noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
+            service.addNoteItem(noteItem);  
+            
+          }	
 		}
 		
 			
@@ -1114,37 +1118,55 @@ public class ServiceRepoService {
 	public void  updateServicesHavingThisSupportingResource(@Valid Resource res) {
       try {
         
-        logger.info("Will update services related to this resource with id = " + res.getId() );
+        logger.debug("Will update services related to this resource with id = " + res.getId() );
         
         var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
+
+        logger.debug("services.found = " + aservices.size() );
         
         for (Service as : aservices) {
             
-            Service aService = findByUuid(as.getId()); 
-            
-            //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
-                
+              Service aService = findByUuid(as.getId()); 
+              
+              List<Resource> rlist = new ArrayList<Resource>();
+              for (ResourceRef rref : aService.getSupportingResource()) {
+                Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
+                if (result.isPresent()) {
+                  rlist.add( result.get() );
+                }
+              }
+  
+              rlist.add(res); //add also this one
+              
+              ServiceStateType nextState = aService.findNextStateBasedOnSupportingResources(rlist);
   
                 ServiceUpdate supd = new ServiceUpdate();
-                
-                //copy characteristics from resource to service
-                
-                for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
-                  Characteristic cNew = new Characteristic();
-                  cNew.setName( rChar.getName());
-                  cNew.value( new Any( rChar.getValue() ));                
-                  supd.addServiceCharacteristicItem( cNew );  
+                supd.setState(nextState);
+                String stateText="";
+                if ( !aService.getState().equals(nextState)) {
+                  stateText = "State changed from " + aService.getState() + " to " + nextState + ".";
                 }
                 
                 
-                Note n = new Note();
-                n.setText("Supporting Resource Attribute Changed with id: " + res.getId());
-                n.setAuthor( "SIM638-API" );
-                n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-                supd.addNoteItem( n );                  
+                //copy characteristics, from resource to service
                 
-                this.updateService( aService.getId(), supd , true, null, null); //update the service            
-            //}
+                for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
+                    Characteristic cNew = new Characteristic();
+                    cNew.setName( rChar.getName());
+                    cNew.value( new Any( rChar.getValue() ));                
+                    supd.addServiceCharacteristicItem( cNew );  
+                }
+                
+                if (as.getServiceCharacteristicByName("_DETAILED_NOTES_") != null) {
+                  Note n = new Note();
+                  n.setText(stateText + "Supporting Resource changed with id: " + res.getId());
+                  n.setAuthor( "SIM638-API" );
+                  n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+                  supd.addNoteItem( n );                  
+                }                  
+                
+                this.updateService( aService.getId(), supd , true, null, null); //update the service 
+
         }
       
 
@@ -1185,47 +1207,23 @@ public class ServiceRepoService {
     @Transactional  
     private void updateServiceFromresourceChange(Resource res) {
 
-      logger.info("Will update services related to this resource with id = " + res.getId() );
-      var aservices = findServicesHavingThisSupportingResourceID(res.getId());
+      updateServicesHavingThisSupportingResource(res);
 
-      for (Service as : aservices) {
-
-        Service aService = findByUuid(as.getId());
-
-
-        List<Resource> rlist = new ArrayList<Resource>();
-        for (ResourceRef rref : aService.getSupportingResource()) {
-          Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
-          if (result.isPresent()) {
-            rlist.add( result.get() );
-          }
-        }
-
-        rlist.add(res); //add also this one
-        
-        ServiceStateType nextState = aService.findNextStateBasedOnSupportingResources(rlist);
-
-        ServiceUpdate supd = new ServiceUpdate();
-        supd.setState(nextState);
-        Note n = new Note();
-        n.setText("Supporting Resource " + res.getId() + " State Changed with status: "
-            + res.getResourceStatus() + ".Next state is " + nextState);
-        n.setAuthor("SIM638-API");
-        n.setDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
-        supd.addNoteItem(n);
-
-        this.updateService(aService.getId(), supd, true, null, null); // update the service
-      }
-
-
-      updateResourceFromKubernetesLabel(res);
+      addAnyNewRelatedResourcesFromKubernetesLabel(res);
 
 
     }
 
+    /**
+     * This function will try to identify if the resource contains
+     * a characteristic called "org.etsi.osl.serviceId" and will check if there is a related service.
+     * If it is not it's add the resource back to the service. This is useful in kubernetes deployments,
+     * in cases of new resources in a namespace that are related to this service
+     * @param res
+     */
     @Transactional  
-    private void updateResourceFromKubernetesLabel(Resource res) {
-      logger.debug("updateResourceFromKubernetesLabel for: " + res.getName()); 
+    private void addAnyNewRelatedResourcesFromKubernetesLabel(Resource res) {
+      logger.debug("updateResourceFromKubernetesLabel for: " + res.getName() + ", version" + res.getResourceVersion()); 
       
       if (res.getResourceCharacteristicByName("org.etsi.osl.serviceId") != null) {
 

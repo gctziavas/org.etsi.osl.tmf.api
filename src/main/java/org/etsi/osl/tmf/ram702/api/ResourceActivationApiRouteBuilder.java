@@ -46,17 +46,17 @@ public class ResourceActivationApiRouteBuilder extends RouteBuilder {
 
 	private static final transient Log logger = LogFactory.getLog(ResourceActivationApiRouteBuilder.class.getName());
 
-	@Value("${CATALOG_ADD_RESOURCE}")
-	private String CATALOG_ADD_RESOURCE = "";
+	@Value("${CATALOG_ADD_RESOURCEACTIVATION}")
+	private String CATALOG_ADD_RESOURCEACTIVATION = "";
 
-	@Value("${CATALOG_UPD_RESOURCE}")
-	private String CATALOG_UPD_RESOURCE = "";
+	@Value("${CATALOG_UPD_RESOURCEACTIVATION}")
+	private String CATALOG_UPD_RESOURCEACTIVATION = "";
 	
-	@Value("${CATALOG_UPDADD_RESOURCE}")
-	private String CATALOG_UPDADD_RESOURCE = "";
+	@Value("${CATALOG_UPDADD_RESOURCEACTIVATION}")
+	private String CATALOG_UPDADD_RESOURCEACTIVATION = "";
 
-	@Value("${CATALOG_GET_RESOURCE_BY_ID}")
-	private String CATALOG_GET_RESOURCE_BY_ID = "";	
+	@Value("${CATALOG_GET_RESOURCEACTIVATION_BY_ID}")
+	private String CATALOG_GET_RESOURCEACTIVATION_BY_ID = "";	
 
 	@Autowired
 	private ProducerTemplate template;
@@ -67,8 +67,8 @@ public class ResourceActivationApiRouteBuilder extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 		
-		from( CATALOG_ADD_RESOURCE )
-		.log(LoggingLevel.INFO, log, CATALOG_ADD_RESOURCE + " message received!")
+		from( CATALOG_ADD_RESOURCEACTIVATION )
+		.log(LoggingLevel.INFO, log, CATALOG_ADD_RESOURCEACTIVATION + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ResourceCreate.class, true)
 		.bean( resourceRepoService, "addResource(${body})")
@@ -76,16 +76,16 @@ public class ResourceActivationApiRouteBuilder extends RouteBuilder {
 		.json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 				
-		from( CATALOG_UPD_RESOURCE )
-		.log(LoggingLevel.INFO, log, CATALOG_UPD_RESOURCE + " message received!")
+		from( CATALOG_UPD_RESOURCEACTIVATION )
+		.log(LoggingLevel.INFO, log, CATALOG_UPD_RESOURCEACTIVATION + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ResourceUpdate.class, true)
 		.bean( resourceRepoService, "updateResource(${header.resourceId}, ${body}, ${header.triggerServiceActionQueue} )")
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 		
-		from( CATALOG_UPDADD_RESOURCE )
-		.log(LoggingLevel.INFO, log, CATALOG_UPDADD_RESOURCE + " message received!")
+		from( CATALOG_UPDADD_RESOURCEACTIVATION )
+		.log(LoggingLevel.INFO, log, CATALOG_UPDADD_RESOURCEACTIVATION + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ResourceCreate.class, true)
 		.bean( resourceRepoService, "addOrUpdateResourceByNameCategoryVersion(${header.aname},${header.acategory}, ${header.aversion}, ${body})")
