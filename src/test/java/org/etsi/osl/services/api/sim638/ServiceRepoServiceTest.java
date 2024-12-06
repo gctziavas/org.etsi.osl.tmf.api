@@ -401,6 +401,12 @@ public class ServiceRepoServiceTest {
         serviceCharacteristicItem.setName( "long_string" );
         serviceCharacteristicItem.setValue( new Any("12345"));
         aService.addServiceCharacteristicItem(serviceCharacteristicItem);
+        
+
+        serviceCharacteristicItem = new Characteristic();
+        serviceCharacteristicItem.setName( "_DETAILED_NOTES_" );
+        serviceCharacteristicItem.setValue( new Any("_DETAILED_NOTES_"));
+        aService.addServiceCharacteristicItem(serviceCharacteristicItem);
 
         ServiceSpecificationRef aServiceSpecificationRef = new ServiceSpecificationRef();
         aServiceSpecificationRef.setId(responsesSpec3.getId() );
