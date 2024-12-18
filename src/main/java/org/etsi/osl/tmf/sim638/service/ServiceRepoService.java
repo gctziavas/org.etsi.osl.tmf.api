@@ -341,7 +341,24 @@ public class ServiceRepoService {
 		s.addNoteItem(noteItem);		
 		
         
-        s = this.serviceRepo.save( s );
+        int cnt = 0;
+        if ( service.getServiceCharacteristic()!=null)
+          for (Characteristic ch : service.getServiceCharacteristic()) {
+            if ( ch.getName().equals( "org.etsi.osl.prefixName" ) ) {
+              cnt++; 
+            }
+            if ( ch.getName().equals( "AdditionPropertiesAsJson" ) ) {
+              logger.debug("=============================================>  FOUND CHARACTERISTIC addService AdditionPropertiesAsJson IN addService" );
+              logger.debug("=============================================>  AdditionPropertiesAsJson charlength=" + ch.getValue().getValue().length() );
+            }
+        } 
+
+        if ( cnt>1) {
+          logger.debug("=============================================>  FOUND CHARACTERISTIC TWICE AFTER service  addService" );
+          
+        }
+		
+		s = this.serviceRepo.save( s );
 
 		raiseServiceCreateNotification(s);
 		return s;
@@ -394,7 +411,41 @@ public class ServiceRepoService {
 		}
 		
 		
-       		
+        int cnt = 0;
+        if ( servUpd.getServiceCharacteristic() != null ) {
+          for (Characteristic ch1 : servUpd.getServiceCharacteristic()) {
+              if ( ch1.getName().equals( "org.etsi.osl.prefixName" ) ) {
+                cnt++; 
+              }
+              if ( ch1.getName().equals( "AdditionPropertiesAsJson" ) ) {
+                logger.debug("=============================================>  FOUND CHARACTERISTIC AdditionPropertiesAsJson IN servUpd" );
+                logger.debug("=============================================>  AdditionPropertiesAsJson charlength=" + ch1.getValue().getValue().length() );
+              }
+              
+          } 
+
+          if ( cnt>1) {
+            logger.debug("=============================================>  FOUND CHARACTERISTIC TWICE servUpd updateService servUpd" );
+            
+          }            
+        }
+        cnt = 0;
+          for (Characteristic ch : service.getServiceCharacteristic()) {
+              if ( ch.getName().equals( "org.etsi.osl.prefixName" ) ) {
+                cnt++; 
+              }
+              if ( ch.getName().equals( "AdditionPropertiesAsJson" ) ) {
+                logger.debug("=============================================>  FOUND CHARACTERISTIC AdditionPropertiesAsJson IN service" );
+                logger.debug("=============================================>  AdditionPropertiesAsJson charlength=" + ch.getValue().getValue().length() );
+              }
+          } 
+
+          if ( cnt>1) {
+            logger.debug("=============================================>  FOUND CHARACTERISTIC TWICE service updateService service" );
+            
+          }
+		
+				
 		if (servUpd.getType()!=null) {
 			service.setType(servUpd.getType());			
 		}
@@ -536,7 +587,16 @@ public class ServiceRepoService {
 					} else {
 						service.addServiceCharacteristicItem(n);
 
-			              
+			              if ( n.getName().equals( "AdditionPropertiesAsJson" ) ) {
+			                logger.debug("=============================================>  ADDING AdditionPropertiesAsJson to service" );
+			                if ( n.getValue()!=null ) {
+		                        logger.debug("=============================================>  ADDING AdditionPropertiesAsJson charlength=" + n.getValue().getValue().length() );                        
+		                      } else {
+
+		                        logger.debug("=============================================>  ADDING AdditionPropertiesAsJson charlength=NULL" );
+		                      }
+		                      
+			              }
 						if ( !n.getName().contains("::") ) { //it is not a child characteristic
 	                        serviceCharacteristicChanged = true;    
 	                        charChangedForNotes += n.getName() + ", "; 						  
@@ -613,6 +673,7 @@ public class ServiceRepoService {
 		
         if (charChangedForNotes.contains( "reconciledAt") ) { //this is just a sync message, so we need to igore such changes
           serviceCharacteristicChanged = false;
+          logger.debug("=============================================>  Just reconciledAt changed" );
         }
 		
 		if (serviceCharacteristicChanged) {
@@ -634,7 +695,22 @@ public class ServiceRepoService {
 		
 		service = this.serviceRepo.save( service );
 		
- 		
+        cnt = 0;
+        for (Characteristic ch : service.getServiceCharacteristic()) {
+            if ( ch.getName().equals( "org.etsi.osl.prefixName" ) ) {
+              cnt++; 
+            }
+            if ( ch.getName().equals( "AdditionPropertiesAsJson" ) ) {
+              logger.debug("=============================================>  FOUND CHARACTERISTIC AFTER AdditionPropertiesAsJson IN service" );
+              logger.debug("=============================================>  AdditionPropertiesAsJson charlength=" + ch.getValue().getValue().length() );
+            }
+        } 
+
+        if ( cnt>1) {
+          logger.debug("=============================================>  FOUND CHARACTERISTIC TWICE AFTER service updateService service" );
+          
+        }
+		
 	    String requestedServiceAsJson = null;
 	    try {
 	      requestedServiceAsJson = mapper.writeValueAsString( service );
@@ -778,7 +854,8 @@ public class ServiceRepoService {
 //			} catch (FileNotFoundException e) {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
-//			}		
+//			}
+			logger.info("======================================================================================================");			
 		}
 		
 		return service;
@@ -894,10 +971,10 @@ public class ServiceRepoService {
 
 		if ( schart!= null ) {
 			String teest = schart.getValue().getValue();
-			logger.debug("schart size = " + teest.length() );
+			logger.info("schart size = " + teest.length() );
 			
-			logger.debug("schart " + teest );
-			logger.debug("======================================================================================================");			
+			logger.info("schart " + teest );
+			logger.info("======================================================================================================");			
 		}
 		
 		return res;
@@ -1207,16 +1284,17 @@ public class ServiceRepoService {
               }
               
               
-              
+              Boolean stateChaged = false;
               ServiceUpdate supd = new ServiceUpdate();
               nextState = aService.findNextStateBasedOnResourceList(rlist);
               supd.setState(nextState);
               String stateText="";
               if ( !aService.getState().equals(nextState)) {
+                stateChaged = true;
                 stateText = "State changed from " + aService.getState() + " to " + nextState + ".";
                 logger.debug("====================>  stateText = " + stateText);
                 for (Resource r : rlist) {
-                  logger.debug("==================>  s:"+  r.getResourceStatus().name()+ ", name:"+ r.getName() );
+                  logger.debug("==================>  r:{}, state:{} ="+  r.getName() + ", "+  r.getResourceStatus().name());
                   
                 }
               }
@@ -1224,9 +1302,11 @@ public class ServiceRepoService {
               //adding all characteristics from service
               for (Characteristic ch : aService.getServiceCharacteristic()) {
                 supd.addServiceCharacteristicItem(ch);
+                
+                
               }
               
-              
+              Boolean characteristicFoundDifferent =false;
               String dontCopyChars = "clusterMasterURL,currentContextCluster,fullResourceName,Kind,apiGroup,UID,metadata";
               String[] arrayDontCopyChars = dontCopyChars.split(",");
               Set<String> setB = new HashSet<>(Arrays.asList(arrayDontCopyChars));
@@ -1235,14 +1315,21 @@ public class ServiceRepoService {
                   if  ( rChar.getValue() != null ) {
 
                     String characteristicname = kind + resourcename + rChar.getName();
-                    if ( supd.getServiceCharacteristicByName( characteristicname ) != null ) {
-                      supd.getServiceCharacteristicByName( characteristicname ) .value(new Any( rChar.getValue() ));
+                    Characteristic servChar = supd.getServiceCharacteristicByName( characteristicname );
+                    if ( servChar != null && servChar.getValue() != null) {                      
+                      if (! servChar.getValue().getValue().equals( rChar.getValue().getValue() ) ) {
+                        characteristicFoundDifferent = true;
+                        supd.getServiceCharacteristicByName( characteristicname ) .value(new Any( rChar.getValue() ));  
+                        logger.debug("====================>  add characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());                      
+                      }
+                      
                     } else {
                       Characteristic cNew = new Characteristic();
                       cNew.setName( characteristicname  );     
                       cNew.value( new Any( rChar.getValue() ));
                       supd.addServiceCharacteristicItem( cNew );
-                      
+                      characteristicFoundDifferent = true;
+                      logger.debug("====================>  add New characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());
                     }
                     
                     
@@ -1252,19 +1339,22 @@ public class ServiceRepoService {
               }
 
                 
-              Characteristic noteCheck = as.getServiceCharacteristicByName("_DETAILED_NOTES_");
-              if ( noteCheck!= null 
-                  && noteCheck.getValue() != null
-                  && noteCheck.getValue().getValue() != null
-                  && !noteCheck.getValue().getValue().equals("")) {
-                Note n = new Note();
-                n.setText(stateText + "Supporting Resource changed with id: " + res.getId());
-                n.setAuthor( "SIM638-API" );
-                n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-                supd.addNoteItem( n );                  
-              }               
-              
-              this.updateService( aService.getId(), supd , true, null, null); //update the service 
+              if ( stateChaged || characteristicFoundDifferent) {
+                Characteristic noteCheck = as.getServiceCharacteristicByName("_DETAILED_NOTES_");
+                if ( noteCheck!= null 
+                    && noteCheck.getValue() != null
+                    && noteCheck.getValue().getValue() != null
+                    && !noteCheck.getValue().getValue().equals("")) {
+                  Note n = new Note();
+                  n.setText(stateText + "Supporting Resource changed with id: " + res.getId());
+                  n.setAuthor( "SIM638-API" );
+                  n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+                  supd.addNoteItem( n );                  
+                }               
+                
+                this.updateService( aService.getId(), supd , true, null, null); //update the service 
+                
+              }
 
         }
       
