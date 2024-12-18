@@ -1266,7 +1266,7 @@ public class ServiceRepoService {
                 resourcename = firstToken ;  //example "cr0fc1234-amf"       
               }
               
-              Boolean resourceIsSameKind = aService.checkIsKindResource(res);
+              Boolean resourceIsSameKind = aService.checkIsKindResource(res) || aService.getServiceCharacteristicByName("Kind")==null; //either Kind is the same or simply does not exist. Then behave the same
               if (resourceIsSameKind) { //if this service is the same kind as the resource then don't prefix the characteristic
                 kind = "";
                 resourcename="";   
