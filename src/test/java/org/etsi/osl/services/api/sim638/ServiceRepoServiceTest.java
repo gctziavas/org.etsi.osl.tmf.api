@@ -296,11 +296,20 @@ public class ServiceRepoServiceTest {
 
         assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 7 );
         assertThat( updatedService.getSupportingResource().size()  ).isEqualTo( 1);
+        
+
+        assertThat( updatedService.getServiceCharacteristicByName("NSLCM").getValue().getValue()   ).isEqualTo( "nslcm_test" );
 
         ResourceUpdate resourceUpdate = new ResourceUpdate();
 
+
+        
         org.etsi.osl.tmf.ri639.model.Characteristic resCharacteristicItem = new org.etsi.osl.tmf.ri639.model.Characteristic();
 
+        resCharacteristicItem.setName( "NSLCM" );
+        resCharacteristicItem.setValue( new Any("nslcm_test2"));
+        resourceUpdate.addResourceCharacteristicItem(resCharacteristicItem);
+        
         resCharacteristicItem.setName( "newChar" );
         resCharacteristicItem.setValue( new Any("myval0"));
         resourceUpdate.addResourceCharacteristicItem(resCharacteristicItem);
@@ -458,6 +467,44 @@ public class ServiceRepoServiceTest {
         return response;
     }
 
+    @Test
+    public void testFindNextStateBasedOnSupportingResources() throws Exception {
+      Service s = new Service();
+      s.setState(ServiceStateType.RESERVED);      
+      List<Resource> rlist = new ArrayList<Resource>();
+      Resource r1 = new Resource();
+      Resource r2 = new Resource();
+      r1.setResourceStatus(ResourceStatusType.RESERVED);
+      r2.setResourceStatus(ResourceStatusType.RESERVED);
+      rlist.add(r1);
+      rlist.add(r2);
+      ServiceStateType nstate = s.findNextStateBasedOnResourceList(rlist);
+      assertThat(nstate).isEqualTo( ServiceStateType.RESERVED );
+
+      r1.setResourceStatus(ResourceStatusType.AVAILABLE);
+      nstate = s.findNextStateBasedOnResourceList(rlist);
+      assertThat(nstate).isEqualTo( ServiceStateType.RESERVED );      
+
+      r2.setResourceStatus(ResourceStatusType.AVAILABLE);
+      nstate = s.findNextStateBasedOnResourceList(rlist);
+      assertThat(nstate).isEqualTo( ServiceStateType.ACTIVE );
+
+      s.setState( ServiceStateType.ACTIVE ); 
+      r1.setResourceStatus(ResourceStatusType.UNKNOWN);
+      nstate = s.findNextStateBasedOnResourceList(rlist);
+      assertThat(nstate).isEqualTo( ServiceStateType.ACTIVE );  
+
+      r1.setResourceStatus(ResourceStatusType.SUSPENDED);
+      nstate = s.findNextStateBasedOnResourceList(rlist);
+      assertThat(nstate).isEqualTo( ServiceStateType.TERMINATED );    
+
+      s.setState( ServiceStateType.TERMINATED ); 
+      r1.setResourceStatus(ResourceStatusType.AVAILABLE);
+      nstate = s.findNextStateBasedOnResourceList(rlist);
+      assertThat(nstate).isEqualTo( ServiceStateType.TERMINATED );
+      
+      
+    }
 
     private ServiceSpecification createServiceSpec(String sspectext, ServiceSpecificationCreate sspeccr1) throws Exception{
         String response = mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")

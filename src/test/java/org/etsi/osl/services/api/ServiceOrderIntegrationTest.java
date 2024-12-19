@@ -310,6 +310,7 @@ public class ServiceOrderIntegrationTest {
 		serviceOrderref.setId(responseSO.getId());
 		serviceOrderref.setServiceOrderItemId((new ArrayList<>(responseSO.getOrderItem())).get(0).getId());
 		s.addServiceOrderItem(serviceOrderref);
+		s.setServiceCharacteristic( new ArrayList<>());
 
 		Service createdServ = serviceRepoService.addService(s);
 

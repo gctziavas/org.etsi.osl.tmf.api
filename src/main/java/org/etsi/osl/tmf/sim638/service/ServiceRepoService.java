@@ -286,6 +286,7 @@ public class ServiceRepoService {
 	}
 	
 
+    @Transactional
 	public Service addService(@Valid ServiceCreate service) {
 		logger.info("Will add service: " + service.getName() );
 		Service s = new Service();
@@ -335,11 +336,12 @@ public class ServiceRepoService {
 		
 		Note noteItem = new Note();
 		noteItem.setText("Service " + s.getState() );
-		noteItem.setAuthor("API");
+		noteItem.setAuthor("SIM-638");
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		s.addNoteItem(noteItem);		
 		
-		s = this.serviceRepo.save( s );
+        
+        s = this.serviceRepo.save( s );
 
 		raiseServiceCreateNotification(s);
 		return s;
@@ -353,22 +355,7 @@ public class ServiceRepoService {
 				.orElse(null);
 	}
 
-	/**
-	 * @param id
-	 * @param servUpd
-	 * @param triggerServiceActionQueue
-	 * @param updatedFromParentService
-	 * @param updatedFromChildService
-	 * @return
-	 */
-	/**
-	 * @param id
-	 * @param servUpd
-	 * @param triggerServiceActionQueue
-	 * @param updatedFromParentService
-	 * @param updatedFromChildService
-	 * @return
-	 */
+
 	/**
 	 * @param id
 	 * @param servUpd
@@ -379,6 +366,9 @@ public class ServiceRepoService {
 	 */
 	@Transactional
 	public Service updateService(String id, @Valid ServiceUpdate servUpd, boolean triggerServiceActionQueue, Service updatedFromParentService, Service updatedFromChildService ) {
+	  
+
+      logger.debug("================> Will updateService = " + id );        
 		//Service service = this.findByUuid(id);
 		Service service = this.getServiceEager(id);
 
@@ -387,7 +377,10 @@ public class ServiceRepoService {
 			logger.error("Service cannot be found in registry, UUID: " + id  );
 			return null;
 		}
+		
 
+	      
+	      
 		logger.info("Will update service: " + service.getName() );
 		//logger.info("Will update service details: " + s.toString() );
 		
@@ -400,7 +393,8 @@ public class ServiceRepoService {
 			e.printStackTrace();
 		}
 		
-				
+		
+       		
 		if (servUpd.getType()!=null) {
 			service.setType(servUpd.getType());			
 		}
@@ -541,6 +535,8 @@ public class ServiceRepoService {
 
 					} else {
 						service.addServiceCharacteristicItem(n);
+
+			              
 						if ( !n.getName().contains("::") ) { //it is not a child characteristic
 	                        serviceCharacteristicChanged = true;    
 	                        charChangedForNotes += n.getName() + ", "; 						  
@@ -585,9 +581,10 @@ public class ServiceRepoService {
 		if (stateChanged) {
 			Note noteItem = new Note();
 			noteItem.setText("Service is " + service.getState() );
-			noteItem.setAuthor("API");
+			noteItem.setAuthor("SIM-638");
 			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 			service.addNoteItem(noteItem);		
+	        logger.debug("=============SERVICE STATE ================================>  " + service.getState() );
 		}
 		
 		
@@ -633,11 +630,11 @@ public class ServiceRepoService {
             
           }	
 		}
-		
-			
+
 		
 		service = this.serviceRepo.save( service );
 		
+ 		
 	    String requestedServiceAsJson = null;
 	    try {
 	      requestedServiceAsJson = mapper.writeValueAsString( service );
@@ -650,40 +647,28 @@ public class ServiceRepoService {
 		 * Save in ServiceActionQueueItem
 		 */
 		
-		if (triggerServiceActionQueue && stateChanged) {
-		  ServiceActionQueueItem saqi = new ServiceActionQueueItem();
-		  saqi.setServiceRefId( id );
-		  saqi.setOriginalServiceInJSON( originaServiceAsJson );
-		  if (stateChanged) {
-		    if ( service.getState().equals(  ServiceStateType.INACTIVE) ) {
-		      saqi.setAction( ServiceActionQueueAction.DEACTIVATE );		
-		    }else if ( service.getState().equals(  ServiceStateType.TERMINATED) ) {
-		      saqi.setAction( ServiceActionQueueAction.TERMINATE );		
-		    }
-
-		  }
-
-		  if ( saqi.getAction() != ServiceActionQueueAction.NONE  ) {
-		    this.addServiceActionQueueItem(service, saqi);					
-		  }
-		}		
-
-		
-//		//here on any state change of a Service we must send an ActionQueueItem that reflects the state changed with the Action  
-		if  ( stateChanged  ) {
-			ServiceActionQueueItem saqi = new ServiceActionQueueItem();
-			saqi.setServiceRefId( id );
-			saqi.setOriginalServiceInJSON( originaServiceAsJson );		
-			if ( service.getState().equals(  ServiceStateType.ACTIVE) ) {
-				saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE  );	
-				this.addServiceActionQueueItem(service, saqi);			
-			}else if ( previousState!=null && previousState.equals( ServiceStateType.ACTIVE) ) {
-				saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOINACTIVE  );
-				this.addServiceActionQueueItem(service, saqi);
-			}
-		}		
-		
-		if ( serviceCharacteristicChanged &&  service.getState().equals(  ServiceStateType.ACTIVE) &&  previousState!=null && previousState.equals( ServiceStateType.ACTIVE) && triggerServiceActionQueue ) {
+	    Boolean childServiceCharacteristicChanged = false;
+	    
+	    if  ( stateChanged  ) {
+          ServiceActionQueueItem saqi = new ServiceActionQueueItem();
+          saqi.setServiceRefId( id );
+          saqi.setOriginalServiceInJSON( originaServiceAsJson );
+              		  
+          if ( service.getState().equals(  ServiceStateType.INACTIVE) ) {
+            saqi.setAction( ServiceActionQueueAction.DEACTIVATE );		
+          }else if ( service.getState().equals(  ServiceStateType.TERMINATED) ) {
+    		saqi.setAction( ServiceActionQueueAction.TERMINATE );		
+          }else if ( service.getState().equals(  ServiceStateType.ACTIVE) ) {
+			saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE  );	
+          }else if ( previousState!=null && previousState.equals( ServiceStateType.ACTIVE) ) {
+			saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOINACTIVE  );
+          }
+			
+          if ( saqi.getAction() != ServiceActionQueueAction.NONE  ) {
+            logger.debug("==========addServiceActionQueueItem==============> saqi.getAction() = " + saqi.getAction() );
+            this.addServiceActionQueueItem(service, saqi);                    
+          }
+		} else if ( serviceCharacteristicChanged &&  service.getState().equals(  ServiceStateType.ACTIVE) &&  previousState!=null && previousState.equals( ServiceStateType.ACTIVE) && triggerServiceActionQueue ) {
 			ServiceActionQueueItem saqi = new ServiceActionQueueItem();
 			saqi.setServiceRefId( id );
 			saqi.setOriginalServiceInJSON( originaServiceAsJson );		
@@ -691,7 +676,9 @@ public class ServiceRepoService {
 			if ( serviceCharacteristicChangedContainsPrimitive ) {
 				saqi.setAction( ServiceActionQueueAction.EVALUATE_CHARACTERISTIC_CHANGED_MANODAY2  );					
 			}
+            logger.debug("==========addServiceActionQueueItem==============>  serviceCharacteristicChanged &&  service.getState().eq charChangedForNotes= "  + charChangedForNotes);
 			this.addServiceActionQueueItem(service, saqi);
+			childServiceCharacteristicChanged = true;
 		}
 		
 		
@@ -703,26 +690,10 @@ public class ServiceRepoService {
          * Update any parent service
          */
         for (ServiceRelationship serviceRelationship : service.getServiceRelationship()) {
-          if (serviceRelationship.getRelationshipType().equals("ChildService")) {
+          if (serviceRelationship.getRelationshipType().equals("ChildService") ) {
             if (serviceRelationship.getService() != null) {
-
-
-              if (serviceCharacteristicChanged) {
-                if (updatedFromParentService == null || (updatedFromParentService != null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId()))) { // avoid circular
-                  ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
-                  saqi.setServiceRefId(serviceRelationship.getService().getId());
-                  try {
-                    saqi.setOriginalServiceInJSON( mapper.writeValueAsString( service ) ); //pass the child service as is 
-                  } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                  }
-                  saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_CHARACTERISTIC_CHANGED);
-                  this.addServiceActionQueueItem(service, saqi);
-                }
-
-              }
               
-              if (stateChanged) {
+              if (stateChanged || childServiceCharacteristicChanged) {
                 if (updatedFromParentService == null || (updatedFromParentService != null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId()))) { // avoid circular
                   ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
                   saqi.setServiceRefId(serviceRelationship.getService().getId());
@@ -731,13 +702,16 @@ public class ServiceRepoService {
                   } catch (JsonProcessingException e) {
                     e.printStackTrace();
                   }
-                  saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_STATE_CHANGE );
+                  if (stateChanged) {
+                    saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_STATE_CHANGE );
+                    logger.debug("==========addServiceActionQueueItem==============>  EVALUATE_CHILD_STATE_CHANGE "  + charChangedForNotes);
+                  } else if ( childServiceCharacteristicChanged)  {
+                    saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_CHARACTERISTIC_CHANGED);
+                    logger.debug("==========addServiceActionQueueItem==============>  EVALUATE_CHILD_CHARACTERISTIC_CHANGED "  + charChangedForNotes);
+                  }
                   this.addServiceActionQueueItem(service, saqi);
                 }
               }
-
-
-
             }
           }
         }	
@@ -804,8 +778,7 @@ public class ServiceRepoService {
 //			} catch (FileNotFoundException e) {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
-//			}
-			logger.info("======================================================================================================");			
+//			}		
 		}
 		
 		return service;
@@ -921,10 +894,10 @@ public class ServiceRepoService {
 
 		if ( schart!= null ) {
 			String teest = schart.getValue().getValue();
-			logger.info("schart size = " + teest.length() );
+			logger.debug("schart size = " + teest.length() );
 			
-			logger.info("schart " + teest );
-			logger.info("======================================================================================================");			
+			logger.debug("schart " + teest );
+			logger.debug("======================================================================================================");			
 		}
 		
 		return res;
@@ -1011,6 +984,9 @@ public class ServiceRepoService {
 		    //find any similar action inqueue and delete them, so to keep this one as the most recent
 	        List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
 	        logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
+	        if (result.size()>0) { //essentially it will not delete any requests, but just return with not adding the new action since it is already exists
+	          return item;
+	        }
 	        this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
 	          
 		}
