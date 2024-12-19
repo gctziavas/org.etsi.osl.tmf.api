@@ -247,6 +247,7 @@ public class ServiceRepoServiceTest {
         ResourceRef firstResourceRef = resourceRefList.get(0);
 
         Resource resource = resourceRepoService.findByUuid(firstResourceRef.getId());
+        resource.setResourceStatus(ResourceStatusType.STANDBY);
 
         ResourceStateChangeNotification resourceCreateNotification = new ResourceStateChangeNotification();
         ResourceStateChangeEvent event = new ResourceStateChangeEvent();
