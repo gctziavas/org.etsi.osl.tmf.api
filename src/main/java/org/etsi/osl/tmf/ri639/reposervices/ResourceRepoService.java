@@ -449,7 +449,6 @@ public class ResourceRepoService {
 
 
     resource = this.resourceRepo.save(resource);
-    this.serviceRepoService.updateServicesHavingThisSupportingResource(resource);
     
     if (resourceCharacteristicChanged) {
       raiseResourceAttributeValueChangeEventNotification(resource);
