@@ -224,19 +224,19 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
         
         
         
-//        from( EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED )
-//        .errorHandler(deadLetterChannel("direct:retriesDeadLetters")
-//            .maximumRedeliveries(5)
-//            .redeliveryDelay(1000).useOriginalMessage()
-//            .logExhausted(true)
-//            .logHandled(true)
-//            .retriesExhaustedLogLevel(LoggingLevel.ERROR)
-//            .retryAttemptedLogLevel(LoggingLevel.ERROR))        
-//          
-//        .log(LoggingLevel.INFO, log, EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED + " message received and will be processed for service inventory!")
-//        .to("log:DEBUG?showBody=true&showHeaders=true")
-//        .unmarshal().json( JsonLibrary.Jackson, ResourceAttributeValueChangeNotification.class, true)
-//        .bean( serviceRepoService, "resourceAttrChangedEvent(${body})");
+        from( EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED )
+        .errorHandler(deadLetterChannel("direct:retriesDeadLetters")
+            .maximumRedeliveries(5)
+            .redeliveryDelay(1000).useOriginalMessage()
+            .logExhausted(true)
+            .logHandled(true)
+            .retriesExhaustedLogLevel(LoggingLevel.ERROR)
+            .retryAttemptedLogLevel(LoggingLevel.ERROR))        
+          
+        .log(LoggingLevel.DEBUG, log, EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED + " message received and will be processed for service inventory!")
+        .to("log:DEBUG?showBody=true&showHeaders=true")
+        .unmarshal().json( JsonLibrary.Jackson, ResourceAttributeValueChangeNotification.class, true)
+        .bean( serviceRepoService, "resourceAttrChangedEvent(${body})");
 		
         
         
