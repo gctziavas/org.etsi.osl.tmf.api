@@ -287,11 +287,7 @@ public class ServiceRepoServiceTest {
         
         
 
-        @Valid ResourceAttributeValueChangeNotification resNotid = new ResourceAttributeValueChangeNotification();
-        ResourceAttributeValueChangeEvent  event = new ResourceAttributeValueChangeEvent();
-        event.getEvent().setResource(resource);
-        
-        resNotid.setEvent( event );
+       
 
         Service updatedService = serviceRepoService.findByUuid(id);
 
@@ -324,9 +320,13 @@ public class ServiceRepoServiceTest {
         Thread.sleep(1000);
         
         System.out.println("STEP 3 - =========================================== "  );
+
+        serviceRepoService.updateServicesHavingThisSupportingResource(nullResource); 
+        
         updatedService = serviceRepoService.findByUuid(id);
         assertThat( updatedService.getSupportingResource().size()  ).isEqualTo( 1);
         assertThat( updatedService.getServiceCharacteristic().size()  ).isEqualTo( 8 );
+        
         
         Set<Note> noteSet = updatedService.getNote();
         List<Note> noteList = new ArrayList<>(noteSet);
