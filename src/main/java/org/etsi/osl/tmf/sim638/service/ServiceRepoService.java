@@ -1133,14 +1133,18 @@ public class ServiceRepoService {
 
               ServiceStateType nextState =  aService.getState();
               List<Resource> rlist = new ArrayList<Resource>();
+              rlist.add(res);
+              
               for (ResourceRef rref : aService.getSupportingResource()) {
-                Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
-                if (result.isPresent()) {
-                  rlist.add( result.get() );
-                  if ( result.get().getResourceStatus()==null){
-                    logger.debug("================> updateServicesHavingThisSupportingResource resource status NULL for resource: "+ result.get().getName()  );     
-                    return;
-                  }
+                if (!rref.getId().equals( res.getId())) {
+                  Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
+                  if (result.isPresent()) {
+                    rlist.add( result.get() );
+                    if ( result.get().getResourceStatus()==null){
+                      logger.debug("================> updateServicesHavingThisSupportingResource resource status NULL for resource: "+ result.get().getName()  );     
+                      return;
+                    }
+                  }                  
                 }
               }
               
@@ -1180,7 +1184,7 @@ public class ServiceRepoService {
               CharCopyResult result = new CharCopyResult(supd, false);
               
               if ( nextState == ServiceStateType.ACTIVE) {
-                if ( !aService.equals(nextState) && nextState == ServiceStateType.ACTIVE) {
+                if ( !aService.getState().equals(nextState) && nextState == ServiceStateType.ACTIVE) {
                   result = copyCharacteristicsFromAllResources(aService, supd, rlist);                  
                 } else {
                   result = copyCharacteristicsFromResource(aService, supd, res);
