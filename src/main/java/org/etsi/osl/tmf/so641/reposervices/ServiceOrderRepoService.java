@@ -914,15 +914,12 @@ public class ServiceOrderRepoService {
 		for (ServiceRef specRel : aService.getSupportingService() ) {
 			result += "\""+ aService.getId() + "\""+ " -> " + "\""+ specRel.getId()  +"\" "+";\r\n";
 			result += "\""+ specRel.getId() + "\""+ " [label = \"" + specRel.getName()  + "\", color = \"#2596be\"];\r\n";
-			
-			for (ResourceRef resRel : aService.getSupportingResource()) {
-				
-				result += "\""+ aService.getId() + "\""+ " -> " + "\""+ resRel.getId() + "\""+ ";\r\n";
-				result += "\""+ resRel.getId() + "\""+ " [ label = \"" + resRel.getName() +"\",  shape = roundedbox, color = \"#e28743\"]; \r\n";
-				
-			}
-			
 		}
+		for (ResourceRef resRel : aService.getSupportingResource()) {
+          
+          result += "\""+ aService.getId() + "\""+ " -> " + "\""+ resRel.getId() + "\""+ ";\r\n";
+          result += "\""+ resRel.getId() + "\""+ " [ label = \"" + resRel.getName() +"\",  shape = roundedbox, color = \"#e28743\"]; \r\n";          
+        }
 		
 		
 		return result;
