@@ -1118,8 +1118,14 @@ public class ServiceRepoService {
 	public void  updateServicesHavingThisSupportingResource(@Valid Resource res) {
       try {
         
+        if (res.getResourceStatus()==null){
+          logger.debug("================> updateServicesHavingThisSupportingResource resource status NULL");     
+          return;
+        }
+        
         logger.debug("================> Will update services related to this resource with id = " + res.getId() );        
         var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
+        logger.debug("================> Services found = " + aservices.size() );     
         
         for (Service as : aservices) {
             
@@ -1127,10 +1133,18 @@ public class ServiceRepoService {
 
               ServiceStateType nextState =  aService.getState();
               List<Resource> rlist = new ArrayList<Resource>();
+              rlist.add(res);
+              
               for (ResourceRef rref : aService.getSupportingResource()) {
-                Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
-                if (result.isPresent()) {
-                  rlist.add( result.get() );
+                if (!rref.getId().equals( res.getId())) {
+                  Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
+                  if (result.isPresent()) {
+                    rlist.add( result.get() );
+                    if ( result.get().getResourceStatus()==null){
+                      logger.debug("================> updateServicesHavingThisSupportingResource resource status NULL for resource: "+ result.get().getName()  );     
+                      return;
+                    }
+                  }                  
                 }
               }
               
@@ -1139,35 +1153,9 @@ public class ServiceRepoService {
               /*
                * Construct characteristic name
                */
-              String kind = "";
-              String resourcename = res.getName() ;
+
               
-              org.etsi.osl.tmf.ri639.model.Characteristic ckind = res.getResourceCharacteristicByName("Kind");
-              if ( ckind != null && ckind.getValue() != null) {
-                kind = ckind.getValue().getValue() ; //example "ConfigMap"
-              }
-              
-              if ( res.getName().indexOf('@')>0) {
-                String firstToken = res.getName().substring(  0, res.getName().indexOf('@') );
-                resourcename = firstToken ;  //example "cr0fc1234-amf"       
-              }
-              
-              Boolean resourceIsSameKind = aService.checkIsKindResource(res) || aService.getServiceCharacteristicByName("Kind")==null; //either Kind is the same or simply does not exist. Then behave the same
-              if (resourceIsSameKind) { //if this service is the same kind as the resource then don't prefix the characteristic
-                kind = "";
-                resourcename="";   
-                //rlist.add(res); //add only this one
-              }else { 
-                //enable the following to remove crXXXXXX prefix in name
-//                org.etsi.osl.tmf.ri639.model.Characteristic kubinstance = res.getResourceCharacteristicByName("app.kubernetes.io/instance");
-//                if ( kubinstance != null && kubinstance.getValue() != null) {
-//                  String removePrefix = kubinstance.getValue().getValue();
-//                  resourcename = resourcename.replace( removePrefix + "-", "");
-//                  resourcename = resourcename.replace( removePrefix, "");
-//                }        
-                kind = kind + ".";
-                resourcename = resourcename + ".";
-              }
+
               
               
               Boolean stateChaged = false;
@@ -1179,10 +1167,10 @@ public class ServiceRepoService {
                 stateChaged = true;
                 stateText = "State changed from " + aService.getState() + " to " + nextState + ".";
                 logger.debug("====================>  stateText = " + stateText);
-                for (Resource r : rlist) {
-                  logger.debug("==================>  r:{}, state:{} ="+  r.getName() + ", "+  r.getResourceStatus().name());
-                  
-                }
+              }
+              for (Resource r : rlist) {
+                logger.debug("==================> state: ="+  r.getResourceStatus().name() + ", "+  r.getName() );
+                
               }
               
               //adding all characteristics from service
@@ -1192,40 +1180,24 @@ public class ServiceRepoService {
                 
               }
               
-              Boolean characteristicFoundDifferent =false;
-              String dontCopyChars = "clusterMasterURL,currentContextCluster,fullResourceName,Kind,apiGroup,UID,metadata";
-              String[] arrayDontCopyChars = dontCopyChars.split(",");
-              Set<String> setB = new HashSet<>(Arrays.asList(arrayDontCopyChars));
-              for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
-                if ( resourceIsSameKind ||  ( !setB.contains( rChar.getName()) &&  !rChar.getName().startsWith("org.etsi.osl") )    ){ //don;t copy characteristics in set                  
-                  if  ( rChar.getValue() != null ) {
-
-                    String characteristicname = kind + resourcename + rChar.getName();
-                    Characteristic servChar = supd.getServiceCharacteristicByName( characteristicname );
-                    if ( servChar != null && servChar.getValue() != null) {                      
-                      if (! servChar.getValue().getValue().equals( rChar.getValue().getValue() ) ) {
-                        characteristicFoundDifferent = true;
-                        supd.getServiceCharacteristicByName( characteristicname ) .value(new Any( rChar.getValue() ));  
-                        logger.debug("====================>  update characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());                      
-                      }
-                      
-                    } else {
-                      Characteristic cNew = new Characteristic();
-                      cNew.setName( characteristicname  );     
-                      cNew.value( new Any( rChar.getValue() ));
-                      supd.addServiceCharacteristicItem( cNew );
-                      characteristicFoundDifferent = true;
-                      logger.debug("====================>  add New characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());
-                    }
-                    
-                    
-                  }                  
+              
+              CharCopyResult result = new CharCopyResult(supd, false);
+              
+              if ( nextState == ServiceStateType.ACTIVE) {
+                if ( !aService.getState().equals(nextState) && nextState == ServiceStateType.ACTIVE) {
+                  result = copyCharacteristicsFromAllResources(aService, supd, rlist);                  
+                } else {
+                  result = copyCharacteristicsFromResource(aService, supd, res);
                 }
-                    
               }
+              
+              
+                
+
+
 
                 
-              if ( stateChaged || characteristicFoundDifferent) {
+              if ( stateChaged || result.characteristicFoundDifferent) {
                 Characteristic noteCheck = as.getServiceCharacteristicByName("_DETAILED_NOTES_");
                 if ( noteCheck!= null 
                     && noteCheck.getValue() != null
@@ -1235,10 +1207,10 @@ public class ServiceRepoService {
                   n.setText(stateText + "Supporting Resource changed with id: " + res.getId());
                   n.setAuthor( "SIM638-API" );
                   n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-                  supd.addNoteItem( n );                  
+                  result.supd.addNoteItem( n );                  
                 }               
                 
-                this.updateService( aService.getId(), supd , true, null, null); //update the service 
+                this.updateService( aService.getId(), result.supd , true, null, null); //update the service 
                 
               }
 
@@ -1251,9 +1223,96 @@ public class ServiceRepoService {
       
     }
     
+    private record CharCopyResult(ServiceUpdate supd, Boolean characteristicFoundDifferent) {
+      
+    }
+    
+    private CharCopyResult copyCharacteristicsFromAllResources(Service aService, ServiceUpdate supd, List<Resource> rlist) {
+      Boolean characteristicFoundDifferent = false;
+      CharCopyResult copyresult = new CharCopyResult(supd, characteristicFoundDifferent);
+      for (Resource r : rlist) {
+        copyresult = copyCharacteristicsFromResource(aService, copyresult.supd, r);
+        characteristicFoundDifferent = characteristicFoundDifferent || copyresult.characteristicFoundDifferent;
+      }
+      
+      CharCopyResult result = new CharCopyResult(copyresult.supd, copyresult.characteristicFoundDifferent);
+      return result ;
+    }
     
     
-    
+    private CharCopyResult copyCharacteristicsFromResource( @Valid Service aService, @Valid ServiceUpdate supd, @Valid Resource res) {
+
+      Boolean characteristicFoundDifferent = false;
+      String kind = "";
+      String resourcename = res.getName() ;
+      
+      org.etsi.osl.tmf.ri639.model.Characteristic ckind = res.getResourceCharacteristicByName("Kind");
+      if ( ckind != null && ckind.getValue() != null) {
+        kind = ckind.getValue().getValue() ; //example "ConfigMap"
+      }
+      
+      if ( res.getName().indexOf('@')>0) {
+        String firstToken = res.getName().substring(  0, res.getName().indexOf('@') );
+        resourcename = firstToken ;  //example "cr0fc1234-amf"       
+      }
+      
+      Boolean resourceIsSameKind = aService.checkIsKindResource(res) || aService.getServiceCharacteristicByName("Kind")==null; //either Kind is the same or simply does not exist. Then behave the same
+      if (resourceIsSameKind) { //if this service is the same kind as the resource then don't prefix the characteristic
+        kind = "";
+        resourcename="";   
+        //rlist.add(res); //add only this one
+      }else { 
+        //enable the following to remove crXXXXXX prefix in name
+//        org.etsi.osl.tmf.ri639.model.Characteristic kubinstance = res.getResourceCharacteristicByName("app.kubernetes.io/instance");
+//        if ( kubinstance != null && kubinstance.getValue() != null) {
+//          String removePrefix = kubinstance.getValue().getValue();
+//          resourcename = resourcename.replace( removePrefix + "-", "");
+//          resourcename = resourcename.replace( removePrefix, "");
+//        }        
+        kind = kind + ".";
+        resourcename = resourcename + ".";
+      }
+      
+      String dontCopyChars = "clusterMasterURL,currentContextCluster,fullResourceName,Kind,apiGroup,UID,metadata";
+      String[] arrayDontCopyChars = dontCopyChars.split(",");
+      Set<String> setB = new HashSet<>(Arrays.asList(arrayDontCopyChars));
+      for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
+        if ( resourceIsSameKind ||  ( !setB.contains( rChar.getName()) &&  !rChar.getName().startsWith("org.etsi.osl") )    ){ //don;t copy characteristics in set                  
+          if  ( rChar.getValue() != null ) {
+
+            String characteristicname = kind + resourcename + rChar.getName();
+            Characteristic servChar = supd.getServiceCharacteristicByName( characteristicname );
+            if ( servChar != null && servChar.getValue() != null) {                      
+              if (! servChar.getValue().getValue().equals( rChar.getValue().getValue() ) ) {
+                characteristicFoundDifferent = true;
+                supd.getServiceCharacteristicByName( characteristicname ) .value(new Any( rChar.getValue() ));  
+                logger.debug("====================>  update characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());                      
+              }
+              
+            } else {
+              Characteristic cNew = new Characteristic();
+              cNew.setName( characteristicname  );     
+              cNew.value( new Any( rChar.getValue() ));
+              supd.addServiceCharacteristicItem( cNew );
+              characteristicFoundDifferent = true;
+              logger.debug("====================>  add New characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());
+            }
+            
+            
+          }                  
+        }
+            
+      };
+      
+      
+      CharCopyResult result = new CharCopyResult(supd, characteristicFoundDifferent);
+      return result ;
+      
+      
+    }
+
+
+
     @Transactional  
     public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {  
       try {

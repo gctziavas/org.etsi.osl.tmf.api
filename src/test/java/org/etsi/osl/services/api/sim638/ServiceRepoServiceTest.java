@@ -307,6 +307,7 @@ public class ServiceRepoServiceTest {
         resCharacteristicItem.setValue( new Any("nslcm_test2"));
         resourceUpdate.addResourceCharacteristicItem(resCharacteristicItem);
         
+        resCharacteristicItem = new org.etsi.osl.tmf.ri639.model.Characteristic();
         resCharacteristicItem.setName( "newChar" );
         resCharacteristicItem.setValue( new Any("myval0"));
         resourceUpdate.addResourceCharacteristicItem(resCharacteristicItem);
@@ -315,7 +316,8 @@ public class ServiceRepoServiceTest {
         System.out.println("STEP 1 - =========================================== " +serviceRepoService.toString() );
         Resource nullResource = resourceRepoService.updateResource( resource.getId(), resourceUpdate, false);
         resource = resourceRepoService.findByUuid(firstResourceRef.getId());        
-        assertThat( resource.getResourceCharacteristic().size()  ).isEqualTo( 1 );
+        nullResource.setResourceStatus(ResourceStatusType.AVAILABLE);
+        assertThat( resource.getResourceCharacteristic().size()  ).isEqualTo( 2 );
 
         Thread.sleep(1000);
         
