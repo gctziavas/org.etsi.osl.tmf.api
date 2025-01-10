@@ -289,9 +289,10 @@ public class MeasurementCollectionJobService {
         MeasurementCollectionJobMapper mapper = Mappers.getMapper(MeasurementCollectionJobMapper.class);
         MeasurementCollectionJob mcj = mapper.createMeasurementCollectionJob(measurementCollectionJobFVO);
 
+        mcj = this.measurementCollectionJobRepository.save(mcj);
         raiseMCJCreateNotification(mcj);
 
-        return this.measurementCollectionJobRepository.save(mcj);
+        return mcj;
     }
 
     public MeasurementCollectionJob updateMeasurementCollectionJob(String uuid, @Valid MeasurementCollectionJobMVO measurementCollectionJobUpdate){
@@ -306,7 +307,7 @@ public class MeasurementCollectionJobService {
         MeasurementCollectionJobMapper mapper = Mappers.getMapper(MeasurementCollectionJobMapper.class);
         measurementCollectionJob = mapper.updateMeasurementCollectionJob(measurementCollectionJobUpdate, measurementCollectionJob);
 
-        this.measurementCollectionJobRepository.save(measurementCollectionJob);
+        measurementCollectionJob = this.measurementCollectionJobRepository.save(measurementCollectionJob);
 
         // This may be unnecessary since MeasurementCollectionJobMVO doesn't have the executionState attribute
         executionStateChanged = !originalExecutionState.equals(measurementCollectionJob.getExecutionState());
