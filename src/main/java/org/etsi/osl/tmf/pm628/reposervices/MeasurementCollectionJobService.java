@@ -384,6 +384,8 @@ public class MeasurementCollectionJobService {
         MeasurementCollectionJobRef ref = new MeasurementCollectionJobRef();
         ref.setId(mcj.getUuid());
         ref.setHref(mcj.getHref());
+        ref.setName("MeasurementCollectionJob");
+        
 
         MeasurementCollectionJobCreateEventPayload payload = new MeasurementCollectionJobCreateEventPayload();
         payload.setMeasurementCollectionJob(ref);

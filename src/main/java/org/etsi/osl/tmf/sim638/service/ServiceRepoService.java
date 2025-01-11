@@ -866,7 +866,7 @@ public class ServiceRepoService {
 		return res;
 	}
 
-    @Transactional  
+
 	public Service getServiceEager(String id) {
 		if ( id == null || id.equals("")) {
 			return null;

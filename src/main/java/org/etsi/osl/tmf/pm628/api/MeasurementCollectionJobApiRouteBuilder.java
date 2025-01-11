@@ -66,9 +66,11 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
 
         from(PM_ADD_MEASUREMENT_COLLECTION_JOB)
                 .log(LoggingLevel.INFO, log, PM_ADD_MEASUREMENT_COLLECTION_JOB + " message received!")
-                .to("log:DEBUG?showBody=true&showHeaders=true").unmarshal()
+                .to("log:DEBUG?showBody=true&showHeaders=true")
+                .unmarshal()
                 .json(JsonLibrary.Jackson, MeasurementCollectionJobFVO.class, true)
                 .bean(measurementCollectionJobService, "createMeasurementCollectionJob(${body})")
+                .marshal().json( JsonLibrary.Jackson)
                 .convertBodyTo( String.class );
 
         from(PM_UPDATE_MEASUREMENT_COLLECTION_JOB)
@@ -76,6 +78,7 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
                 .to("log:DEBUG?showBody=true&showHeaders=true").unmarshal()
                 .json(JsonLibrary.Jackson, MeasurementCollectionJobMVO.class, true)
                 .bean(measurementCollectionJobService, "updateMeasurementCollectionJob(${header.mcjid}, ${body})")
+                .marshal().json( JsonLibrary.Jackson)
                 .convertBodyTo( String.class );
     }
 
