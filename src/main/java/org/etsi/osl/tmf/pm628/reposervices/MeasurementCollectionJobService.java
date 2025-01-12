@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.etsi.osl.tmf.pm628.api.MeasurementCollectionJobApiRouteBuilderEvents;
 import org.etsi.osl.tmf.pm628.model.*;
 import org.etsi.osl.tmf.pm628.repo.MeasurementCollectionJobRepository;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -20,6 +21,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 
 @Service
 @Transactional
@@ -277,6 +281,47 @@ public class MeasurementCollectionJobService {
         return resultList;
     }
 
+    @Transactional  
+    public String findMeasurementCollectionJobByUuidEagerAsString(String uuid) throws JsonProcessingException{
+
+      MeasurementCollectionJob mcj = findMeasurementCollectionJobByUuidEager(uuid);
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.registerModule(new Hibernate5JakartaModule());
+      String res = mapper.writeValueAsString(mcj);
+      
+      return res;
+
+    }
+    
+
+    private MeasurementCollectionJob findMeasurementCollectionJobByUuidEager(String id) {
+      if ( id == null || id.equals("")) {
+        return null;
+    }
+    Session session = sessionFactory.openSession();
+    Transaction tx = session.beginTransaction();
+    MeasurementCollectionJob s = null;
+    try {
+        s = (MeasurementCollectionJob) session.get(MeasurementCollectionJob.class, id);
+        if (s == null) {
+            return this.findMeasurementCollectionJobByUuid(id);// last resort
+        }
+
+        Hibernate.initialize(s.getDataAccessEndpoint() );
+        Hibernate.initialize(s.getFileTransferData() );
+        Hibernate.initialize(s.getPerformanceIndicatorGroupSpecification() );
+        Hibernate.initialize(s.getPerformanceIndicatorSpecification());
+        Hibernate.initialize(s.getScheduleDefinition() );
+        Hibernate.initialize(s.getTrackingRecord() );
+        
+        tx.commit();
+    } finally {
+        session.close();
+    }
+    
+    return s;
+    }
+
     public MeasurementCollectionJob findMeasurementCollectionJobByUuid(String uuid){
         log.debug("MeasurementCollectionJob FIND BY UUID");
         Optional<MeasurementCollectionJob> measurementCollectionJob = measurementCollectionJobRepository.findByUuid(uuid);
@@ -310,7 +355,9 @@ public class MeasurementCollectionJobService {
         measurementCollectionJob = this.measurementCollectionJobRepository.save(measurementCollectionJob);
 
         // This may be unnecessary since MeasurementCollectionJobMVO doesn't have the executionState attribute
-        executionStateChanged = !originalExecutionState.equals(measurementCollectionJob.getExecutionState());
+        if ( originalExecutionState!=null) {
+          executionStateChanged = !originalExecutionState.equals(measurementCollectionJob.getExecutionState());          
+        }
 
         if (executionStateChanged) {
             raiseMCJExecutionStateChangeNotification(measurementCollectionJob);
@@ -337,6 +384,8 @@ public class MeasurementCollectionJobService {
         MeasurementCollectionJobRef ref = new MeasurementCollectionJobRef();
         ref.setId(mcj.getUuid());
         ref.setHref(mcj.getHref());
+        ref.setName("MeasurementCollectionJob");
+        
 
         MeasurementCollectionJobCreateEventPayload payload = new MeasurementCollectionJobCreateEventPayload();
         payload.setMeasurementCollectionJob(ref);

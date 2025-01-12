@@ -30,7 +30,7 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
     private String PM_GET_MEASUREMENT_COLLECTION_JOBS;
 
     @Value("${PM_MEASUREMENT_COLLECTION_GET_JOB_BY_ID}")
-    private String PM_GET_MEASUREMENT_COLLECTION_JOB_BY_ID;
+    private String PM_MEASUREMENT_COLLECTION_GET_JOB_BY_ID;
 
     @Value("${PM_MEASUREMENT_COLLECTION_JOB_ADD}")
     private String PM_ADD_MEASUREMENT_COLLECTION_JOB;
@@ -58,17 +58,19 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
             .bean(measurementCollectionJobService, "findAllMeasurementCollectionJobs")
             .convertBodyTo( String.class );
 
-        from(PM_GET_MEASUREMENT_COLLECTION_JOB_BY_ID)
-            .log(LoggingLevel.INFO, log, PM_GET_MEASUREMENT_COLLECTION_JOB_BY_ID + " message received!")
+        from(PM_MEASUREMENT_COLLECTION_GET_JOB_BY_ID)
+            .log(LoggingLevel.INFO, log, PM_MEASUREMENT_COLLECTION_GET_JOB_BY_ID + " message received!")
             .to("log:DEBUG?showBody=true&showHeaders=true")
-            .bean(measurementCollectionJobService, "findMeasurementCollectionJobByUuid")
+            .bean(measurementCollectionJobService, "findMeasurementCollectionJobByUuidEagerAsString")
             .convertBodyTo( String.class );
 
         from(PM_ADD_MEASUREMENT_COLLECTION_JOB)
                 .log(LoggingLevel.INFO, log, PM_ADD_MEASUREMENT_COLLECTION_JOB + " message received!")
-                .to("log:DEBUG?showBody=true&showHeaders=true").unmarshal()
+                .to("log:DEBUG?showBody=true&showHeaders=true")
+                .unmarshal()
                 .json(JsonLibrary.Jackson, MeasurementCollectionJobFVO.class, true)
                 .bean(measurementCollectionJobService, "createMeasurementCollectionJob(${body})")
+                .marshal().json( JsonLibrary.Jackson)
                 .convertBodyTo( String.class );
 
         from(PM_UPDATE_MEASUREMENT_COLLECTION_JOB)
@@ -76,6 +78,7 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
                 .to("log:DEBUG?showBody=true&showHeaders=true").unmarshal()
                 .json(JsonLibrary.Jackson, MeasurementCollectionJobMVO.class, true)
                 .bean(measurementCollectionJobService, "updateMeasurementCollectionJob(${header.mcjid}, ${body})")
+                .marshal().json( JsonLibrary.Jackson)
                 .convertBodyTo( String.class );
     }
 
