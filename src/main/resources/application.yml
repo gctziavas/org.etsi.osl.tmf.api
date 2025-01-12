@@ -49,10 +49,13 @@ spring:
     username: root
     hikari:
        minimumIdle: 2
-       maximumPoolSize: 40
-       idleTimeout: 120000
-       connectionTimeout: 400000
-       leakDetectionThreshold: 100000
+       maximumPoolSize: 20
+       idleTimeout: 20000
+       idle-timeout: 20000
+       connectionTimeout: 40000
+       leakDetectionThreshold: 30000
+       
+       
   jpa:
     database-platform: org.etsi.osl.tmf.LocalMysqlDialect
     hibernate:

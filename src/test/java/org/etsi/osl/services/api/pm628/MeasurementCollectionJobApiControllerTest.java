@@ -1,5 +1,6 @@
 package org.etsi.osl.services.api.pm628;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
@@ -114,6 +115,7 @@ public class MeasurementCollectionJobApiControllerTest {
         assertThat(mcj2.getReportingPeriod()).isEqualTo(mcj.getReportingPeriod());
     }
 
+    
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
     @Test
     public void testCreateMeasurementCollectionJob() throws Exception {
@@ -126,6 +128,39 @@ public class MeasurementCollectionJobApiControllerTest {
         assertThat(mcj.getExecutionState()).isEqualTo(ExecutionStateType.ACKNOWLEDGED);
         assertThat(mcj.getGranularity()).isEqualTo(Granularity.fromValue("g_1mn"));
         assertThat(mcj.getReportingPeriod()).isEqualTo(ReportingPeriod.fromValue("r_1mn"));
+        
+        
+     // Create the event
+        MeasurementCollectionJobRef ref = new MeasurementCollectionJobRef();
+        ref.setId(mcj.getUuid());
+        ref.setHref(mcj.getHref());
+        ref.setName("MeasurementCollectionJob");
+        
+        MeasurementCollectionJobCreateEventPayload payload = new MeasurementCollectionJobCreateEventPayload();
+        payload.setMeasurementCollectionJob(ref);
+
+        MeasurementCollectionJobCreateEvent event = new MeasurementCollectionJobCreateEvent();
+        event.setTitle("MeasurementCollectionJob created");
+        event.setDescription("MeasurementCollectionJob with UUID: " + mcj.getUuid() + " has been created");
+        event.setEvent(payload);
+
+        String apayload = toJsonString(event);
+        
+        MeasurementCollectionJobCreateEvent eventresponse = toJsonObj (apayload, MeasurementCollectionJobCreateEvent.class);
+        assertThat(eventresponse.getEvent().getMeasurementCollectionJob()).isNotNull();
+    }
+    
+
+    static String toJsonString(Object object) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        return mapper.writeValueAsString(object);
+    }
+
+    static <T> T toJsonObj(String content, Class<T> valueType)  throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        return mapper.readValue( content, valueType);
     }
 
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.etsi.osl.tmf.pm628.api.MeasurementCollectionJobApiRouteBuilderEvents;
 import org.etsi.osl.tmf.pm628.model.*;
 import org.etsi.osl.tmf.pm628.repo.MeasurementCollectionJobRepository;
+import org.etsi.osl.tmf.so641.model.ServiceOrder;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -15,11 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -288,58 +291,63 @@ public class MeasurementCollectionJobService {
       ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(new Hibernate5JakartaModule());
       String res = mapper.writeValueAsString(mcj);
-      
+      log.debug("=====> MCJObjectMapper {}", res);
       return res;
 
     }
     
 
+    @Transactional
     private MeasurementCollectionJob findMeasurementCollectionJobByUuidEager(String id) {
-      if ( id == null || id.equals("")) {
+      if (id == null || id.equals("")) {
         return null;
-    }
-    Session session = sessionFactory.openSession();
-    Transaction tx = session.beginTransaction();
-    MeasurementCollectionJob s = null;
-    try {
+      }
+      MeasurementCollectionJob s = null;
+      try (Session session = sessionFactory.openSession()) {
+        Transaction tx = session.beginTransaction();
         s = (MeasurementCollectionJob) session.get(MeasurementCollectionJob.class, id);
         if (s == null) {
-            return this.findMeasurementCollectionJobByUuid(id);// last resort
+          log.debug("=====> findMeasurementCollectionJobByUuidEager last resort");
+          return this.findMeasurementCollectionJobByUuid(id);// last resort
         }
 
-        Hibernate.initialize(s.getDataAccessEndpoint() );
-        Hibernate.initialize(s.getFileTransferData() );
-        Hibernate.initialize(s.getPerformanceIndicatorGroupSpecification() );
+        Hibernate.initialize(s.getDataAccessEndpoint());
+        Hibernate.initialize(s.getFileTransferData());
+        Hibernate.initialize(s.getPerformanceIndicatorGroupSpecification());
         Hibernate.initialize(s.getPerformanceIndicatorSpecification());
-        Hibernate.initialize(s.getScheduleDefinition() );
-        Hibernate.initialize(s.getTrackingRecord() );
-        
+        Hibernate.initialize(s.getScheduleDefinition());
+        Hibernate.initialize(s.getTrackingRecord());
+
         tx.commit();
-    } finally {
-        session.close();
-    }
-    
-    return s;
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      return s;
     }
 
+    @Transactional
     public MeasurementCollectionJob findMeasurementCollectionJobByUuid(String uuid){
         log.debug("MeasurementCollectionJob FIND BY UUID");
         Optional<MeasurementCollectionJob> measurementCollectionJob = measurementCollectionJobRepository.findByUuid(uuid);
         return measurementCollectionJob.orElse(null);
     }
 
+    @Transactional
     public MeasurementCollectionJob createMeasurementCollectionJob(MeasurementCollectionJobFVO measurementCollectionJobFVO){
         log.debug("MeasurementCollectionJob CREATE: {}", measurementCollectionJobFVO);
 
         MeasurementCollectionJobMapper mapper = Mappers.getMapper(MeasurementCollectionJobMapper.class);
         MeasurementCollectionJob mcj = mapper.createMeasurementCollectionJob(measurementCollectionJobFVO);
-
-        mcj = this.measurementCollectionJobRepository.save(mcj);
+        mcj.setCreationTime( OffsetDateTime.now() );
+        mcj.setLastModifiedTime( OffsetDateTime.now());
+        mcj = this.measurementCollectionJobRepository.saveAndFlush(mcj);
         raiseMCJCreateNotification(mcj);
 
         return mcj;
     }
 
+    @Transactional
     public MeasurementCollectionJob updateMeasurementCollectionJob(String uuid, @Valid MeasurementCollectionJobMVO measurementCollectionJobUpdate){
         log.debug("MeasurementCollectionJob UPDATE with UUID: {}", uuid);
 
@@ -352,8 +360,10 @@ public class MeasurementCollectionJobService {
         MeasurementCollectionJobMapper mapper = Mappers.getMapper(MeasurementCollectionJobMapper.class);
         measurementCollectionJob = mapper.updateMeasurementCollectionJob(measurementCollectionJobUpdate, measurementCollectionJob);
 
+        measurementCollectionJob.setLastModifiedTime( OffsetDateTime.now());
         measurementCollectionJob = this.measurementCollectionJobRepository.save(measurementCollectionJob);
 
+        
         // This may be unnecessary since MeasurementCollectionJobMVO doesn't have the executionState attribute
         if ( originalExecutionState!=null) {
           executionStateChanged = !originalExecutionState.equals(measurementCollectionJob.getExecutionState());          
@@ -373,12 +383,12 @@ public class MeasurementCollectionJobService {
         MeasurementCollectionJob measurementCollectionJob = measurementCollectionJobRepository.findByUuid(uuid)
                 .orElseThrow(() -> new IllegalArgumentException("No MeasurementCollectionJob with UUID: " + uuid));
         measurementCollectionJobRepository.delete(measurementCollectionJob);
-
         raiseMCJDeleteNotification(measurementCollectionJob);
 
         return null;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void raiseMCJCreateNotification(MeasurementCollectionJob mcj){
         // Create the event payload
         MeasurementCollectionJobRef ref = new MeasurementCollectionJobRef();
@@ -399,6 +409,7 @@ public class MeasurementCollectionJobService {
         routeBuilderEvents.publishEvent(event, mcj.getUuid());
     }
 
+    @Transactional
     private void raiseMCJAttributeValueChangeNotification(MeasurementCollectionJob mcj){
 
         // Create the event payload
@@ -414,6 +425,7 @@ public class MeasurementCollectionJobService {
         routeBuilderEvents.publishEvent(event, mcj.getUuid());
     }
 
+    @Transactional
     private void raiseMCJExecutionStateChangeNotification(MeasurementCollectionJob mcj){
 
         // Create the event payload
@@ -429,6 +441,7 @@ public class MeasurementCollectionJobService {
         routeBuilderEvents.publishEvent(event, mcj.getUuid());
     }
 
+    @Transactional
     private void raiseMCJDeleteNotification(MeasurementCollectionJob mcj){
 
         // Create the event payload
