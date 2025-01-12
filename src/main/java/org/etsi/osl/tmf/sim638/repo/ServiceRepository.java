@@ -22,15 +22,14 @@ package org.etsi.osl.tmf.sim638.repo;
 import java.util.List;
 import java.util.Optional;
 import org.etsi.osl.tmf.sim638.model.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 
 
 @Repository
-public interface ServiceRepository extends CrudRepository<Service, Long>,  PagingAndSortingRepository<Service, Long> {
+public interface ServiceRepository extends JpaRepository<Service, Long> {
 
 	
 	Optional<Service> findByUuid(String id);

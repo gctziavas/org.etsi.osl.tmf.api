@@ -78,6 +78,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.etsi.osl.model.nfv.DeploymentDescriptor;
 import org.etsi.osl.model.nfv.DeploymentDescriptorVxFInstanceInfo;
@@ -340,7 +341,7 @@ public class ServiceRepoService {
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		s.addNoteItem(noteItem);		
 		
-		s = this.serviceRepo.save( s );
+		s = this.serviceRepo.saveAndFlush( s );
 
 		raiseServiceCreateNotification(s);
 		return s;
@@ -621,7 +622,7 @@ public class ServiceRepoService {
 		}
 
 		
-		service = this.serviceRepo.save( service );
+		service = this.serviceRepo.saveAndFlush( service );
 		
 
 		
@@ -867,14 +868,14 @@ public class ServiceRepoService {
 	}
 
 
+    @Transactional
 	public Service getServiceEager(String id) {
 		if ( id == null || id.equals("")) {
 			return null;
 		}
-		Session session = sessionFactory.openSession();
-		Transaction tx = session.beginTransaction();
 		Service s = null;
-		try {
+		try (Session session = sessionFactory.openSession()) {
+	        Transaction tx = session.beginTransaction();
 			s = (Service) session.get(Service.class, id);
 			if (s == null) {
 				return this.findByUuid(id);// last resort
@@ -891,15 +892,16 @@ public class ServiceRepoService {
 			Hibernate.initialize(s.getPlace()  );
 			
 			tx.commit();
-		} finally {
-			session.close();
-		}
+		} catch (Exception e) {
+	        e.printStackTrace();
+	      }
+
 		
 		return s;
 	}
 	
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseServiceCreateNotification(Service so) {
 		ServiceCreateNotification n = new ServiceCreateNotification();
 		ServiceCreateEvent event = new ServiceCreateEvent();
@@ -909,7 +911,7 @@ public class ServiceRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseServiceStateChangedNotification(Service so) {
 		ServiceStateChangeNotification n = new ServiceStateChangeNotification();
 		ServiceStateChangeEvent event = new ServiceStateChangeEvent();
@@ -919,7 +921,7 @@ public class ServiceRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseServiceAttributeValueChangedNotification(Service so) {
 		ServiceAttributeValueChangeNotification n = new ServiceAttributeValueChangeNotification();
 		ServiceAttributeValueChangeEvent event = new ServiceAttributeValueChangeEvent();

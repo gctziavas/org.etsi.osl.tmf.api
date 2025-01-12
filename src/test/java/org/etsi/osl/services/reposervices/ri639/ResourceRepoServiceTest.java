@@ -117,6 +117,7 @@ public class ResourceRepoServiceTest {
     public void setupBefore() {
         when(resourceRepo.findByUuid(anyString())).thenReturn(Optional.of(resource));
         when(resourceRepo.save(any(Resource.class))).thenReturn(resource);
+        when(resourceRepo.saveAndFlush(any(Resource.class))).thenReturn(resource);
         doReturn(resource).when(resourceRepoService).getResourceEager(anyString());
     }
 
@@ -174,7 +175,7 @@ public class ResourceRepoServiceTest {
         // Then
         assertNotNull(result);
         assertEquals("test_resource", result.getName());
-        verify(resourceRepo, times(1)).save(any(Resource.class));
+        verify(resourceRepo, times(1)).saveAndFlush(any(Resource.class));
     }
 
     /**
@@ -210,7 +211,7 @@ public class ResourceRepoServiceTest {
         assertEquals(ResourceStatusType.AVAILABLE, updatedResource.getResourceStatus());
         assertEquals("2.0", updatedResource.getResourceVersion());
         
-        verify(resourceRepo, times(1)).save(any(Resource.class));
+        verify(resourceRepo, times(1)).saveAndFlush(any(Resource.class));
     }
 
     /**

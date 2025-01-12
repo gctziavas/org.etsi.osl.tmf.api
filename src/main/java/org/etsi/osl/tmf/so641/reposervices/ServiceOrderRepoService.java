@@ -59,6 +59,7 @@ import org.hibernate.query.Query;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TemporalType;
@@ -365,7 +366,7 @@ public class ServiceOrderRepoService {
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		so.addNoteItem(noteItem);
 
-		so = this.serviceOrderRepo.save(so);
+		so = this.serviceOrderRepo.saveAndFlush(so);
 		
 		if (allAcknowledged) { //in the case were order items are automatically acknowledged
 			so.setState( ServiceOrderStateType.ACKNOWLEDGED );
@@ -376,7 +377,7 @@ public class ServiceOrderRepoService {
 			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 			so.addNoteItem(noteItem);
 			
-			so = this.serviceOrderRepo.save(so);
+			so = this.serviceOrderRepo.saveAndFlush(so);
 		}
 		
 		raiseSOCreateNotification(so);
@@ -658,13 +659,14 @@ public class ServiceOrderRepoService {
 
 		
 
-		so = this.serviceOrderRepo.save(so);
+		so = this.serviceOrderRepo.saveAndFlush(so);
 		if (stateChanged) {
 			raiseSOStateChangedNotification(so);			
 		} else {
 			raiseSOAttributeValueChangedNotification(so);
 		}
 		
+
 		return so;
 	}
 
@@ -737,12 +739,11 @@ public class ServiceOrderRepoService {
 		return res;
 	}
 
+	@Transactional
 	public ServiceOrder getServiceORderEager(String id) {
 
-		Session session = sessionFactory.openSession();
-		Transaction tx = session.beginTransaction();
-		
-		try {
+		try( Session session = sessionFactory.openSession() ) {
+	        Transaction tx = session.beginTransaction();
 			ServiceOrder s = null;
 			try {
 				s = (ServiceOrder) session.get(ServiceOrder.class, id);
@@ -770,13 +771,12 @@ public class ServiceOrderRepoService {
 			// TODO: handle exception
 		}
 
-		session.close();
 		return null;
 		
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseSOCreateNotification(ServiceOrder so) {
 		ServiceOrderCreateNotification n = new ServiceOrderCreateNotification();
 		ServiceOrderCreateEvent event = new ServiceOrderCreateEvent();
@@ -786,7 +786,7 @@ public class ServiceOrderRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseSOStateChangedNotification(ServiceOrder so) {
 		ServiceOrderStateChangeNotification n = new ServiceOrderStateChangeNotification();
 		ServiceOrderStateChangeEvent event = new ServiceOrderStateChangeEvent();
@@ -797,7 +797,7 @@ public class ServiceOrderRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseSOAttributeValueChangedNotification(ServiceOrder so) {
 		ServiceOrderAttributeValueChangeNotification n = new ServiceOrderAttributeValueChangeNotification();
 		ServiceOrderAttributeValueChangeEvent event = new ServiceOrderAttributeValueChangeEvent();

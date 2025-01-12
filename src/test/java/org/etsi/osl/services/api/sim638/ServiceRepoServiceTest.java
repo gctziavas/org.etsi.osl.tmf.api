@@ -52,6 +52,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -102,6 +107,26 @@ public class ServiceRepoServiceTest {
             }
         }
         assertThat( idExists ).isTrue();
+    }
+    
+
+    @Test
+    public void testAddService() {
+      // When
+      ServiceCreate s = new ServiceCreate();
+      s.setDescription("A Service for ");
+      s.setServiceDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
+      s.hasStarted(false);
+      s.setIsServiceEnabled(false);
+      s.setName("Servicename");
+      s.setStartMode("0");
+
+      Service result = serviceRepoService.addService(s);
+
+      // Then
+      assertNotNull(result);
+      assertEquals("Servicename", result.getName());
+      
     }
 
     // AlarmManagementIntegrationTest.testAlarmCreateAndUpdateRoutes:224 » CamelExecution Exception occurred during execution on the exchange: Exchange[0054D8F070E6449-0000000000000001]
