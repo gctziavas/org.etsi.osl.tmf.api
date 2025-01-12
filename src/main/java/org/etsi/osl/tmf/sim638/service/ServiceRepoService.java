@@ -577,23 +577,25 @@ public class ServiceRepoService {
 		}
 		
 		
-		/**
-		 * Check here if the characteristics changed are of interest for LCM rules and further processing by the orchestrator 
-		 */
-		Characteristic lcmchar = service.getServiceCharacteristicByName("_LCM_CHARACTERISTICS_");
+        /**
+         * Check here if the characteristics changed are of interest for LCM rules and further processing by the orchestrator 
+         */
+        Characteristic lcmchar = service.getServiceCharacteristicByName("_LCM_CHARACTERISTICS_");
         if ( lcmchar != null && lcmchar.getValue() != null && !lcmchar.getValue().getValue().equals("all") && !charChangedForNotes.equals("")) {
           
           // Split the strings into arrays of values
           String[] arrayA = lcmchar.getValue().getValue().split(",");
           String[] arrayB = charChangedForNotes.split(",");
           // Convert strb values into a set for faster lookup
-          Set<String> setB = new HashSet<>(Arrays.asList(arrayB));
           // Check if any value from stra exists in strb
           boolean valueExists = false;
           for (String value : arrayA) {
-              if (setB.contains(value)) {
+            for (String b : arrayB) {
+              if ( b.equals(value) ) {
                 valueExists = true; // A common value exists
-              }
+                break;
+              }              
+            }
           }
           if (!valueExists) {
             serviceCharacteristicChanged=false;
