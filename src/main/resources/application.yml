@@ -53,7 +53,7 @@ spring:
        idleTimeout: 20000
        idle-timeout: 20000
        connectionTimeout: 40000
-       leakDetectionThreshold: 30000
+       leakDetectionThreshold: 40000
        
        
   jpa:
