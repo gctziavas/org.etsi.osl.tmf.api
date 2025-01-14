@@ -223,5 +223,25 @@ public interface ProductOfferingApi {
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 	}
+	
+	   @Operation(summary = "Creates and Retrieves a ProductOffering by ID", operationId = "retrieveProductOffering", description = "This operation retrieves a ProductOffering entity. Attribute selection is enabled for all first level attributes." , tags = {
+           "productOffering", })
+   @ApiResponses(value = { @ApiResponse(responseCode ="200", description = "Success" ),
+           @ApiResponse(responseCode = "400", description = "Bad Request" ),
+           @ApiResponse(responseCode = "401", description = "Unauthorized" ),
+           @ApiResponse(responseCode = "403", description = "Forbidden" ),
+           @ApiResponse(responseCode = "404", description = "Not Found" ),
+           @ApiResponse(responseCode = "405", description = "Method Not allowed" ),
+           @ApiResponse(responseCode = "409", description = "Conflict" ),
+           @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
+   @RequestMapping(value = "/productOffering/fromServiceSpecId/{id}", produces = {
+           "application/json;charset=utf-8" }, method = RequestMethod.POST)
+   default ResponseEntity<ProductOffering> createRetrieveProductOfferingBasedOnServiceSpec(
+           @Parameter(description = "Identifier of the ProductOffering", required = true) @PathVariable("id") String id) {
+       
+       
+       return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+   }
+
 
 }

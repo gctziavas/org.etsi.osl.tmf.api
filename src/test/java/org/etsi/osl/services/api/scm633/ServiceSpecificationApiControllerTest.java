@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +49,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Transactional
 @SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
 @AutoConfigureMockMvc
+@AutoConfigureTestDatabase
 @ActiveProfiles("testing")
 public class ServiceSpecificationApiControllerTest {
 

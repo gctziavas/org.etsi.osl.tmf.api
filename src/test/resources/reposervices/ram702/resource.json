@@ -1,0 +1,61 @@
+{
+    "uuid": "eec4bf3c-3698-4815-b205-70b43df083d4",
+    "endOperatingDate": "2024-09-24T11:43:57.355Z",
+    "startOperatingDate": "2024-09-23T11:45:13.347536Z",
+    "@baseType": "BaseEntity",
+    "@schemaLocation": null,
+    "@type": null,
+    "href": null,
+    "name": "test_resource",
+    "id": "eec4bf3c-3698-4815-b205-70b43df083d4",
+    "category": "test_category",
+    "description": "A test resource",
+    "resourceVersion": "1.0",
+    "activationFeature": [],
+    "administrativeState": null,
+    "attachment": [],
+    "note": [
+        {
+            "uuid": "312ec354-1a82-4f54-b1ad-e36ce81301ba",
+            "date": "2024-09-24T10:52:41.912820494Z",
+            "@baseType": "BaseEntity",
+            "@schemaLocation": null,
+            "@type": null,
+            "href": null,
+            "author": "API",
+            "system": null,
+            "text": "Resource status: null"
+        }
+    ],
+    "operationalState": null,
+    "place": null,
+    "relatedParty": [
+        {
+            "uuid": "bdfa090e-2dbf-4b61-ab02-b28eaa946423",
+            "@baseType": "BaseRootEntity",
+            "@schemaLocation": null,
+            "@type": "org.etsi.osl.tmf.prm669.model.RelatedParty",
+            "href": null,
+            "name": "admin",
+            "role": "REQUESTER",
+            "@referredType": "SimpleUsername_Individual",
+            "id": "admin",
+            "extendedInfo": ""
+        }
+    ],
+    "resourceCharacteristic": [],
+    "resourceRelationship": [],
+    "resourceSpecification": {
+        "@baseType": "BaseRootEntity",
+        "@schemaLocation": null,
+        "@type": "org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef",
+        "href": null,
+        "name": "Application@argoproj.io/v1alpha1@default@https://10.255.28.198:6443/",
+        "version": null,
+        "@referredType": null,
+        "id": "87094d78-75c2-4876-9a75-d3cc34119915"
+    },
+    "resourceStatus": "AVAILABLE",
+    "usageState": "ACTIVE",
+    "value": null
+}

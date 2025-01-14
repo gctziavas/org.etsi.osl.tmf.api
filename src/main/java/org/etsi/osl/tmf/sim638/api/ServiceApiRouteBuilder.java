@@ -123,7 +123,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
       
       
 		from( CATALOG_ADD_SERVICE )
-		.log(LoggingLevel.INFO, log, CATALOG_ADD_SERVICE + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_ADD_SERVICE + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ServiceCreate.class, true)
 		.bean( serviceRepoService, "addService(${body})")
@@ -131,7 +131,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		.convertBodyTo( String.class );
 		
 		from( CATALOG_GET_SERVICE_BY_ID )
-		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICE_BY_ID + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_GET_SERVICE_BY_ID + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( serviceRepoService, "getServiceEagerAsString")
 		.convertBodyTo( String.class );
@@ -139,7 +139,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		
 		
 		from( CATALOG_UPD_SERVICE )
-		.log(LoggingLevel.INFO, log, CATALOG_UPD_SERVICE + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_UPD_SERVICE + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ServiceUpdate.class, true)
 		.bean( serviceRepoService, "updateService(${header.serviceid}, ${body}, ${header.triggerServiceActionQueue} )")
@@ -148,14 +148,14 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		
 		
 		from( CATALOG_SERVICE_QUEUE_ITEMS_GET )
-		.log(LoggingLevel.INFO, log, CATALOG_SERVICE_QUEUE_ITEMS_GET + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_SERVICE_QUEUE_ITEMS_GET + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( serviceRepoService, "findAllServiceActionQueueItems")
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 		
 		from( CATALOG_SERVICE_QUEUE_ITEM_UPD )
-		.log(LoggingLevel.INFO, log, CATALOG_SERVICE_QUEUE_ITEM_UPD + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_SERVICE_QUEUE_ITEM_UPD + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ServiceActionQueueItem.class, true)
 		.bean( serviceRepoService, "updateServiceActionQueueItem(${body})")
@@ -163,7 +163,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		.convertBodyTo( String.class );
 		
 		from( CATALOG_SERVICE_QUEUE_ITEM_DELETE )
-		.log(LoggingLevel.INFO, log, CATALOG_SERVICE_QUEUE_ITEM_DELETE + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_SERVICE_QUEUE_ITEM_DELETE + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, ServiceActionQueueItem.class, true)
 		.bean( serviceRepoService, "deleteServiceActionQueueItemByUuid(${header.itemid})");
@@ -171,7 +171,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		
 		
 		from( CATALOG_SERVICES_TO_TERMINATE )
-		.log(LoggingLevel.INFO, log, CATALOG_SERVICES_TO_TERMINATE + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_SERVICES_TO_TERMINATE + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( serviceRepoService, "findAllActiveServicesToTerminate")
 		.marshal().json( JsonLibrary.Jackson)
@@ -179,7 +179,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		
 
 		from( CATALOG_SERVICES_OF_PARTNERS )
-		.log(LoggingLevel.INFO, log, CATALOG_SERVICES_OF_PARTNERS + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_SERVICES_OF_PARTNERS + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( serviceRepoService, "findAllActiveAndReservedServicesOfPartners")
 		.marshal().json( JsonLibrary.Jackson)
@@ -187,14 +187,14 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 		
 
 		from( CATALOG_GET_SERVICE_BY_ORDERID )
-		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICE_BY_ORDERID + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, CATALOG_GET_SERVICE_BY_ORDERID + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( serviceRepoService, "getServicesFromOrderID")
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
 		
 		from( NFV_CATALOG_NS_LCMCHANGED )
-		.log(LoggingLevel.INFO, log, NFV_CATALOG_NS_LCMCHANGED + " message received and will be processed for service inventory!")
+		.log(LoggingLevel.DEBUG, log, NFV_CATALOG_NS_LCMCHANGED + " message received and will be processed for service inventory!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.unmarshal().json( JsonLibrary.Jackson, DeploymentDescriptor.class, true)
 		.bean( serviceRepoService, "nfvCatalogNSResourceChanged(${body})");
@@ -202,7 +202,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
 
 
         from( EVENT_RESOURCE_STATE_CHANGED )
-        .log(LoggingLevel.INFO, log, EVENT_RESOURCE_STATE_CHANGED + " message received and will be processed for service inventory!")
+        .log(LoggingLevel.DEBUG, log, EVENT_RESOURCE_STATE_CHANGED + " message received and will be processed for service inventory!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .unmarshal().json( JsonLibrary.Jackson, ResourceStateChangeNotification.class, true)
         .bean( serviceRepoService, "resourceStateChangedEvent(${body})");
@@ -216,7 +216,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
             .logHandled(true)
             .retriesExhaustedLogLevel(LoggingLevel.ERROR)
             .retryAttemptedLogLevel(LoggingLevel.ERROR))     
-        .log(LoggingLevel.INFO, log, EVENT_RESOURCE_CREATE + " message received and will be processed for service inventory!")
+        .log(LoggingLevel.DEBUG, log, EVENT_RESOURCE_CREATE + " message received and will be processed for service inventory!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .unmarshal().json( JsonLibrary.Jackson, ResourceCreateNotification.class, true)
         .bean( serviceRepoService, "resourceCreatedEvent(${body})");
@@ -233,7 +233,7 @@ public class ServiceApiRouteBuilder extends RouteBuilder {
             .retriesExhaustedLogLevel(LoggingLevel.ERROR)
             .retryAttemptedLogLevel(LoggingLevel.ERROR))        
           
-        .log(LoggingLevel.INFO, log, EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED + " message received and will be processed for service inventory!")
+        .log(LoggingLevel.DEBUG, log, EVENT_RESOURCE_ATTRIBUTE_VALUE_CHANGED + " message received and will be processed for service inventory!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .unmarshal().json( JsonLibrary.Jackson, ResourceAttributeValueChangeNotification.class, true)
         .bean( serviceRepoService, "resourceAttrChangedEvent(${body})");

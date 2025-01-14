@@ -5,13 +5,20 @@
 	<parent>
 		<groupId>org.etsi.osl</groupId>
 		<artifactId>org.etsi.osl.main</artifactId>
-		<version>1.0.0</version>
+		<version>2024Q4</version>
 		<relativePath>../org.etsi.osl.main</relativePath>
 	</parent>
 
+	<version>${org.etsi.osl.tmf.api.version}</version>
 
 	<artifactId>org.etsi.osl.tmf.api</artifactId>
 	<name>org.etsi.osl.tmf.api</name>
+
+	<organization>
+		<name>OpenSlice by ETSI</name>
+		<url>https://osl.etsi.org</url>
+	</organization>
+
 
 
 	<properties>
@@ -290,6 +297,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>4.0.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
@@ -431,6 +444,12 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>
+				<configuration>
+                <!-- Disable parallel execution -->
+                	<parallel>none</parallel>
+                	<runOrder>alphabetical</runOrder>
+                	<forkCount>1</forkCount>
+            	</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -452,11 +471,6 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.5</version>
-			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>

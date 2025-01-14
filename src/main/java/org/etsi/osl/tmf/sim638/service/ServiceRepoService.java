@@ -24,14 +24,19 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +78,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.etsi.osl.model.nfv.DeploymentDescriptor;
 import org.etsi.osl.model.nfv.DeploymentDescriptorVxFInstanceInfo;
@@ -281,6 +287,7 @@ public class ServiceRepoService {
 	}
 	
 
+    @Transactional
 	public Service addService(@Valid ServiceCreate service) {
 		logger.info("Will add service: " + service.getName() );
 		Service s = new Service();
@@ -330,11 +337,11 @@ public class ServiceRepoService {
 		
 		Note noteItem = new Note();
 		noteItem.setText("Service " + s.getState() );
-		noteItem.setAuthor("API");
+		noteItem.setAuthor("SIM-638");
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		s.addNoteItem(noteItem);		
 		
-		s = this.serviceRepo.save( s );
+		s = this.serviceRepo.saveAndFlush( s );
 
 		raiseServiceCreateNotification(s);
 		return s;
@@ -348,6 +355,7 @@ public class ServiceRepoService {
 				.orElse(null);
 	}
 
+
 	/**
 	 * @param id
 	 * @param servUpd
@@ -358,17 +366,15 @@ public class ServiceRepoService {
 	 */
 	@Transactional
 	public Service updateService(String id, @Valid ServiceUpdate servUpd, boolean triggerServiceActionQueue, Service updatedFromParentService, Service updatedFromChildService ) {
-		//Service service = this.findByUuid(id);
-		Service service = this.getServiceEager(id);
 
+		Service service = this.getServiceEager(id);
 		
 		if ( service == null ) {
 			logger.error("Service cannot be found in registry, UUID: " + id  );
 			return null;
 		}
-
+	      
 		logger.info("Will update service: " + service.getName() );
-		//logger.info("Will update service details: " + s.toString() );
 		
 		ObjectMapper mapper = new ObjectMapper();
 		String originaServiceAsJson = null;
@@ -427,8 +433,12 @@ public class ServiceRepoService {
 		boolean stateChanged = false;
 		ServiceStateType previousState = service.getState();		
 		if (servUpd.getState() != null ) {	
+          logger.debug("=============SERVICE STATE == previousState =>  " + service.getState() +", " + servUpd.getName());
+          logger.debug("=============SERVICE STATE == newState ======>  " + servUpd.getState()  +", " + service.getName());
+          
 			stateChanged = service.getState() != servUpd.getState();
 			service.setState(servUpd.getState());
+
 			
 		}
 		if (servUpd.getServiceSpecificationRef() != null ) {
@@ -469,10 +479,6 @@ public class ServiceRepoService {
 		boolean serviceCharacteristicChangedContainsNSLCM;
 		
 		String charChangedForNotes = "";
-		//List<Characteristic> childCharacteristicsChanged = new ArrayList<>();
-		
-
-		//logger.info("==> Will update serviceToString: " + service.toString() );
 		
 		
 		if ( servUpd.getServiceCharacteristic()!=null ) {
@@ -520,6 +526,7 @@ public class ServiceRepoService {
 
 					} else {
 						service.addServiceCharacteristicItem(n);
+						
 						if ( !n.getName().contains("::") ) { //it is not a child characteristic
 	                        serviceCharacteristicChanged = true;    
 	                        charChangedForNotes += n.getName() + ", "; 						  
@@ -564,69 +571,97 @@ public class ServiceRepoService {
 		if (stateChanged) {
 			Note noteItem = new Note();
 			noteItem.setText("Service is " + service.getState() );
-			noteItem.setAuthor("API");
+			noteItem.setAuthor("SIM-638");
 			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 			service.addNoteItem(noteItem);		
 		}
 		
 		
+        /**
+         * Check here if the characteristics changed are of interest for LCM rules and further processing by the orchestrator 
+         */
+        Characteristic lcmchar = service.getServiceCharacteristicByName("_LCM_CHARACTERISTICS_");
+        if ( lcmchar != null && lcmchar.getValue() != null && !lcmchar.getValue().getValue().equals("all") && !charChangedForNotes.equals("")) {
+          
+          // Split the strings into arrays of values
+          String[] arrayA = lcmchar.getValue().getValue().split(",");
+          String[] arrayB = charChangedForNotes.split(",");
+          // Convert strb values into a set for faster lookup
+          // Check if any value from stra exists in strb
+          boolean valueExists = false;
+          for (String value : arrayA) {
+            for (String b : arrayB) {
+              if ( b.equals(value) ) {
+                valueExists = true; // A common value exists
+                break;
+              }              
+            }
+          }
+          if (!valueExists) {
+            serviceCharacteristicChanged=false;
+          }
+        }
 		
         if (charChangedForNotes.contains( "reconciledAt") ) { //this is just a sync message, so we need to igore such changes
           serviceCharacteristicChanged = false;
+          logger.debug("=============================================>  Just reconciledAt changed" );
         }
 		
 		if (serviceCharacteristicChanged) {
-			Note noteItem = new Note();
-			noteItem.setText("Service Characteristic changed: " + charChangedForNotes );
-			noteItem.setAuthor("API");
-			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
-			service.addNoteItem(noteItem);		
+          
+          Characteristic noteCheck = service.getServiceCharacteristicByName("_DETAILED_NOTES_");
+          if ( noteCheck!= null 
+              && noteCheck.getValue() != null
+              && noteCheck.getValue().getValue() != null
+              && !noteCheck.getValue().getValue().equals("")) {
+            Note noteItem = new Note();
+            noteItem.setText("Service Characteristic changed: " + charChangedForNotes );
+            noteItem.setAuthor("SIM638-API");
+            noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
+            service.addNoteItem(noteItem);  
+            
+          }	
 		}
+
 		
-			
+		service = this.serviceRepo.saveAndFlush( service );
 		
-		service = this.serviceRepo.save( service );
+
 		
-		
+	    String requestedServiceAsJson = null;
+	    try {
+	      requestedServiceAsJson = mapper.writeValueAsString( service );
+	    } catch (JsonProcessingException e) {
+	      logger.error("cannot umarshall service: " + service.getName() );
+	      e.printStackTrace();
+	    }
 		
 		/**
 		 * Save in ServiceActionQueueItem
 		 */
 		
-		if (triggerServiceActionQueue && stateChanged) {
-		  ServiceActionQueueItem saqi = new ServiceActionQueueItem();
-		  saqi.setServiceRefId( id );
-		  saqi.setOriginalServiceInJSON( originaServiceAsJson );
-		  if (stateChanged) {
-		    if ( service.getState().equals(  ServiceStateType.INACTIVE) ) {
-		      saqi.setAction( ServiceActionQueueAction.DEACTIVATE );		
-		    }else if ( service.getState().equals(  ServiceStateType.TERMINATED) ) {
-		      saqi.setAction( ServiceActionQueueAction.TERMINATE );		
-		    }
-
-		  }
-
-		  if ( saqi.getAction() != ServiceActionQueueAction.NONE  ) {
-		    this.addServiceActionQueueItem(saqi);					
-		  }
-		}		
-
-		
-//		//here on any state change of a Service we must send an ActionQueueItem that reflects the state changed with the Action  
-		if  ( stateChanged  ) {
-			ServiceActionQueueItem saqi = new ServiceActionQueueItem();
-			saqi.setServiceRefId( id );
-			saqi.setOriginalServiceInJSON( originaServiceAsJson );			
-			if ( service.getState().equals(  ServiceStateType.ACTIVE) ) {
-				saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE  );	
-				this.addServiceActionQueueItem(saqi);			
-			}else if ( previousState!=null && previousState.equals( ServiceStateType.ACTIVE) ) {
-				saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOINACTIVE  );
-				this.addServiceActionQueueItem(saqi);
-			}
-		}		
-		
-		if ( serviceCharacteristicChanged &&  service.getState().equals(  ServiceStateType.ACTIVE) &&  previousState!=null && previousState.equals( ServiceStateType.ACTIVE) && triggerServiceActionQueue ) {
+	    Boolean childServiceCharacteristicChanged = false;
+	    
+	    if  ( stateChanged  ) {
+          ServiceActionQueueItem saqi = new ServiceActionQueueItem();
+          saqi.setServiceRefId( id );
+          saqi.setOriginalServiceInJSON( originaServiceAsJson );
+              		  
+          if ( service.getState().equals(  ServiceStateType.INACTIVE) ) {
+            saqi.setAction( ServiceActionQueueAction.DEACTIVATE );		
+          }else if ( service.getState().equals(  ServiceStateType.TERMINATED) ) {
+    		saqi.setAction( ServiceActionQueueAction.TERMINATE );		
+          }else if ( service.getState().equals(  ServiceStateType.ACTIVE) ) {
+			saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE  );	
+          }else if ( previousState!=null && previousState.equals( ServiceStateType.ACTIVE) ) {
+			saqi.setAction( ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOINACTIVE  );
+          }
+			
+          if ( saqi.getAction() != ServiceActionQueueAction.NONE  ) {
+            logger.debug("==========addServiceActionQueueItem==============> saqi.getAction() = " + saqi.getAction() );
+            this.addServiceActionQueueItem(service, saqi);                    
+          }
+		} else if ( serviceCharacteristicChanged &&  service.getState().equals(  ServiceStateType.ACTIVE) &&  previousState!=null && previousState.equals( ServiceStateType.ACTIVE) && triggerServiceActionQueue ) {
 			ServiceActionQueueItem saqi = new ServiceActionQueueItem();
 			saqi.setServiceRefId( id );
 			saqi.setOriginalServiceInJSON( originaServiceAsJson );		
@@ -634,33 +669,24 @@ public class ServiceRepoService {
 			if ( serviceCharacteristicChangedContainsPrimitive ) {
 				saqi.setAction( ServiceActionQueueAction.EVALUATE_CHARACTERISTIC_CHANGED_MANODAY2  );					
 			}
-			this.addServiceActionQueueItem(saqi);
+            logger.debug("==========addServiceActionQueueItem==============>  serviceCharacteristicChanged &&  service.getState().eq charChangedForNotes= "  + charChangedForNotes);
+			this.addServiceActionQueueItem(service, saqi);
+			childServiceCharacteristicChanged = true;
 		}
+		
+		
+		
+		
+		
 		
         /*
          * Update any parent service
          */
         for (ServiceRelationship serviceRelationship : service.getServiceRelationship()) {
-          if (serviceRelationship.getRelationshipType().equals("ChildService")) {
+          if (serviceRelationship.getRelationshipType().equals("ChildService") ) {
             if (serviceRelationship.getService() != null) {
-
-
-              if (serviceCharacteristicChanged) {
-                if (updatedFromParentService == null || (updatedFromParentService != null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId()))) { // avoid circular
-                  ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
-                  saqi.setServiceRefId(serviceRelationship.getService().getId());
-                  try {
-                    saqi.setOriginalServiceInJSON( mapper.writeValueAsString( service ) ); //pass the child service as is
-                  } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                  }
-                  saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_CHARACTERISTIC_CHANGED);
-                  this.addServiceActionQueueItem(saqi);
-                }
-
-              }
               
-              if (stateChanged) {
+              if (stateChanged || childServiceCharacteristicChanged) {
                 if (updatedFromParentService == null || (updatedFromParentService != null && !updatedFromParentService.getId().equals(serviceRelationship.getService().getId()))) { // avoid circular
                   ServiceActionQueueItem saqi = new ServiceActionQueueItem(); // this will trigger lcm rule to parent
                   saqi.setServiceRefId(serviceRelationship.getService().getId());
@@ -669,13 +695,16 @@ public class ServiceRepoService {
                   } catch (JsonProcessingException e) {
                     e.printStackTrace();
                   }
-                  saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_STATE_CHANGE );
-                  this.addServiceActionQueueItem(saqi);
+                  if (stateChanged) {
+                    saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_STATE_CHANGE );
+                    logger.debug("==========addServiceActionQueueItem==============>  EVALUATE_CHILD_STATE_CHANGE "  + charChangedForNotes);
+                  } else if ( childServiceCharacteristicChanged)  {
+                    saqi.setAction(ServiceActionQueueAction.EVALUATE_CHILD_CHARACTERISTIC_CHANGED);
+                    logger.debug("==========addServiceActionQueueItem==============>  EVALUATE_CHILD_CHARACTERISTIC_CHANGED "  + charChangedForNotes);
+                  }
+                  this.addServiceActionQueueItem(service, saqi);
                 }
               }
-
-
-
             }
           }
         }	
@@ -729,23 +758,6 @@ public class ServiceRepoService {
 		}
 		
 		
-		Characteristic schart = service.getServiceCharacteristicByName("long_string");
-
-		if ( schart!= null ) {
-			String teest = schart.getValue().getValue();
-			logger.info("schart size = " + teest.length() );
-			
-			logger.info("schart " + teest );
-			System.out.println("The value is : \n " + teest);
-//			try (PrintWriter out = new PrintWriter("C:\\tranoris\\ctranup\\personal\\Invoices\\filename.txt")) {
-//			    out.println( teest );
-//			} catch (FileNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			logger.info("======================================================================================================");			
-		}
-		
 		return service;
 	}
 
@@ -760,43 +772,72 @@ public class ServiceRepoService {
         ObjectMapper primitivesObjectMapper = new ObjectMapper();
 
         // Retrieve the service characteristic based on the name
-        Characteristic aNSLCMCharacteristic = service.getServiceCharacteristicByName(n.getName());
+        Characteristic aNSLCMStatusesCharacteristic = service.getServiceCharacteristicByName(n.getName());
 
-        // Retrieve the current value as a string directly from the service characteristic
-        String aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+        // Retrieve the current NSLCM statuses, and extract the new status 
+		// to be appended
+		String aNSLCMStatusesBeforeUpdate = service
+				.getServiceCharacteristicByName(n.getName()).getValue().getValue();
+		String aNSLCMNewStatus = n.getValue().getValue();
 
-        // Check if the current service characteristic value is null or explicitly "null" and initialize if needed
-        if (aNSLCMCharacteristicValue == null || "null".equals(aNSLCMCharacteristicValue) || aNSLCMCharacteristicValue.equals("")) {
-            service.getServiceCharacteristicByName(n.getName()).getValue().setValue("[]");
-        }
+        // Check if the current NSLCM statuses value is null or explicitly "null" 
+		// and, if thats the case start an empty JSON array (this takes place when initializing the characteristic)
+        if ( aNSLCMStatusesBeforeUpdate == null ||
+			aNSLCMStatusesBeforeUpdate.isEmpty() ||
+			aNSLCMStatusesBeforeUpdate.equals("null")
+		){
+			try {
+				service.getServiceCharacteristicByName(n.getName()).getValue().setValue(
+					primitivesObjectMapper.writeValueAsString(primitivesObjectMapper.createArrayNode())
+				);
+			} catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+		}
 
         // Check if the current characteristic value is not null and not explicitly "null"
-        if (n.getValue().getValue() != null || !"null".equals(n.getValue().getValue())) {
-			aNSLCMCharacteristicValue = service.getServiceCharacteristicByName(n.getName()).getValue().getValue();
-
-            ArrayList<String> arrayList = null;
-
-            // Deserialize the current value back to an array list
+        if ( aNSLCMNewStatus != null &&
+			!aNSLCMNewStatus.isEmpty() &&
+			!aNSLCMNewStatus.equals("null")
+		) {
             try {
-                arrayList = primitivesObjectMapper.readValue(aNSLCMCharacteristicValue, new TypeReference<ArrayList<String>>() {});
+				// Deserialize the current statuses back to an array list
+				ArrayNode nslcmStatusesJsonArray = (ArrayNode) primitivesObjectMapper.readTree(
+					service.getServiceCharacteristicByName(n.getName()).getValue().getValue()
+				);
+
+				// Map the current status to json
+				JsonNode currenNSLCMStatus = primitivesObjectMapper.readTree(n.getValue().getValue());
+
+				// Add the new status to the list if it's not already present and is not null
+				if (!containsNode(nslcmStatusesJsonArray, currenNSLCMStatus)) {
+					nslcmStatusesJsonArray.add(currenNSLCMStatus);
+				}
+
+				// Finally, map the statuses list to a Json encoded one
+				aNSLCMStatusesCharacteristic.setValue(
+					new Any(primitivesObjectMapper.writeValueAsString(nslcmStatusesJsonArray), n.getValue().getAlias())
+				);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
+		}
+		return service;
+    }
 
-            // Add the new value to the list if it's not already present and is not null
-            if (!arrayList.contains(n.getValue().getValue()) && n.getValue().getValue() != null) {
-                arrayList.add(n.getValue().getValue());
-            }
-
-            // Update the characteristic with the newly modified list
-            try {
-                aNSLCMCharacteristic.setValue(new Any(primitivesObjectMapper.writeValueAsString(arrayList), n.getValue().getAlias()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
+	/**
+     * Helper method to check if an ArrayNode contains a specific JsonNode.
+     * This method uses Jackson's `equals()` for deep equality.
+	 * @param arrayNode Array of Json Nodes
+     * @param jsonNode	the object encoded as Jsons
+     */
+    private static boolean containsNode(ArrayNode arrayNode, JsonNode jsonNode) {
+        for (JsonNode node : arrayNode) {
+            if (node.equals(jsonNode)) {
+                return true;
             }
         }
-
-		return service;
+        return false;
     }
 
 
@@ -824,30 +865,19 @@ public class ServiceRepoService {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new Hibernate5JakartaModule());
 		String res = mapper.writeValueAsString(s);
-
-
-		Characteristic schart = s.getServiceCharacteristicByName("long_string");
-
-		if ( schart!= null ) {
-			String teest = schart.getValue().getValue();
-			logger.info("schart size = " + teest.length() );
-			
-			logger.info("schart " + teest );
-			logger.info("======================================================================================================");			
-		}
 		
 		return res;
 	}
 
-    @Transactional  
+
+    @Transactional
 	public Service getServiceEager(String id) {
 		if ( id == null || id.equals("")) {
 			return null;
 		}
-		Session session = sessionFactory.openSession();
-		Transaction tx = session.beginTransaction();
 		Service s = null;
-		try {
+		try (Session session = sessionFactory.openSession()) {
+	        Transaction tx = session.beginTransaction();
 			s = (Service) session.get(Service.class, id);
 			if (s == null) {
 				return this.findByUuid(id);// last resort
@@ -864,15 +894,16 @@ public class ServiceRepoService {
 			Hibernate.initialize(s.getPlace()  );
 			
 			tx.commit();
-		} finally {
-			session.close();
-		}
+		} catch (Exception e) {
+	        e.printStackTrace();
+	      }
+
 		
 		return s;
 	}
 	
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseServiceCreateNotification(Service so) {
 		ServiceCreateNotification n = new ServiceCreateNotification();
 		ServiceCreateEvent event = new ServiceCreateEvent();
@@ -882,7 +913,7 @@ public class ServiceRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseServiceStateChangedNotification(Service so) {
 		ServiceStateChangeNotification n = new ServiceStateChangeNotification();
 		ServiceStateChangeEvent event = new ServiceStateChangeEvent();
@@ -892,7 +923,7 @@ public class ServiceRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseServiceAttributeValueChangedNotification(Service so) {
 		ServiceAttributeValueChangeNotification n = new ServiceAttributeValueChangeNotification();
 		ServiceAttributeValueChangeEvent event = new ServiceAttributeValueChangeEvent();
@@ -912,15 +943,23 @@ public class ServiceRepoService {
 		return (List<ServiceActionQueueItem>) this.serviceActionQueueRepo.findFirst10ByOrderByInsertedDate();
 	}
 	
-	public ServiceActionQueueItem  addServiceActionQueueItem(@Valid ServiceActionQueueItem item) {
+	public ServiceActionQueueItem  addServiceActionQueueItem(Service service, @Valid ServiceActionQueueItem item) {
 		logger.debug("Will add ServiceActionQueueItem ServiceRefId: " + item.getServiceRefId() );
 		
-		//find any similar action inqueue and delete them, so to keep this one as the most recent
-		List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
-        logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
-        this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
-        
-		return this.serviceActionQueueRepo.save( item);
+		Characteristic lcmchar = service.getServiceCharacteristicByName("_LCM_CHARACTERISTICS_");
+		if ( lcmchar == null || lcmchar.getValue() == null) {
+		    //find any similar action inqueue and delete them, so to keep this one as the most recent
+	        List<ServiceActionQueueItem> result = this.serviceActionQueueRepo.findByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+	        logger.debug("Will add ServiceActionQueueItem ServiceRefId result: " +result.size() );
+	        if (result.size()>0) { //essentially it will not delete any requests, but just return with not adding the new action since it is already exists
+	          return item;
+	        }
+	        this.serviceActionQueueRepo.deleteByServiceRefIdAndAction(item.getServiceRefId(), item.getAction());
+	          
+		}
+
+        return this.serviceActionQueueRepo.save( item);
+		
 	}
 
 	/**
@@ -1080,42 +1119,105 @@ public class ServiceRepoService {
 	
 
     @Transactional	
-	public void  resourceAttrChangedEvent(@Valid ResourceAttributeValueChangeNotification resNotif) {
+	public void  updateServicesHavingThisSupportingResource(@Valid Resource res) {
       try {
         
-        logger.debug("ResourceAttributeValueChangeNotification"); 
-        Resource res = resNotif.getEvent().getEvent().getResource();
-        logger.info("Will update services related to this resource with id = " + res.getId() );
+        if (res.getResourceStatus()==null){
+          logger.debug("================> updateServicesHavingThisSupportingResource resource status NULL");     
+          return;
+        }
         
+        logger.debug("================> Will update services related to this resource with id = " + res.getId() );        
         var aservices = findServicesHavingThisSupportingResourceID(  res.getId() );
+        logger.debug("================> Services found = " + aservices.size() );     
         
         for (Service as : aservices) {
             
-            Service aService = findByUuid(as.getId()); 
-            
-            //if ( aService.getState().equals( ServiceStateType.ACTIVE )  ) {
-                
-  
-                ServiceUpdate supd = new ServiceUpdate();
-                
-                //copy characteristics from resource to service
-                
-                for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
-                  Characteristic cNew = new Characteristic();
-                  cNew.setName( rChar.getName());
-                  cNew.value( new Any( rChar.getValue() ));                
-                  supd.addServiceCharacteristicItem( cNew );  
+              Service aService = getServiceEager(as.getId());
+
+              ServiceStateType nextState =  aService.getState();
+              List<Resource> rlist = new ArrayList<Resource>();
+              rlist.add(res);
+              
+              for (ResourceRef rref : aService.getSupportingResource()) {
+                if (!rref.getId().equals( res.getId())) {
+                  Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
+                  if (result.isPresent()) {
+                    rlist.add( result.get() );
+                    if ( result.get().getResourceStatus()==null){
+                      logger.debug("================> updateServicesHavingThisSupportingResource resource status NULL for resource: "+ result.get().getName()  );     
+                      return;
+                    }
+                  }                  
                 }
+              }
+              
+              //copy characteristics, from resource to service
+
+              /*
+               * Construct characteristic name
+               */
+
+              
+
+              
+              
+              Boolean stateChaged = false;
+              ServiceUpdate supd = new ServiceUpdate();
+              nextState = aService.findNextStateBasedOnResourceList(rlist);
+              supd.setState(nextState);
+              String stateText="";
+              if ( !aService.getState().equals(nextState)) {
+                stateChaged = true;
+                stateText = "State changed from " + aService.getState() + " to " + nextState + ".";
+                logger.debug("====================>  stateText = " + stateText);
+              }
+              for (Resource r : rlist) {
+                logger.debug("==================> state: ="+  r.getResourceStatus().name() + ", "+  r.getName() );
+                
+              }
+              
+              //adding all characteristics from service
+              for (Characteristic ch : aService.getServiceCharacteristic()) {
+                supd.addServiceCharacteristicItem(ch);
                 
                 
-                Note n = new Note();
-                n.setText("Supporting Resource Attribute Changed with id: " + res.getId());
-                n.setAuthor( "SIM638-API" );
-                n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
-                supd.addNoteItem( n );                  
+              }
+              
+              
+              CharCopyResult result = new CharCopyResult(supd, false);
+              
+              if ( nextState == ServiceStateType.ACTIVE) {
+                if ( !aService.getState().equals(nextState) && nextState == ServiceStateType.ACTIVE) {
+                  result = copyCharacteristicsFromAllResources(aService, supd, rlist);                  
+                } else {
+                  result = copyCharacteristicsFromResource(aService, supd, res);
+                }
+              }
+              
+              
                 
-                this.updateService( aService.getId(), supd , true, null, null); //update the service            
-            //}
+
+
+
+                
+              if ( stateChaged || result.characteristicFoundDifferent) {
+                Characteristic noteCheck = as.getServiceCharacteristicByName("_DETAILED_NOTES_");
+                if ( noteCheck!= null 
+                    && noteCheck.getValue() != null
+                    && noteCheck.getValue().getValue() != null
+                    && !noteCheck.getValue().getValue().equals("")) {
+                  Note n = new Note();
+                  n.setText(stateText + "Supporting Resource changed with id: " + res.getId());
+                  n.setAuthor( "SIM638-API" );
+                  n.setDate( OffsetDateTime.now(ZoneOffset.UTC).toString() );
+                  result.supd.addNoteItem( n );                  
+                }               
+                
+                this.updateService( aService.getId(), result.supd , true, null, null); //update the service 
+                
+              }
+
         }
       
 
@@ -1125,7 +1227,96 @@ public class ServiceRepoService {
       
     }
     
+    private record CharCopyResult(ServiceUpdate supd, Boolean characteristicFoundDifferent) {
+      
+    }
     
+    private CharCopyResult copyCharacteristicsFromAllResources(Service aService, ServiceUpdate supd, List<Resource> rlist) {
+      Boolean characteristicFoundDifferent = false;
+      CharCopyResult copyresult = new CharCopyResult(supd, characteristicFoundDifferent);
+      for (Resource r : rlist) {
+        copyresult = copyCharacteristicsFromResource(aService, copyresult.supd, r);
+        characteristicFoundDifferent = characteristicFoundDifferent || copyresult.characteristicFoundDifferent;
+      }
+      
+      CharCopyResult result = new CharCopyResult(copyresult.supd, copyresult.characteristicFoundDifferent);
+      return result ;
+    }
+    
+    
+    private CharCopyResult copyCharacteristicsFromResource( @Valid Service aService, @Valid ServiceUpdate supd, @Valid Resource res) {
+
+      Boolean characteristicFoundDifferent = false;
+      String kind = "";
+      String resourcename = res.getName() ;
+      
+      org.etsi.osl.tmf.ri639.model.Characteristic ckind = res.getResourceCharacteristicByName("Kind");
+      if ( ckind != null && ckind.getValue() != null) {
+        kind = ckind.getValue().getValue() ; //example "ConfigMap"
+      }
+      
+      if ( res.getName().indexOf('@')>0) {
+        String firstToken = res.getName().substring(  0, res.getName().indexOf('@') );
+        resourcename = firstToken ;  //example "cr0fc1234-amf"       
+      }
+      
+      Boolean resourceIsSameKind = aService.checkIsKindResource(res) || aService.getServiceCharacteristicByName("Kind")==null; //either Kind is the same or simply does not exist. Then behave the same
+      if (resourceIsSameKind) { //if this service is the same kind as the resource then don't prefix the characteristic
+        kind = "";
+        resourcename="";   
+        //rlist.add(res); //add only this one
+      }else { 
+        //enable the following to remove crXXXXXX prefix in name
+//        org.etsi.osl.tmf.ri639.model.Characteristic kubinstance = res.getResourceCharacteristicByName("app.kubernetes.io/instance");
+//        if ( kubinstance != null && kubinstance.getValue() != null) {
+//          String removePrefix = kubinstance.getValue().getValue();
+//          resourcename = resourcename.replace( removePrefix + "-", "");
+//          resourcename = resourcename.replace( removePrefix, "");
+//        }        
+        kind = kind + ".";
+        resourcename = resourcename + ".";
+      }
+      
+      String dontCopyChars = "clusterMasterURL,currentContextCluster,fullResourceName,Kind,apiGroup,UID,metadata";
+      String[] arrayDontCopyChars = dontCopyChars.split(",");
+      Set<String> setB = new HashSet<>(Arrays.asList(arrayDontCopyChars));
+      for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
+        if ( resourceIsSameKind ||  ( !setB.contains( rChar.getName()) &&  !rChar.getName().startsWith("org.etsi.osl") )    ){ //don;t copy characteristics in set                  
+          if  ( rChar.getValue() != null ) {
+
+            String characteristicname = kind + resourcename + rChar.getName();
+            Characteristic servChar = supd.getServiceCharacteristicByName( characteristicname );
+            if ( servChar != null && servChar.getValue() != null) {                      
+              if (! servChar.getValue().getValue().equals( rChar.getValue().getValue() ) ) {
+                characteristicFoundDifferent = true;
+                supd.getServiceCharacteristicByName( characteristicname ) .value(new Any( rChar.getValue() ));  
+                logger.debug("====================>  update characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());                      
+              }
+              
+            } else {
+              Characteristic cNew = new Characteristic();
+              cNew.setName( characteristicname  );     
+              cNew.value( new Any( rChar.getValue() ));
+              supd.addServiceCharacteristicItem( cNew );
+              characteristicFoundDifferent = true;
+              logger.debug("====================>  add New characteristic: " + characteristicname +", value: "+ rChar.getValue().getValue());
+            }
+            
+            
+          }                  
+        }
+            
+      };
+      
+      
+      CharCopyResult result = new CharCopyResult(supd, characteristicFoundDifferent);
+      return result ;
+      
+      
+    }
+
+
+
     @Transactional  
     public void  resourceCreatedEvent(@Valid ResourceCreateNotification resNotif) {  
       try {
@@ -1150,53 +1341,38 @@ public class ServiceRepoService {
       }catch (Exception e) {
         e.printStackTrace();
       }
+    }
     
+    @Transactional  
+    public void  resourceAttrChangedEvent(@Valid ResourceAttributeValueChangeNotification resNotif) {  
+      try {
+        Resource res = resNotif.getEvent().getEvent().getResource();    
+        logger.debug("resourceAttrChangedEvent for: " + res.getName()); 
+        updateServiceFromresourceChange(res);
+      }catch (Exception e) {
+        e.printStackTrace();
+      }
+      
     }
 
     @Transactional  
     private void updateServiceFromresourceChange(Resource res) {
-
-      logger.info("Will update services related to this resource with id = " + res.getId() );
-      var aservices = findServicesHavingThisSupportingResourceID(res.getId());
-
-      for (Service as : aservices) {
-
-        Service aService = findByUuid(as.getId());
-
-
-        List<Resource> rlist = new ArrayList<Resource>();
-        for (ResourceRef rref : aService.getSupportingResource()) {
-          Optional<Resource> result = resourceRepo.findByUuid(rref.getId());
-          if (result.isPresent()) {
-            rlist.add( result.get() );
-          }
-        }
-
-        rlist.add(res); //add also this one
-        
-        ServiceStateType nextState = aService.findNextStateBasedOnSupportingResources(rlist);
-
-        ServiceUpdate supd = new ServiceUpdate();
-        supd.setState(nextState);
-        Note n = new Note();
-        n.setText("Supporting Resource " + res.getId() + " State Changed with status: "
-            + res.getResourceStatus() + ".Next state is " + nextState);
-        n.setAuthor("SIM638-API");
-        n.setDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
-        supd.addNoteItem(n);
-
-        this.updateService(aService.getId(), supd, true, null, null); // update the service
-      }
-
-
-      updateResourceFromKubernetesLabel(res);
-
-
+      
+      addAnyNewRelatedResourcesFromKubernetesLabel(res);      
+      updateServicesHavingThisSupportingResource(res);
+      
     }
 
+    /**
+     * This function will try to identify if the resource contains
+     * a characteristic called "org.etsi.osl.serviceId" and will check if there is a related service.
+     * If it is not it's add the resource back to the service. This is useful in kubernetes deployments,
+     * in cases of new resources in a namespace that are related to this service
+     * @param res
+     */
     @Transactional  
-    private void updateResourceFromKubernetesLabel(Resource res) {
-      logger.debug("updateResourceFromKubernetesLabel for: " + res.getName()); 
+    private void addAnyNewRelatedResourcesFromKubernetesLabel(Resource res) {
+      logger.debug("updateResourceFromKubernetesLabel for: " + res.getName() + ", version" + res.getResourceVersion()); 
       
       if (res.getResourceCharacteristicByName("org.etsi.osl.serviceId") != null) {
 
@@ -1205,7 +1381,7 @@ public class ServiceRepoService {
         String serviceId = res.getResourceCharacteristicByName("org.etsi.osl.serviceId").getValue().getValue();
         logger.debug("rserviceId: " + serviceId); 
         
-        Service aService = findByUuid( serviceId ); 
+        Service aService = getServiceEager( serviceId ); 
         if ( aService !=null ) {
           logger.debug("aService found "); 
           Boolean resourceFoundInSupportedResourcesOfService = false; 
@@ -1224,14 +1400,7 @@ public class ServiceRepoService {
             rref.id(res.getId()).name(res.getName());
             supd.addSupportingResourceItem(rref );
             
-            //copy characteristics from resource to service
-            for (org.etsi.osl.tmf.ri639.model.Characteristic rChar : res.getResourceCharacteristic()) {
-              Characteristic cNew = new Characteristic();
-              cNew.setName( rChar.getName());
-              cNew.value( new Any( rChar.getValue() ));                
-              supd.addServiceCharacteristicItem( cNew );  
-            }
-            
+
             
             Note n = new Note();
             n.setText("Supporting Resource "+ res.getId() + " Added in service" );
@@ -1247,8 +1416,6 @@ public class ServiceRepoService {
       }
       
     }
-    
-    
     
 	
 }

@@ -275,7 +275,7 @@ public class ServiceInventoryIntegrationTest {
 		assertThat( serviceRepoService.findAll().size() ).isEqualTo( 1 );
 
 		assertThat( responseSOUpd.getEndDate() ).isNotNull();
-		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 5 );
+		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 4 );
 		assertThat( responseSOUpd.getServiceCharacteristic().size()  ).isEqualTo( 4 );
 		assertThat( responseSOUpd.getServiceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
 		assertThat( responseSOUpd.getServiceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "1007" )  ;
@@ -321,13 +321,13 @@ public class ServiceInventoryIntegrationTest {
 		assertThat( serviceRepoService.findAll().size() ).isEqualTo( 1 );
 
 		assertThat( responseSOUpd.getEndDate() ).isNotNull();
-		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 7 );
+		assertThat( responseSOUpd.getNote().size()  ).isEqualTo( 6 );
 		assertThat( responseSOUpd.getServiceCharacteristic().size()  ).isEqualTo( 4 );
 		assertThat( responseSOUpd.getServiceCharacteristicByName( "ConfigStatus" ).getValue().getValue()  ).isEqualTo( "RUNNING" )  ;
 		assertThat( responseSOUpd.getServiceCharacteristicByName( "DeploymentRequestID" ).getValue().getValue()  ).isEqualTo( "1007" )  ;
 		
 		 
-		assertThat( serviceRepoService.findAllServiceActionQueueItems().size() ).isEqualTo( 3 );		
+		assertThat( serviceRepoService.findAllServiceActionQueueItems().size() ).isEqualTo( 2 );		
 		assertThat( serviceRepoService.findAllServiceActionQueueItems().get(0).getAction() ).isEqualTo(ServiceActionQueueAction.EVALUATE_STATE_CHANGE_TOACTIVE   );
 		
 	}

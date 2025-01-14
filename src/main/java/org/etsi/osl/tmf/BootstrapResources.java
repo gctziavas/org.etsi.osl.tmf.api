@@ -22,8 +22,10 @@ package org.etsi.osl.tmf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.etsi.osl.domain.model.kubernetes.KubernetesCRDV1;
 import org.etsi.osl.domain.model.kubernetes.KubernetesCRV1;
+import org.etsi.osl.domain.model.kubernetes.KubernetesConfigMap;
 import org.etsi.osl.domain.model.kubernetes.KubernetesContextDefinition;
 import org.etsi.osl.domain.model.kubernetes.KubernetesSecret;
+import org.etsi.osl.domain.model.kubernetes.KubernetesService;
 import org.etsi.osl.tmf.rcm634.model.ResourceCandidateUpdate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalog;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalogCreate;
@@ -207,19 +209,42 @@ public class BootstrapResources {
 			this.addToCategory( scategoryInfra, rspecKubCRV1 );
 		}
 
-	      resourceSpecificationObj = this.resourceSpecRepoService.findByNameAndVersion( 
-	          KubernetesSecret.OSL_KUBSECRET_RSPEC_NAME , 
-	          KubernetesSecret.OSL_KUBSECRET_RSPEC_VERSION);
+	    resourceSpecificationObj = this.resourceSpecRepoService.findByNameAndVersion( 
+	        KubernetesSecret.OSL_KUBSECRET_RSPEC_NAME , 
+	        KubernetesSecret.OSL_KUBSECRET_RSPEC_VERSION);
       
-      if ( ( scategoryInfra != null ) &&  ( resourceSpecificationObj == null ))
-      {
-          ResourceSpecification rspecKubSecret =
-                  this.resourceSpecRepoService.addResourceSpecification( KubernetesSecret.builder().build().toRSpecCreate_InitRepo() );
-          KubernetesSecret.builder().build().fromRSpec(rspecKubSecret);//to update any details
-          this.addToCategory( scategoryInfra, rspecKubSecret );
-      }
+        if ( ( scategoryInfra != null ) &&  ( resourceSpecificationObj == null ))
+        {
+            ResourceSpecification rspecKubSecret =
+                    this.resourceSpecRepoService.addResourceSpecification( KubernetesSecret.builder().build().toRSpecCreate_InitRepo() );
+            KubernetesSecret.builder().build().fromRSpec(rspecKubSecret);//to update any details
+            this.addToCategory( scategoryInfra, rspecKubSecret );
+        }
 
 		
+        resourceSpecificationObj = this.resourceSpecRepoService.findByNameAndVersion( 
+            KubernetesService.OSL_KUBSERVICE_RSPEC_NAME , 
+            KubernetesService.OSL_KUBSERVICE_RSPEC_VERSION);
+      
+        if ( ( scategoryInfra != null ) &&  ( resourceSpecificationObj == null ))
+        {
+            ResourceSpecification rspecKubServ =
+                    this.resourceSpecRepoService.addResourceSpecification( KubernetesService.builder().build().toRSpecCreate_InitRepo() );
+            KubernetesService.builder().build().fromRSpec(rspecKubServ);//to update any details
+            this.addToCategory( scategoryInfra, rspecKubServ );
+        }
+        
+        resourceSpecificationObj = this.resourceSpecRepoService.findByNameAndVersion( 
+            KubernetesConfigMap.OSL_KUBCMAP_RSPEC_NAME , 
+            KubernetesConfigMap.OSL_KUBCMAP_RSPEC_VERSION);
+      
+        if ( ( scategoryInfra != null ) &&  ( resourceSpecificationObj == null ))
+        {
+            ResourceSpecification rspecKubCMap =
+                    this.resourceSpecRepoService.addResourceSpecification( KubernetesConfigMap.builder().build().toRSpecCreate_InitRepo() );
+            KubernetesConfigMap.builder().build().fromRSpec( rspecKubCMap );//to update any details
+            this.addToCategory( scategoryInfra, rspecKubCMap );
+        }
 		
 	}
 	

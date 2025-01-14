@@ -60,12 +60,14 @@ import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
 import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
 import org.etsi.osl.tmf.ri639.repo.ResourceRepository;
 import org.etsi.osl.tmf.sim638.model.Service;
+import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
@@ -91,6 +93,9 @@ public class ResourceRepoService {
 
   @Autowired
   ResourceApiRouteBuilderEvents resourceApiRouteBuilder;
+  
+  @Autowired
+  ServiceRepoService serviceRepoService;
 
   @Autowired
   public ResourceRepoService(EntityManagerFactory factory) {
@@ -195,7 +200,7 @@ public class ResourceRepoService {
     return (List<Resource>) this.resourceRepo.findByRolename(name);
   }
 
-
+  @Transactional
   public Resource addResource(@Valid ResourceCreate resource) {
     logger.info("Will add Resource: " + resource.getName());
 
@@ -268,7 +273,7 @@ public class ResourceRepoService {
     noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC));
     s.addNoteItem(noteItem);
 
-    s = this.resourceRepo.save(s);
+    s = this.resourceRepo.saveAndFlush(s);
 
     raiseResourceCreateNotification(s);
     return s;
@@ -444,7 +449,8 @@ public class ResourceRepoService {
     }
 
 
-    resource = this.resourceRepo.save(resource);
+    resource = this.resourceRepo.saveAndFlush(resource);
+    
     if (resourceCharacteristicChanged) {
       raiseResourceAttributeValueChangeEventNotification(resource);
     } else if (resourceStateChanged) {
@@ -453,6 +459,7 @@ public class ResourceRepoService {
     return resource;
   }
 
+  @Transactional
   public String getResourceEagerAsString(String id) throws JsonProcessingException {
     Resource s = this.getResourceEager(id);
     ObjectMapper mapper = new ObjectMapper();
@@ -462,11 +469,13 @@ public class ResourceRepoService {
     return res;
   }
 
+
+  @Transactional
   public Resource getResourceEager(String id) {
-    Session session = sessionFactory.openSession();
-    Transaction tx = session.beginTransaction();
+    
     Resource s = null;
-    try {
+    try(Session session = sessionFactory.openSession()) {
+      Transaction tx = session.beginTransaction();
       s = (Resource) session.get(Resource.class, id);
       if (s == null) {
         return this.findByUuid(id);// last resort
@@ -482,15 +491,15 @@ public class ResourceRepoService {
 
 
       tx.commit();
-    } finally {
-      session.close();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
     return s;
   }
 
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   private void raiseResourceCreateNotification(Resource so) {
     ResourceCreateNotification n = new ResourceCreateNotification();
     ResourceCreateEvent event = new ResourceCreateEvent();
@@ -500,7 +509,7 @@ public class ResourceRepoService {
 
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   private void raiseResourceAttributeValueChangeEventNotification(Resource so) {
     ResourceAttributeValueChangeNotification n = new ResourceAttributeValueChangeNotification();
     ResourceAttributeValueChangeEvent event = new ResourceAttributeValueChangeEvent();
@@ -511,8 +520,8 @@ public class ResourceRepoService {
   }
   
   
-  
-  @Transactional
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   private void raiseResourceStateChangeEventNotification(Resource so) {
     ResourceStateChangeNotification n = new ResourceStateChangeNotification();
     ResourceStateChangeEvent event = new ResourceStateChangeEvent();
@@ -549,6 +558,7 @@ public class ResourceRepoService {
     return result;
   }
 
+  @Transactional
   public Void deleteByUuid(String id) {
     Optional<Resource> optionalCat = this.resourceRepo.findByUuid(id);
     Resource s = optionalCat.get();

@@ -24,14 +24,13 @@ import java.util.Optional;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
 import org.etsi.osl.tmf.so641.model.ServiceOrder;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface ServiceOrderRepository extends CrudRepository<ServiceOrder, Long>, PagingAndSortingRepository<ServiceOrder, Long> {
+public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long> {
 
 
 	Optional<ServiceOrder> findByUuid(String id);

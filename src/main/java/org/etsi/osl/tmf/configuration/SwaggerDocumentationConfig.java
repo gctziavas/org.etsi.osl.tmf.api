@@ -73,7 +73,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	             
@@ -109,7 +109,7 @@ public class SwaggerDocumentationConfig {
 	            		  .description("## TMF API Reference: TMF620 - Product Catalog Management  ### Release : 19.0 - June 2019  Product Catalog API is one of Catalog Management API Family. Product Catalog API goal is to provide a catalog of products.   ### Operations Product Catalog API performs the following operations on the resources : - Retrieve an entity or a collection of entities depending on filter criteria - Partial update of an entity (including updating rules) - Create an entity (including default values and creation rules) - Delete an entity - Manage notification of events")
 	                      
 		              .version("4.0.0")
-		              .license(new License().name("Apache 2.0").url("http://openslice.io")))
+		              .license(new License().name("Apache 2.0").url("https://osl.etsi.org")))
 					.externalDocs(new ExternalDocumentation()
 							.description("TMF API Tables")
 							.url("https://www.tmforum.org/oda/open-apis/table"));	     
@@ -139,7 +139,7 @@ public class SwaggerDocumentationConfig {
   
   
 	@Bean
-	public OpenApiCustomizer scm622OpenAPI() {
+	public OpenApiCustomizer po622OpenAPI() {
 		return openApi -> openApi
 				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
 				.info(new Info().title("TMF 622 Product Ordering")
@@ -148,7 +148,7 @@ public class SwaggerDocumentationConfig {
 						.version("1.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -161,12 +161,48 @@ public class SwaggerDocumentationConfig {
 	  	SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
       return GroupedOpenApi.builder()
       		.group("tmf-api-622-ProductOrderingManagement-v4.0.0")
-      		.addOpenApiCustomizer( this.scm622OpenAPI() )
+      		.addOpenApiCustomizer( this.po622OpenAPI() )
       		.packagesToScan("org.etsi.osl.tmf.po622.api")
       		.build();
 
   }
 	
+  
+  /**
+   * TMF 637 Product Inventory Management 
+   * @return
+   */
+  @Bean
+  public OpenApiCustomizer pim637penAPI() {
+      
+      
+      return openApi -> openApi
+              .specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
+                .info(new Info().title("TMF 637 Product Inventory Management")
+                    .description("**TMF API Reference : TMF 637 - Product Inventory Management**  Release : 19.0 - June 2019\n\nThe Product Inventory Management API provides standardized mechanism for product inventory management such as creation, update and retrieval of the representation of a product in the inventory. It also allows the notification of events related to product lifecycle  **Product resource** A product offering procured by a customer or other interested party playing a party role. A product is realized as one or more service(s) and / or resource(s).  Product Inventory API performs the following operations on product : - Retrieval of a product or a collection of products depending on filter criteria - Partial update of a product (including updating rules and for administration purpose) - Creation of a product (including default values and creation rules and for administration purpose) - Deletion of a product (for administration purposes) - Notification of events on product.  Copyright © TM Forum 2019. All Rights Reserved   ")
+                    
+                    .version("4.0.0")
+                    .license(new License().name("Apache 2.0").url("https://osl.etsi.org")))
+                  .externalDocs(new ExternalDocumentation()
+                          .description("TMF API Tables")
+                          .url("https://www.tmforum.org/oda/open-apis/table"));        
+                       
+    }
+  
+  
+@Bean
+public GroupedOpenApi pim637() {
+
+      SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+      SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+    return GroupedOpenApi.builder()
+          .group("tmf-api-637-ProductInventoryManagement-v4.0.0")
+          .addOpenApiCustomizer( this.pim637penAPI() )
+          .packagesToScan("org.etsi.osl.tmf.pim637.api")
+          .build();
+
+}
+
 	  
   /**
 	 * TMF 634 Resource Catalog Management
@@ -183,7 +219,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -217,7 +253,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -255,7 +291,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -291,7 +327,7 @@ public class SwaggerDocumentationConfig {
 						.version("2.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -328,7 +364,7 @@ public class SwaggerDocumentationConfig {
 						.version("2.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -366,7 +402,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -403,7 +439,7 @@ public class SwaggerDocumentationConfig {
 						.version("2.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -442,7 +478,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -479,7 +515,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -516,7 +552,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -555,7 +591,7 @@ public class SwaggerDocumentationConfig {
 //			            .version("3.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -594,7 +630,7 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -633,7 +669,7 @@ public class SwaggerDocumentationConfig {
 			            .version("1.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -671,7 +707,7 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -709,7 +745,7 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));	  	                  
@@ -744,7 +780,7 @@ public class SwaggerDocumentationConfig {
 						.version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("TMF API Tables")
 						.url("https://www.tmforum.org/oda/open-apis/table"));
@@ -781,10 +817,10 @@ public class SwaggerDocumentationConfig {
 			            .version("4.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Openslice")
-						.url("http://openslice.io"));	  	                  
+						.url("https://osl.etsi.org"));	  	                  
 	  }
 	
 	@Bean
@@ -826,10 +862,10 @@ public class SwaggerDocumentationConfig {
 			            .version("1.0.0")
 						.license(new License()
 								.name("Apache 2.0")
-								.url("http://openslice.io")))
+								.url("https://osl.etsi.org")))
 				.externalDocs(new ExternalDocumentation()
 						.description("Openslice")
-						.url("http://openslice.io"));	  	                  
+						.url("https://osl.etsi.org"));	  	                  
 	  }
 	
 	@Bean
@@ -845,6 +881,72 @@ public class SwaggerDocumentationConfig {
 	    		.build();
 	
 	}
+
+	/**
+	 * TMF 628 Performance Management
+	 * @return
+	 */
+	@Bean
+	public OpenApiCustomizer pm628OpenAPI() {
+		return openApi -> openApi
+				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
+				.info(new Info().title("TMF628 Performance Management API")
+						.description("TMF628 Performance Management API")
+						.version("5.0.0")
+						.license(new License()
+								.name("Apache 2.0")
+								.url("https://osl.etsi.org")))
+				.externalDocs(new ExternalDocumentation()
+						.description("TMF API Tables")
+						.url("https://www.tmforum.org/oda/open-apis/table"));	             
+	  }
+	
+    @Bean
+    public GroupedOpenApi pm628(){
+
+	  	SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+	  	SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+        return GroupedOpenApi.builder()
+        		.group("tmf-api-628-PerformanceManagement-v5.0.0")
+        		.addOpenApiCustomizer( this.pm628OpenAPI() )
+        		.packagesToScan("org.etsi.osl.tmf.pm628.api")
+        		.build();
+
+    }
+
+	/**
+	 * TMF 702 Resource Activation Management 
+	 * @return
+	 */
+	@Bean
+	public OpenApiCustomizer ram7020penAPI() {
+		
+		
+		return openApi -> openApi
+				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
+	            .info(new Info().title("TMF 702 Resource Activation and Configuration")
+	            	.description("## TMF API Reference: TMF702 - Resource Activation \n\n### Release : 19.5 - December 2019\n\nResource Activation  API goal is to provide the ability to activate Resources.\n\n### Operations\nResource Activation and Configuration API performs the following operations on the resources :\n- Retrieve an entity or a collection of entities depending on filter criteria\n- Partial update of an entity (including updating rules)\n- Create an entity (including default values and creation rules)\n- Delete an entity (for administration purposes)\n- Manage notification of events")
+		            .version("4.0.0")
+					.license(new License().name("Apache 2.0").url("https://osl.etsi.org")))
+				.externalDocs(new ExternalDocumentation()
+					.description("TMF API Tables")
+					.url("https://www.tmforum.org/oda/open-apis/table"));	     
+			             
+	  }
+    
+		
+	@Bean
+	public GroupedOpenApi ram702() {
+
+		SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+		SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+		return GroupedOpenApi.builder()
+				.group("tmf-api-702-Resource Activation and Configuration-v4.0.0")
+				.addOpenApiCustomizer( this.ram7020penAPI() )
+				.packagesToScan("org.etsi.osl.tmf.ram702.api")
+				.build();
+
+  }
 	
 	
 //	@Bean

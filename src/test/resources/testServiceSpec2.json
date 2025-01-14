@@ -73,6 +73,35 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Spec2Attribute3",
+			"configurable": false,
+			"description": "This attribute specifies the zzzxxx",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 10,
+			"regex": null,
+			"valueType": "ENUM",			
+			"serviceSpecCharRelationship": [
+			],
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "SMALLINT",
+					"validFor": null,
+					"value": {
+						"value": "2",
+						"alias": "xxx"
+					}
+				}
+			]
 		}
 	]
 }

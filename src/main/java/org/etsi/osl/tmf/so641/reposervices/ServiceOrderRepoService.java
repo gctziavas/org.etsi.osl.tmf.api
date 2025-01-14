@@ -44,6 +44,7 @@ import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
+import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.etsi.osl.tmf.so641.api.NotFoundException;
 import org.etsi.osl.tmf.so641.api.ServiceOrderApiRouteBuilderEvents;
@@ -58,6 +59,7 @@ import org.hibernate.query.Query;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TemporalType;
@@ -364,7 +366,7 @@ public class ServiceOrderRepoService {
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		so.addNoteItem(noteItem);
 
-		so = this.serviceOrderRepo.save(so);
+		so = this.serviceOrderRepo.saveAndFlush(so);
 		
 		if (allAcknowledged) { //in the case were order items are automatically acknowledged
 			so.setState( ServiceOrderStateType.ACKNOWLEDGED );
@@ -375,7 +377,7 @@ public class ServiceOrderRepoService {
 			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 			so.addNoteItem(noteItem);
 			
-			so = this.serviceOrderRepo.save(so);
+			so = this.serviceOrderRepo.saveAndFlush(so);
 		}
 		
 		raiseSOCreateNotification(so);
@@ -538,9 +540,7 @@ public class ServiceOrderRepoService {
 			logger.debug( "(oi.getId() = "+oi.getId() );		
 			
 		}
-		if ( serviceOrderUpd.getState()!= null ) {
-
-			
+		if ( serviceOrderUpd.getState()!= null ) {			
 			
 			stateChanged = so.getState() != serviceOrderUpd.getState();
 			so.setState( serviceOrderUpd.getState() );
@@ -548,12 +548,6 @@ public class ServiceOrderRepoService {
 			if ( so.getState().equals( ServiceOrderStateType.COMPLETED )) {
 				so.setCompletionDate( OffsetDateTime.now(ZoneOffset.UTC));
 			}
-			
-			
-			
-			
-			
-			
 			
 		}
 		if ( serviceOrderUpd.getCategory()!= null ) {
@@ -654,21 +648,25 @@ public class ServiceOrderRepoService {
 
 			for (String serviceId : services) {
 				logger.debug("Will delegate updated SO expected completion date " + so.getExpectedCompletionDate() + " to service with id = " + serviceId);		
-
-				org.etsi.osl.tmf.sim638.model.Service service = serviceRepoService.findByUuid(serviceId);
-				service.setEndDate(so.getExpectedCompletionDate());
+				
+				
+				@Valid
+                ServiceUpdate servUpd = new ServiceUpdate();
+				servUpd.setEndDate(so.getExpectedCompletionDate());
+                serviceRepoService.updateService(serviceId, servUpd, false, null, null);
 			}
 		}
 
 		
 
-		so = this.serviceOrderRepo.save(so);
+		so = this.serviceOrderRepo.saveAndFlush(so);
 		if (stateChanged) {
 			raiseSOStateChangedNotification(so);			
 		} else {
 			raiseSOAttributeValueChangedNotification(so);
 		}
 		
+
 		return so;
 	}
 
@@ -741,12 +739,11 @@ public class ServiceOrderRepoService {
 		return res;
 	}
 
+	@Transactional
 	public ServiceOrder getServiceORderEager(String id) {
 
-		Session session = sessionFactory.openSession();
-		Transaction tx = session.beginTransaction();
-		
-		try {
+		try( Session session = sessionFactory.openSession() ) {
+	        Transaction tx = session.beginTransaction();
 			ServiceOrder s = null;
 			try {
 				s = (ServiceOrder) session.get(ServiceOrder.class, id);
@@ -774,13 +771,12 @@ public class ServiceOrderRepoService {
 			// TODO: handle exception
 		}
 
-		session.close();
 		return null;
 		
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseSOCreateNotification(ServiceOrder so) {
 		ServiceOrderCreateNotification n = new ServiceOrderCreateNotification();
 		ServiceOrderCreateEvent event = new ServiceOrderCreateEvent();
@@ -790,7 +786,7 @@ public class ServiceOrderRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseSOStateChangedNotification(ServiceOrder so) {
 		ServiceOrderStateChangeNotification n = new ServiceOrderStateChangeNotification();
 		ServiceOrderStateChangeEvent event = new ServiceOrderStateChangeEvent();
@@ -801,7 +797,7 @@ public class ServiceOrderRepoService {
 		
 	}
 
-	@Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
 	private void raiseSOAttributeValueChangedNotification(ServiceOrder so) {
 		ServiceOrderAttributeValueChangeNotification n = new ServiceOrderAttributeValueChangeNotification();
 		ServiceOrderAttributeValueChangeEvent event = new ServiceOrderAttributeValueChangeEvent();
@@ -888,25 +884,28 @@ public class ServiceOrderRepoService {
 		if (depth>10) {
 			return result;
 		}
+
+		
+		
 		for (ServiceRef specRel : soiOrigin.getService().getSupportingService() ) {
-			if ( !soiOrigin.getService().getName().equals( specRel.getName()) ) {
-				result += "\""+ soiOrigin.getService().getId() + "\""+ " -> " + "\""+ specRel.getId() +"\" "+";\r\n";
+			//if ( !soiOrigin.getService().getName().equals( specRel.getName()) ) {
+				//result += "\""+ soiOrigin.getService().getId() + "\""+ " -> " + "\""+ specRel.getId() +"\" "+";\r\n";
 				result += "\""+ specRel.getId() + "\""+ " [label =\""+ specRel.getName() +"\", color = \"#2596be\"]; \r\n";
 				org.etsi.osl.tmf.sim638.model.Service aService= serviceRepoService.findByUuid( specRel.getId() );
 				if ( aService!= null) {
 					result += getServiceGraphNotation( aService,0 );				
 				}
-			}
+			//}
 			
 		}
-		
-		for (ResourceRef resRel :soiOrigin.getService().getSupportingResource() ) {
+
+		for (ResourceRef resRel : soiOrigin.getService().getSupportingResource() ) {
 			result += "\""+ soiOrigin.getService().getId() + "\""+ " -> " + "\""+ resRel.getId() + "\""+ ";\r\n";
 			result += "\""+ resRel.getId() + "\""+ " [label = \"" + resRel.getName() + "\", shape = roundedbox, color = \"#e28743\"]; \r\n";
 			
 		}
 		
-		result += "\""+ soiOrigin.getService().getId() + "\""+ " [label = \""+ soiOrigin.getService().getName() +"\", color = \"#2596be\"]; \r\n";
+		//result += "\""+ soiOrigin.getService().getId() + "\""+ " [label = \"Order "+ soiOrigin.getService().getName() +"\", color = \"#259600\"]; \r\n";
 		return result;
 	}
 
@@ -918,15 +917,12 @@ public class ServiceOrderRepoService {
 		for (ServiceRef specRel : aService.getSupportingService() ) {
 			result += "\""+ aService.getId() + "\""+ " -> " + "\""+ specRel.getId()  +"\" "+";\r\n";
 			result += "\""+ specRel.getId() + "\""+ " [label = \"" + specRel.getName()  + "\", color = \"#2596be\"];\r\n";
-			
-			for (ResourceRef resRel : aService.getSupportingResource()) {
-				
-				result += "\""+ aService.getId() + "\""+ " -> " + "\""+ resRel.getId() + "\""+ ";\r\n";
-				result += "\""+ resRel.getId() + "\""+ " [ label = \"" + resRel.getName() +"\",  shape = roundedbox, color = \"#e28743\"]; \r\n";
-				
-			}
-			
 		}
+		for (ResourceRef resRel : aService.getSupportingResource()) {
+          
+          result += "\""+ aService.getId() + "\""+ " -> " + "\""+ resRel.getId() + "\""+ ";\r\n";
+          result += "\""+ resRel.getId() + "\""+ " [ label = \"" + resRel.getName() +"\",  shape = roundedbox, color = \"#e28743\"]; \r\n";          
+        }
 		
 		
 		return result;

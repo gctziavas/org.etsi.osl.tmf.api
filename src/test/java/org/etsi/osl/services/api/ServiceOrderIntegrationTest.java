@@ -208,7 +208,7 @@ public class ServiceOrderIntegrationTest {
 		 * here 1+2 + the 2 characteristics of the service itself total 5
 		 */
 		
-		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 3 );
+		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 4 );
 
 		ServiceOrderCreate servOrder = new ServiceOrderCreate();
 		servOrder.setCategory("Experimentation");
@@ -261,8 +261,8 @@ public class ServiceOrderIntegrationTest {
 		
 
 		assertThat( responsesSpec1.getServiceSpecCharacteristic().size() ).isEqualTo( 2 );
-		assertThat( responsesSpec2.getServiceSpecCharacteristic().size() ).isEqualTo( 3 );
-		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 3 );
+		assertThat( responsesSpec2.getServiceSpecCharacteristic().size() ).isEqualTo( 4 );
+		assertThat( responsesSpec3.getServiceSpecCharacteristic().size() ).isEqualTo( 4 );
 	
 		
 		responseSO.getOrderItem().stream().forEach(soiElement -> {
@@ -310,6 +310,7 @@ public class ServiceOrderIntegrationTest {
 		serviceOrderref.setId(responseSO.getId());
 		serviceOrderref.setServiceOrderItemId((new ArrayList<>(responseSO.getOrderItem())).get(0).getId());
 		s.addServiceOrderItem(serviceOrderref);
+		s.setServiceCharacteristic( new ArrayList<>());
 
 		Service createdServ = serviceRepoService.addService(s);
 

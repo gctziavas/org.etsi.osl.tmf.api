@@ -22,15 +22,14 @@ package org.etsi.osl.tmf.ri639.repo;
 import java.util.List;
 import java.util.Optional;
 import org.etsi.osl.tmf.ri639.model.Resource;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 
 
 @Repository
-public interface ResourceRepository extends  CrudRepository<Resource, Long>, PagingAndSortingRepository<Resource, Long> {
+public interface ResourceRepository extends  JpaRepository<Resource, Long> {
 
 	
 	Optional<Resource> findByUuid(String id);
