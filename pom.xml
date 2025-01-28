@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.etsi.osl</groupId>
 		<artifactId>org.etsi.osl.main</artifactId>
-		<version>2024Q4</version>
+		<version>2025Q2-SNAPSHOT</version>
 		<relativePath>../org.etsi.osl.main</relativePath>
 	</parent>
 
