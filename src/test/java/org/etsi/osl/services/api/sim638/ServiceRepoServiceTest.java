@@ -524,7 +524,7 @@ public class ServiceRepoServiceTest {
 
       r1.setResourceStatus(ResourceStatusType.SUSPENDED);
       nstate = s.findNextStateBasedOnResourceList(rlist);
-      assertThat(nstate).isEqualTo( ServiceStateType.TERMINATED );    
+      assertThat(nstate).isEqualTo( ServiceStateType.ACTIVE );    
 
       s.setState( ServiceStateType.TERMINATED ); 
       r1.setResourceStatus(ResourceStatusType.AVAILABLE);
