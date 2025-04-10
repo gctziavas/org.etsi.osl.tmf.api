@@ -41,6 +41,9 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
     @Value("${PM_MEASUREMENT_COLLECTION_JOB_UPDATE}")
     private String PM_UPDATE_MEASUREMENT_COLLECTION_JOB;
 
+    @Value("${PM_MEASUREMENT_COLLECTION_JOB_GET_INPRORGESS_OR_PENDING}")
+    private String PM_MEASUREMENT_COLLECTION_JOB_GET_INPRORGESS_OR_PENDING;
+
     @Autowired
     private ProducerTemplate template;
 
@@ -57,6 +60,7 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
             .to("log:DEBUG?showBody=true&showHeaders=true")
             .bean(measurementCollectionJobService, "findAllMeasurementCollectionJobs")
             .convertBodyTo( String.class );
+
 
         from(PM_MEASUREMENT_COLLECTION_GET_JOB_BY_ID)
             .log(LoggingLevel.INFO, log, PM_MEASUREMENT_COLLECTION_GET_JOB_BY_ID + " message received!")
@@ -79,6 +83,12 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
                 .json(JsonLibrary.Jackson, MeasurementCollectionJobMVO.class, true)
                 .bean(measurementCollectionJobService, "updateMeasurementCollectionJob(${header.mcjid}, ${body})")
                 .marshal().json( JsonLibrary.Jackson)
+                .convertBodyTo( String.class );
+
+        from(PM_MEASUREMENT_COLLECTION_JOB_GET_INPRORGESS_OR_PENDING)
+                .log(LoggingLevel.INFO, log, PM_MEASUREMENT_COLLECTION_JOB_GET_INPRORGESS_OR_PENDING + " message received!")
+                .to("log:DEBUG?showBody=true&showHeaders=true")
+                .bean(measurementCollectionJobService, "findPendingOrInProgressMeasurementCollectionJobs")
                 .convertBodyTo( String.class );
     }
 
