@@ -456,4 +456,11 @@ public class MeasurementCollectionJobService {
 
         routeBuilderEvents.publishEvent(event, mcj.getUuid());
     }
+
+    public List<MeasurementCollectionJob> findPendingOrInProgressMeasurementCollectionJobs(){
+        log.debug("findPendingOrInProgressMeasurementCollectionJobs");
+        List<MeasurementCollectionJob> pendingOrInProgressMeasurementCollectionJobs = findAllByExecutionState(ExecutionStateType.PENDING);
+        pendingOrInProgressMeasurementCollectionJobs.addAll(findAllByExecutionState(ExecutionStateType.INPROGRESS));
+        return pendingOrInProgressMeasurementCollectionJobs;
+    }
 }
