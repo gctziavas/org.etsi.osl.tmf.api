@@ -52,4 +52,12 @@ public interface ResourceSpecificationRepository extends CrudRepository<Resource
 	@Query("SELECT sc FROM PhysicalRspec sc")
 	List<PhysicalResourceSpecification> findAllPhysical();
 
+	// Methods for metrics
+
+	@Query("SELECT COUNT(sc) FROM LogicalRspec sc")
+	int countLogical();
+
+	@Query("SELECT COUNT(sc) FROM PhysicalRspec sc")
+	int countPhysical();
+
 }
