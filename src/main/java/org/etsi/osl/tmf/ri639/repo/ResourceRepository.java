@@ -19,9 +19,11 @@
  */
 package org.etsi.osl.tmf.ri639.repo;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.etsi.osl.tmf.ri639.model.Resource;
+import org.etsi.osl.tmf.ri639.model.ResourceStatusType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -56,4 +58,18 @@ public interface ResourceRepository extends  JpaRepository<Resource, Long> {
 
 	List<Resource> findByNameAndResourceVersion(String aname, String aversion);
 	List<Resource> findByNameAndCategoryAndResourceVersion(String aname, String acategory, String aversion);
+
+
+	// Methods for metrics
+
+	@Query("SELECT COUNT(res) FROM RIResource res")
+	int countAll();
+
+	int countByResourceStatus(ResourceStatusType status);
+
+	@Query("SELECT res.resourceStatus, COUNT(res) FROM RIResource res "
+			+ "WHERE res.startOperatingDate >= :starttime AND res.endOperatingDate <= :endtime "
+			+ "GROUP BY res.resourceStatus")
+	List<Object[]> groupByStateBetweenDates(OffsetDateTime starttime, OffsetDateTime endtime);
+
 }
