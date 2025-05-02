@@ -19,8 +19,11 @@
  */
 package org.etsi.osl.tmf.sim638.repo;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import org.etsi.osl.tmf.common.model.service.ServiceStateType;
 import org.etsi.osl.tmf.sim638.model.Service;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -68,4 +71,15 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
         + "WHERE sres.id = ?1 " )  
     List<Service> findServicesHavingThisSupportingResourceID(String resourceID);
 
+	// Methods for metrics
+
+	@Query("SELECT COUNT(srv) FROM Service srv")
+	int countAll();
+
+	int countByState(ServiceStateType state);
+
+	@Query("SELECT srv.state, COUNT(srv) FROM Service srv "
+			+ "WHERE srv.startDate >= :starttime AND srv.endDate <= :endtime "
+			+ "GROUP BY srv.state")
+	List<Object[]> groupByStateBetweenDates(OffsetDateTime starttime, OffsetDateTime endtime);
 }
