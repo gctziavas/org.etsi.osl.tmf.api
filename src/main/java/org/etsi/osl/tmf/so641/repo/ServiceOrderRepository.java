@@ -67,7 +67,7 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
 	int countAllActive(OffsetDateTime currentDate, List<ServiceOrderStateType> states);
 
 	@Query("SELECT sor.state, COUNT(sor) FROM ServiceOrder sor "
-			+ "WHERE sor.requestedStartDate >= :starttime AND sor.requestedCompletionDate <= :endtime "
+			+ "WHERE sor.orderDate >= :starttime AND sor.orderDate <= :endtime "
 			+ "GROUP BY sor.state")
 	List<Object[]> groupByStateBetweenDates(OffsetDateTime starttime, OffsetDateTime endtime);
 
