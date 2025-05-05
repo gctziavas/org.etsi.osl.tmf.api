@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
@@ -62,6 +63,7 @@ import org.etsi.osl.tmf.scm633.api.ServiceSpecificationApiRouteBuilderNSD;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateUpdate;
+import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecRelationship;
@@ -209,12 +211,14 @@ public class ServiceSpecificationRepoService {
 			}			
 			sql += " FROM ServiceSpecification s";
 			if (allParams.size() > 0) {
-				sql += " WHERE ";
-				for (String pname : allParams.keySet()) {
-					sql += " " + pname + " LIKE ";
-					String pval = URLDecoder.decode(allParams.get(pname), StandardCharsets.UTF_8.toString());
-					sql += "'" + pval + "'";
-				}
+				
+			
+				
+				String items = allParams.entrySet()
+			    .stream()
+			    .map(entry -> "s." + entry.getKey() + " LIKE '%" + URLDecoder.decode( entry.getValue(), StandardCharsets.UTF_8 )+ "%'" )
+			    .collect(Collectors.joining(" OR "));
+				sql += " WHERE " + items;
 
 			}
 			sql += " ORDER BY s.name";
@@ -230,10 +234,10 @@ public class ServiceSpecificationRepoService {
 							Map<String, Object> result = new LinkedHashMap<String, Object>(tuple.length);
 							        for (int i = 0; i < tuple.length; i++) {
 							            String alias = aliases[i];
-							            if (alias.equals("type")) {
-							            	alias = "@type";
-							            }
 							            if (alias != null) {
+	                                        if (alias.equals("type")) {
+	                                            alias = "@type";
+	                                        }
 							                result.put(alias, tuple[i]);
 							            }
 							        }
@@ -271,7 +275,11 @@ public class ServiceSpecificationRepoService {
 
 	}
 
-//	 @Transactional(propagation=Propagation.REQUIRED , readOnly=true,
+
+
+
+
+  //	 @Transactional(propagation=Propagation.REQUIRED , readOnly=true,
 //	 noRollbackFor=Exception.class)
 	public ServiceSpecification findByUuid(String id) {
 		Optional<ServiceSpecification> optionalCat = this.serviceSpecificationRepo.findByUuid(id);
@@ -1463,12 +1471,16 @@ public class ServiceSpecificationRepoService {
 		return serviceSpecCharacteristicItem;
 	}
 	
+
+    @Transactional
     public String searchServiceSpecRefs(String searchText) {
-      String res = "{}";
+      String res = "[]";
 
       Map<String, String> criteria = new HashMap<>();
       try {
-        List<ServiceSpecification> specs= this.findAll(res, criteria);
+        criteria.put("name", searchText);
+        criteria.put("description", searchText);
+        List<String> specs= this.searchSpecsInCategories( null, criteria);
         
         ObjectMapper mapper = new ObjectMapper();
         // Registering Hibernate4Module to support lazy objects
@@ -1485,6 +1497,86 @@ public class ServiceSpecificationRepoService {
 
       
       return res;
+    }
+    
+    
+    /**
+     * 
+     * This findAll is optimized on fields. 
+     * @param fields
+     * @param allParams
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    @Transactional
+    public List searchSpecsInCategories(@Valid String fields, Map<String, String> allParams)
+            throws UnsupportedEncodingException {
+
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        List<ServiceCategory> alist = null;
+        try {
+          String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription";
+                       
+            
+
+            sql += " FROM ServiceCategory as scateg JOIN  scateg.serviceCandidateObj as scandidate JOIN scandidate.serviceSpecificationObj as s ";
+            if (allParams.size() > 0) {
+                
+                String items = allParams.entrySet()
+                .stream()
+                .map(entry -> "s." + entry.getKey() + " LIKE '%" + URLDecoder.decode( entry.getValue(), StandardCharsets.UTF_8 )+ "%'" )
+                .collect(Collectors.joining(" OR "));
+                sql += " WHERE " + items;
+
+            }
+            sql += " ORDER BY s.name";
+            
+//            List<ServiceSpecification> specs = session
+//                .createQuery( sql, ServiceSpecification.class)
+//                .getResultList();
+            
+            
+            List<Object> mapaEntity = session
+                    .createQuery(sql )
+                    .setResultTransformer( new ResultTransformer() {
+                        
+                        @Override
+                        public Object transformTuple(Object[] tuple, String[] aliases) {
+                            Map<String, Object> result = new LinkedHashMap<String, Object>(tuple.length);
+                                    for (int i = 0; i < tuple.length; i++) {
+                                        String alias = aliases[i];
+                                        if (alias != null) {
+                                          if (alias.equals("type")) {
+                                              alias = "@type";
+                                          }
+                                            result.put(alias, tuple[i]);
+                                        }
+                                    }
+
+                                    return result;
+                        }
+                        
+                        @Override
+                        public List transformList(List collection) {
+                            return collection;
+                        }
+                    } )
+                    .list();
+            
+//          //this will fetch the whole object fields
+            
+            
+            return mapaEntity;
+        
+            
+            
+            
+        } finally {
+            tx.commit();
+            session.close();
+        }
+
     }
 
 	

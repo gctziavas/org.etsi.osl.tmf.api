@@ -95,14 +95,12 @@ public class ServiceCatalogApiRouteBuilder extends RouteBuilder {
 		from( CATALOG_GET_SERVICECATALOGS )
 		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOGS + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")	
-		.bean( catalogRepoService, "findAllEager()")
-		.marshal().json( JsonLibrary.Jackson, String.class)
-		.convertBodyTo( String.class );
+		.bean( catalogRepoService, "findAllEager()");
 		
 	    from( CATALOG_GET_SERVICECATALOG_BY_NAME )
 	    .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOG_BY_NAME + " message received!")
 	    .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( catalogRepoService, "findByNameEager(${header.catalogId})")
+        .bean( catalogRepoService, "findByNameEager(${header.catalogName})")
 	    .marshal().json( JsonLibrary.Jackson, String.class)
 	    .convertBodyTo( String.class );
 	      
@@ -110,9 +108,7 @@ public class ServiceCatalogApiRouteBuilder extends RouteBuilder {
         from( CATALOG_GET_SERVICECATEGORIES )
         .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATEGORIES + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( catalogRepoService, "findAllCategoriesByCatalogName(${header.catalogName})")
-        .marshal().json( JsonLibrary.Jackson, String.class)
-        .convertBodyTo( String.class );
+        .bean( catalogRepoService, "findAllCategoriesByCatalogName(${header.catalogName})");
           
         
         from( CATALOG_GET_SERVICECATEGORY_BY_ID )
@@ -126,9 +122,7 @@ public class ServiceCatalogApiRouteBuilder extends RouteBuilder {
         from( CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID )
         .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( categoryRepoService, "findAllServiceSpecRefsByCategId(${header.categoryId})")
-        .marshal().json( JsonLibrary.Jackson, String.class)
-        .convertBodyTo( String.class );
+        .bean( categoryRepoService, "findAllServiceSpecRefsByCategId(${header.categoryId})");
 	      
 	}
 

@@ -127,9 +127,7 @@ public class ServiceSpecificationApiRouteBuilder extends RouteBuilder {
         from( CATALOG_SEARCH_SERVICESPECREFS )
         .log(LoggingLevel.INFO, log, CATALOG_SEARCH_SERVICESPECREFS + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( serviceSpecificationRepoService, "searchServiceSpecRefs(${header.searchText})")
-        .marshal().json( JsonLibrary.Jackson, String.class)
-        .convertBodyTo( String.class );
+        .bean( serviceSpecificationRepoService, "searchServiceSpecRefs(${header.searchText})");
         
         
 	}

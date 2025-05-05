@@ -43,6 +43,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
@@ -241,8 +242,9 @@ public class CatalogRepoService {
 	 * return recursively all categories in catalog
 	 * @param catalogName
 	 */
+	@Transactional
 	public String findAllCategoriesByCatalogName(String catalogName) {
-	  String res="{}";
+	  String res="[]";
 
 	  Optional<ServiceCatalog> scopt = this.catalogRepo.findByName(catalogName);
 	  
@@ -268,7 +270,6 @@ public class CatalogRepoService {
       } catch (JsonProcessingException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
-        return "{}";
       }
       
       
@@ -277,6 +278,7 @@ public class CatalogRepoService {
 	}
 	
 	
+	@Transactional
 	  private List<ServiceCategory> getCategories( @Valid List<ServiceCategoryRef> list) {
 	    List<ServiceCategory> categories = new ArrayList<ServiceCategory>();
 	    

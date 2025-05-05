@@ -52,6 +52,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
@@ -151,10 +152,18 @@ public class CategoryRepoService {
 	
 
 
+	@Transactional
     public String findAllServiceSpecRefsByCategId(String categoryId) {
       
+
+      String res="[]";
       List<ServiceSpecificationRef> serviceSpecificationRefList = new ArrayList<>();
       ServiceCategory category = this.findByUuid(categoryId);      
+      
+      if ( category == null ) {
+        return res;
+      }
+      
       Set<ServiceCandidate> serviceCands = category.getServiceCandidateObj();
       
       for (ServiceCandidate serviceCandidate : serviceCands) {
@@ -169,7 +178,6 @@ public class CategoryRepoService {
       // this will fetch all lazy objects before marshaling
       mapper.registerModule(new Hibernate5JakartaModule());     
       
-      String res="{}";
       try {
         res = mapper.writeValueAsString( serviceSpecificationRefList );
       } catch (JsonProcessingException e) {
