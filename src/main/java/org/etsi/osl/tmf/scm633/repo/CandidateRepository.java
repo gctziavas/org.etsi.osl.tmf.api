@@ -19,6 +19,7 @@
  */
 package org.etsi.osl.tmf.scm633.repo;
 
+import java.util.List;
 import java.util.Optional;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
 import org.springframework.data.jpa.repository.Query;
@@ -35,5 +36,9 @@ public interface CandidateRepository extends CrudRepository<ServiceCandidate, Lo
 
 	@Query("SELECT sc FROM ServiceCandidate sc JOIN FETCH sc.serviceSpecificationObj spec WHERE spec.uuid = ?1")
 	Optional<ServiceCandidate> findByServiceSpecUuid(String id);
+
+	// Methods for metrics
+	@Query("SELECT sc FROM ServiceCandidate sc")
+	List<ServiceCandidate> findAll();
 
 }

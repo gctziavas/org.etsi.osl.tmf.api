@@ -5,8 +5,8 @@ import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.pm632.model.IndividualCreate;
 import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
-import org.etsi.osl.tmf.scm633.model.ServiceCategory;
-import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
+import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
+import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +56,7 @@ public class GerenalMetricsApiControllerTest {
     ResourceSpecificationRepoService resourceSpecificationRepoService;
 
     @Autowired
-    CategoryRepoService categoryRepoService;
+    CandidateRepoService candidateRepoService;
 
 
     @Before
@@ -96,11 +96,13 @@ public class GerenalMetricsApiControllerTest {
 
         int totalSpecs = JsonPath.read(response, "$.publishedServiceSpecifications");
 
-        List<ServiceCategory> serviceCategories = categoryRepoService.findAll();
+        List<ServiceCandidate> serviceCandidates = candidateRepoService.findAll();
         int count = 0;
 
-        for (ServiceCategory serviceCategory : serviceCategories) {
-            count += serviceCategory.getServiceCandidateObj().size() + serviceCategory.getServiceCandidateRefs().size();
+        for (ServiceCandidate serviceCandidate : serviceCandidates) {
+            if (serviceCandidate.getCategory() != null) {
+                count += 1;
+            }
         }
 
         assertThat(totalSpecs).isEqualTo(count);
