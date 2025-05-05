@@ -27,8 +27,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
+import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateRef;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
@@ -144,7 +149,37 @@ public class CategoryRepoService {
 	}
 	
 	
-	
+
+
+    public String findAllServiceSpecRefsByCategId(String categoryId) {
+      
+      List<ServiceSpecificationRef> serviceSpecificationRefList = new ArrayList<>();
+      ServiceCategory category = this.findByUuid(categoryId);      
+      Set<ServiceCandidate> serviceCands = category.getServiceCandidateObj();
+      
+      for (ServiceCandidate serviceCandidate : serviceCands) {
+        @Valid
+        ServiceSpecificationRef specRef = serviceCandidate.getServiceSpecificationRef();
+        serviceSpecificationRefList.add(specRef);
+      }
+      
+
+      ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());     
+      
+      String res="{}";
+      try {
+        res = mapper.writeValueAsString( serviceSpecificationRefList );
+      } catch (JsonProcessingException e) {
+        e.printStackTrace();
+      }
+      
+      
+      return res;
+      
+    }
 	
 
 	public boolean deleteById(String id) {

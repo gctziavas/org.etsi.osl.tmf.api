@@ -21,8 +21,12 @@ package org.etsi.osl.tmf.scm633.reposervices;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
@@ -30,9 +34,16 @@ import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogUpdate;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryRef;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.repo.CatalogRepository;
+import org.hibernate.Hibernate;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
@@ -50,6 +61,18 @@ public class CatalogRepoService {
 
 	@Autowired
 	CandidateRepoService candidateRepoService;
+	
+
+    private SessionFactory sessionFactory;
+    
+    @Autowired
+    public CatalogRepoService(EntityManagerFactory factory) {
+        if (factory.unwrap(SessionFactory.class) == null) {
+            throw new NullPointerException("factory is not a hibernate factory");
+        }
+        this.sessionFactory = factory.unwrap(SessionFactory.class);
+    }
+    
 
 	public ServiceCatalog addCatalog(ServiceCatalog c) {
 
@@ -64,10 +87,86 @@ public class CatalogRepoService {
 		return this.catalogRepo.save(sc);
 	}
 
+	public String findAllEager() {
+	  
+	  List<ServiceCatalog> oids = (List<ServiceCatalog>) this.catalogRepo.findByOrderByName();
+	  ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());
+      String res;
+      try {
+        res = mapper.writeValueAsString( oids );
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return "{}";
+      }
+      
+	  return res;
+	}
+
+	   
+	   
 	public List<ServiceCatalog> findAll() {
 		return (List<ServiceCatalog>) this.catalogRepo.findByOrderByName();
 	}
 
+	
+	 public ServiceCatalog findByUuidEager(String id) {
+       
+
+       Session session = sessionFactory.openSession();
+       Transaction tx = session.beginTransaction(); // instead of begin transaction, is it possible to continue?
+       try {
+           ServiceCatalog dd = null;
+           try {
+               dd = session.get(ServiceCatalog.class, id);
+               if (dd == null) {
+                   return this.findById(id);// last resort
+               }
+               Hibernate.initialize(dd.getCategoryRefs() );
+               Hibernate.initialize(dd.getRelatedParty() );
+               Hibernate.initialize(dd.getCategoryObj() );
+
+               tx.commit();
+           } finally {
+               session.close();
+           }
+           return dd;
+           
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
+
+       session.close();
+       return null;
+       
+	 }
+	 
+	 
+	 
+	public String findByNameEager(String aname) {
+	  ServiceCatalog sc = this.findByName(aname);
+
+	  ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());
+      String res;
+      try {
+        res = mapper.writeValueAsString( sc );
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return "{}";
+      }
+      
+      return res;
+	       
+	}
+  
+	
 	public ServiceCatalog findById(String id) {
 		Optional<ServiceCatalog> optionalCat = this.catalogRepo.findByUuid(id);
 		return optionalCat.orElse(null);
@@ -136,6 +235,64 @@ public class CatalogRepoService {
 	public ServiceCatalog updateCatalog(ServiceCatalog scatalog) {
 		return this.catalogRepo.save(scatalog);
 	}
+	
+	
+	/**
+	 * return recursively all categories in catalog
+	 * @param catalogName
+	 */
+	public String findAllCategoriesByCatalogName(String catalogName) {
+	  String res="{}";
+
+	  Optional<ServiceCatalog> scopt = this.catalogRepo.findByName(catalogName);
+	  
+	  if (scopt.isEmpty() ) {
+	      return res;	    
+	  }
+	  
+	  ServiceCatalog sc = scopt.get();
+	  
+	  sc.getCategoryRefs();
+
+
+	  List<ServiceCategory> allcategories = this.getCategories( sc.getCategoryRefs());
+	  
+	  ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());     
+      
+      
+      try {
+        res = mapper.writeValueAsString( allcategories );
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return "{}";
+      }
+      
+      
+      return res;
+      
+	}
+	
+	
+	  private List<ServiceCategory> getCategories( @Valid List<ServiceCategoryRef> list) {
+	    List<ServiceCategory> categories = new ArrayList<ServiceCategory>();
+	    
+	    for (ServiceCategoryRef c : list ) {	      
+	     ServiceCategory category = this.categRepoService.findByUuid( c.getId());
+	     categories.add(category);
+	     
+	     if (category.getCategoryRefs()!=null && category.getCategoryRefs().size()>0) {
+	         List<ServiceCategory> subcategories = this.getCategories( category.getCategoryRefs() );
+	         categories.addAll(subcategories );//add children
+	     }
+	      
+	    }
+	    
+	    return categories;
+	  }
 
 	
 

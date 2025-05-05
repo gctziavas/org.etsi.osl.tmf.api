@@ -67,7 +67,14 @@ public class ServiceSpecificationApiRouteBuilder extends RouteBuilder {
 	
 	@Value("${CATALOG_UPD_EXTERNAL_SERVICESPEC}")
 	private String CATALOG_UPD_EXTERNAL_SERVICESPEC = "";
-	
+
+
+    @Value("${CATALOG_SEARCH_SERVICESPECREFS}")
+    private String CATALOG_SEARCH_SERVICESPECREFS = "";
+
+
+	    
+	    
 	@Autowired
 	ServiceSpecificationRepoService serviceSpecificationRepoService;
 	
@@ -114,6 +121,17 @@ public class ServiceSpecificationApiRouteBuilder extends RouteBuilder {
 		.bean( serviceSpecificationRepoService, "updateOrAddServiceSpecification(${header.serviceSpecId}, ${header.forceId}, ${body} )")
 		.marshal().json( JsonLibrary.Jackson)
 		.convertBodyTo( String.class );
+		
+
+
+        from( CATALOG_SEARCH_SERVICESPECREFS )
+        .log(LoggingLevel.INFO, log, CATALOG_SEARCH_SERVICESPECREFS + " message received!")
+        .to("log:DEBUG?showBody=true&showHeaders=true")
+        .bean( serviceSpecificationRepoService, "searchServiceSpecRefs(${header.searchText})")
+        .marshal().json( JsonLibrary.Jackson, String.class)
+        .convertBodyTo( String.class );
+        
+        
 	}
 
 	

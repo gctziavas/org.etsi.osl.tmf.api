@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.tmf.common.model.Any;
@@ -1463,6 +1463,29 @@ public class ServiceSpecificationRepoService {
 		return serviceSpecCharacteristicItem;
 	}
 	
+    public String searchServiceSpecRefs(String searchText) {
+      String res = "{}";
+
+      Map<String, String> criteria = new HashMap<>();
+      try {
+        List<ServiceSpecification> specs= this.findAll(res, criteria);
+        
+        ObjectMapper mapper = new ObjectMapper();
+        // Registering Hibernate4Module to support lazy objects
+        // this will fetch all lazy objects before marshaling
+        mapper.registerModule(new Hibernate5JakartaModule());   
+        res = mapper.writeValueAsString( specs );  
+        
+        
+      } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+      } catch (JsonProcessingException e) {
+        e.printStackTrace();
+      }
+
+      
+      return res;
+    }
 
 	
 
