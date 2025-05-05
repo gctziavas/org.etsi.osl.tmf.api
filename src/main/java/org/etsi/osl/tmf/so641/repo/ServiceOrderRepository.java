@@ -19,6 +19,7 @@
  */
 package org.etsi.osl.tmf.so641.repo;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
@@ -51,4 +52,27 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
 			+ "WHERE sor.uuid = ?1 "
 			+ "ORDER BY an.date ASC")	
 	Optional<ServiceOrder> findNotesOfServOrder(String id);
+
+
+	// Methods for metrics
+
+	@Query("SELECT COUNT(sor) FROM ServiceOrder sor")
+	int countAll();
+
+	int countByState(ServiceOrderStateType state);
+
+	@Query("SELECT COUNT(sor) FROM ServiceOrder sor "
+			+ "WHERE sor.state IN :states "
+			+ "AND sor.requestedStartDate < :currentDate AND sor.requestedCompletionDate > :currentDate")
+	int countAllActive(OffsetDateTime currentDate, List<ServiceOrderStateType> states);
+
+	@Query("SELECT sor.state, COUNT(sor) FROM ServiceOrder sor "
+			+ "WHERE sor.requestedStartDate >= :starttime AND sor.requestedCompletionDate <= :endtime "
+			+ "GROUP BY sor.state")
+	List<Object[]> groupByStateBetweenDates(OffsetDateTime starttime, OffsetDateTime endtime);
+
+	@Query("SELECT sor.orderDate FROM ServiceOrder sor " +
+			"WHERE sor.orderDate >= :starttime AND sor.orderDate <= :endtime")
+	List<OffsetDateTime> getOrderDatesBetweenDates(OffsetDateTime starttime, OffsetDateTime endtime);
+
 }
