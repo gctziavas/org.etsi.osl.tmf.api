@@ -48,6 +48,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class CatalogRepoService {
 
 
@@ -58,21 +59,7 @@ public class CatalogRepoService {
 	CategoryRepoService categRepoService;
 
 	@Autowired
-	ServiceSpecificationRepoService specRepoService;
-
-	@Autowired
-	CandidateRepoService candidateRepoService;
-	
-
-    private SessionFactory sessionFactory;
-    
-    @Autowired
-    public CatalogRepoService(EntityManagerFactory factory) {
-        if (factory.unwrap(SessionFactory.class) == null) {
-            throw new NullPointerException("factory is not a hibernate factory");
-        }
-        this.sessionFactory = factory.unwrap(SessionFactory.class);
-    }
+	ServiceSpecificationRepoService specRepoService;	    
     
 
 	public ServiceCatalog addCatalog(ServiceCatalog c) {
@@ -114,35 +101,24 @@ public class CatalogRepoService {
 	}
 
 	
-	 public ServiceCatalog findByUuidEager(String id) {
+	 public String findByUuidEager(String id) {
        
+	      ServiceCatalog sc = this.findById(id);
 
-       Session session = sessionFactory.openSession();
-       Transaction tx = session.beginTransaction(); // instead of begin transaction, is it possible to continue?
-       try {
-           ServiceCatalog dd = null;
-           try {
-               dd = session.get(ServiceCatalog.class, id);
-               if (dd == null) {
-                   return this.findById(id);// last resort
-               }
-               Hibernate.initialize(dd.getCategoryRefs() );
-               Hibernate.initialize(dd.getRelatedParty() );
-               Hibernate.initialize(dd.getCategoryObj() );
-
-               tx.commit();
-           } finally {
-               session.close();
-           }
-           return dd;
-           
-       } catch (Exception e) {
-           e.printStackTrace();
-       }
-
-       session.close();
-       return null;
-       
+	      ObjectMapper mapper = new ObjectMapper();
+	      // Registering Hibernate4Module to support lazy objects
+	      // this will fetch all lazy objects before marshaling
+	      mapper.registerModule(new Hibernate5JakartaModule());
+	      String res;
+	      try {
+	        res = mapper.writeValueAsString( sc );
+	      } catch (JsonProcessingException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	        return "{}";
+	      }
+	      
+	      return res;
 	 }
 	 
 	 

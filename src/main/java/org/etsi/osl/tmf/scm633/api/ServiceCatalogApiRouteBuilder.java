@@ -88,9 +88,7 @@ public class ServiceCatalogApiRouteBuilder extends RouteBuilder {
 		from( CATALOG_GET_SERVICECATALOG_BY_ID )
 		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOG_BY_ID + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
-		.bean( catalogRepoService, "findByUuidEager(${header.catalogId})")
-		.marshal().json( JsonLibrary.Jackson, String.class)
-		.convertBodyTo( String.class );
+		.bean( catalogRepoService, "findByUuidEager(${header.catalogId})");
 		
 		from( CATALOG_GET_SERVICECATALOGS )
 		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOGS + " message received!")
@@ -114,9 +112,7 @@ public class ServiceCatalogApiRouteBuilder extends RouteBuilder {
         from( CATALOG_GET_SERVICECATEGORY_BY_ID )
         .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATEGORY_BY_ID + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( categoryRepoService, "findByIdEager(${header.catalogId})")
-        .marshal().json( JsonLibrary.Jackson, String.class)
-        .convertBodyTo( String.class );
+        .bean( categoryRepoService, "findByIdEager(${header.catalogId})");
         
         
         from( CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID )

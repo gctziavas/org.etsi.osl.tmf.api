@@ -23,7 +23,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,56 +39,33 @@ import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryRef;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryUpdate;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecCharRelationship;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.repo.CandidateRepository;
-import org.etsi.osl.tmf.scm633.repo.CatalogRepository;
 import org.etsi.osl.tmf.scm633.repo.CategoriesRepository;
-import org.hibernate.Hibernate;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class CategoryRepoService {
 
 
-	@Autowired
-	CategoriesRepository categsRepo;
+
+	private final CategoriesRepository categsRepo;
 	
+	private final CandidateRepository candidateRepo;
 
-	@Autowired
-	CandidateRepository candidateRepo;
-
-
-	@Autowired
-	CatalogRepository catalogRepo;
 	
-
-	private SessionFactory  sessionFactory;
-	
-	/**
-	 * from https://stackoverflow.com/questions/25063995/spring-boot-handle-to-hibernate-sessionfactory
-	 * @param factory
-	 */
-	@Autowired
-	public CategoryRepoService(EntityManagerFactory factory) {
-	    if(factory.unwrap(SessionFactory.class) == null){
-	        throw new NullPointerException("factory is not a hibernate factory");
-	      }
-	      this.sessionFactory = factory.unwrap(SessionFactory.class);
-	    }
-
+    @Autowired
+    public CategoryRepoService(CategoriesRepository categsRepo, CandidateRepository candidateRepo) {
+        this.categsRepo = categsRepo;
+        this.candidateRepo = candidateRepo;
+    }
 	
 	public ServiceCategory addCategory(ServiceCategory c) {
 
-		return this.categsRepo.save( c );
+		return this.getCategsRepo().save( c );
 	}
 
 	public ServiceCategory addCategory(@Valid ServiceCategoryCreate serviceCategory) {	
@@ -97,56 +73,47 @@ public class CategoryRepoService {
 		
 		ServiceCategory sc = new ServiceCategory() ;
 		sc = updateCategoryDataFromAPICall(sc, serviceCategory);
-		return this.categsRepo.save( sc );
+		return this.getCategsRepo().save( sc );
 		
 	}
 
+    @Transactional
 	public List<ServiceCategory> findAll() {
-		return (List<ServiceCategory>) this.categsRepo.findByOrderByName();
+		return (List<ServiceCategory>) this.getCategsRepo().findByOrderByName();
 	}
 
+    @Transactional
 	public ServiceCategory findByUuid(String id) {
-		Optional<ServiceCategory> optionalCat = this.categsRepo.findByUuid( id );
+		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByUuid( id );
 		return optionalCat
 				.orElse(null);
 	}
 	
 
-	public ServiceCategory findByIdEager(String id) {
-//		Optional<ServiceCategory> optionalCat = this.categsRepo.findByIdEager( id );
-//		return optionalCat
-//				.orElse(null);
+    @Transactional
+	public String findByIdEager(String id) {
+		ServiceCategory sc = this.findByUuid( id );
+
+        String res= "{}";
+        
+		if ( sc == null ) {
+		  return res;
+		}
+		  
 		
-		 Session session = sessionFactory.openSession();
-		    Transaction tx = session.beginTransaction();
-		    ServiceCategory dd = null;
-		    try {
-		        dd = (ServiceCategory) session.get(ServiceCategory.class, id);
-		        Hibernate.initialize( dd.getCategoryObj()  );
-		        Hibernate.initialize( dd.getServiceCandidateObj() );
-		        for (ServiceCandidate sc : dd.getServiceCandidateObj()) {
-			        Hibernate.initialize(sc );
-			        Hibernate.initialize(sc.getCategoryObj() );
-			        Hibernate.initialize(sc.getServiceSpecificationObj() );
-			        Hibernate.initialize(sc.getServiceSpecificationObj().getServiceSpecCharacteristic() );
-			        for (ServiceSpecCharacteristic ssc : sc.getServiceSpecificationObj().getServiceSpecCharacteristic() ) {
-				        Hibernate.initialize(ssc.getServiceSpecCharRelationship() );
-				        for (ServiceSpecCharRelationship srel : ssc.getServiceSpecCharRelationship() ) {
-					        Hibernate.initialize( srel );					        	
-				        }
-				        Hibernate.initialize(ssc.getServiceSpecCharacteristicValue() );				
-				        for (ServiceSpecCharacteristicValue srel : ssc.getServiceSpecCharacteristicValue() ) {
-					        Hibernate.initialize( srel );					        	
-				        }		
-					}
-			        Hibernate.initialize(sc.getServiceSpecificationObj().getServiceSpecRelationship() );
-				}
-		        
-		        tx.commit();
-		    } finally {
-		        session.close();
-		    }
-		    return dd;
+		ObjectMapper mapper = new ObjectMapper();
+	      // Registering Hibernate4Module to support lazy objects
+	      // this will fetch all lazy objects before marshaling
+	      mapper.registerModule(new Hibernate5JakartaModule());     
+	      
+	      try {
+	        res = mapper.writeValueAsString( sc );
+	      } catch (JsonProcessingException e) {
+	        e.printStackTrace();
+	      }
+	      
+	      
+	      return res;
 	}
 	
 	
@@ -191,14 +158,14 @@ public class CategoryRepoService {
 	
 
 	public boolean deleteById(String id) {
-		Optional<ServiceCategory> optionalCat = this.categsRepo.findByUuid( id );
+		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByUuid( id );
 		if ( optionalCat.get().getCategoryObj().size()>0 ) {
 			return false; //has children
 		}
 		
 		
 		if ( optionalCat.get().getParentId() != null ) {
-			ServiceCategory parentCat = (this.categsRepo.findByUuid( optionalCat.get().getParentId() )).get();
+			ServiceCategory parentCat = (this.getCategsRepo().findByUuid( optionalCat.get().getParentId() )).get();
 			
 			//remove from parent category
 			for (ServiceCategory ss : parentCat.getCategoryObj()) {
@@ -207,24 +174,24 @@ public class CategoryRepoService {
 					 break;
 				}
 			}			
-			parentCat = this.categsRepo.save(parentCat);
+			parentCat = this.getCategsRepo().save(parentCat);
 		}
 		
 		
-		this.categsRepo.delete( optionalCat.get());
+		this.getCategsRepo().delete( optionalCat.get());
 		return true;
 		
 	}
 
 	public ServiceCategory updateCategory(String id, @Valid ServiceCategoryUpdate serviceCategory) {
-		Optional<ServiceCategory> optionalCat = this.categsRepo.findByUuid( id );
+		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByUuid( id );
 		if ( optionalCat == null ) {
 			return null;
 		}
 		
 		ServiceCategory sc = optionalCat.get();
 		sc = updateCategoryDataFromAPICall(sc, serviceCategory);
-		return this.categsRepo.save( sc );
+		return this.getCategsRepo().save( sc );
 	}
 	
 	public ServiceCategory updateCategoryDataFromAPICall( ServiceCategory sc, ServiceCategoryUpdate serviceCatUpd )
@@ -270,14 +237,14 @@ public class CategoryRepoService {
 					}					
 				}
 				if (!idexists) {
-					Optional<ServiceCategory> catToAdd = this.categsRepo.findByUuid( ref.getId() );
+					Optional<ServiceCategory> catToAdd = this.getCategsRepo().findByUuid( ref.getId() );
 					if ( catToAdd.isPresent() ) {
 						ServiceCategory scatadd = catToAdd.get();
 						sc.getCategoryObj().add( scatadd );
 						idAddedUpdated.put( ref.getId(), true);		
 						
 						scatadd.setParentId( sc.getUuid());
-						scatadd = this.categsRepo.save( scatadd );
+						scatadd = this.getCategsRepo().save( scatadd );
 					}
 				}
 			}
@@ -335,10 +302,15 @@ public class CategoryRepoService {
 
 
 	public ServiceCategory findByName(String aName) {
-		Optional<ServiceCategory> optionalCat = this.categsRepo.findByName( aName );
+		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByName( aName );
 		return optionalCat
 				.orElse(null);
 	}
+
+  public CategoriesRepository getCategsRepo() {
+    return categsRepo;
+    
+  }
 
 
 }
