@@ -1,5 +1,6 @@
 package org.etsi.osl.tmf.pcm620.api;
 
+import java.util.ArrayList;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -38,6 +39,10 @@ public class ProductSpecificationApiRouteBuilder extends RouteBuilder {
 
   @Value("${CATALOG_GET_PRODUCTOFFERING_BY_ID}")
   private String CATALOG_GET_PRODUCTOFFERING_BY_ID = "";
+
+
+  @Value("${CATALOG_SEARCH_PRODUCTOFFERINGS}")
+  private String CATALOG_SEARCH_PRODUCTOFFERINGS = "";
   
   
   
@@ -89,6 +94,14 @@ public class ProductSpecificationApiRouteBuilder extends RouteBuilder {
     .bean( productOfferingRepoService, "findByUuidEager")
     .marshal().json( JsonLibrary.Jackson, String.class)
     .convertBodyTo( String.class );
+    
+
+
+    from( CATALOG_SEARCH_PRODUCTOFFERINGS )
+    .log(LoggingLevel.INFO, log, CATALOG_SEARCH_PRODUCTOFFERINGS + " message received!")
+    .to("log:DEBUG?showBody=true&showHeaders=true")
+    .unmarshal().json( JsonLibrary.Jackson, ArrayList.class, true)
+    .bean( productOfferingRepoService, "searchProductOfferings( ${body} )");
     
     
   }

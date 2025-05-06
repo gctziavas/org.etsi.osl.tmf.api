@@ -20,7 +20,7 @@
 package org.etsi.osl.tmf.scm633.api;
 
 import java.io.IOException;
-
+import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ServiceSpecificationApiRouteBuilder extends RouteBuilder {
 
-	private static final transient Log logger = LogFactory.getLog(ServiceOrderApiRouteBuilder.class.getName());
+	private static final transient Log logger = LogFactory.getLog(ServiceSpecificationApiRouteBuilder.class.getName());
 
 	@Value("${CATALOG_GET_SERVICESPEC_BY_ID}")
 	private String CATALOG_GET_SERVICESPEC_BY_ID = "";
@@ -127,7 +127,8 @@ public class ServiceSpecificationApiRouteBuilder extends RouteBuilder {
         from( CATALOG_SEARCH_SERVICESPECREFS )
         .log(LoggingLevel.INFO, log, CATALOG_SEARCH_SERVICESPECREFS + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( serviceSpecificationRepoService, "searchServiceSpecRefs(${header.searchText})");
+        .unmarshal().json( JsonLibrary.Jackson, ArrayList.class, true)
+        .bean( serviceSpecificationRepoService, "searchServiceSpecRefs( ${body} )");
         
         
 	}

@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -210,10 +211,7 @@ public class ServiceSpecificationRepoService {
 				
 			}			
 			sql += " FROM ServiceSpecification s";
-			if (allParams.size() > 0) {
-				
-			
-				
+			if (allParams.size() > 0) {				
 				String items = allParams.entrySet()
 			    .stream()
 			    .map(entry -> "s." + entry.getKey() + " LIKE '%" + URLDecoder.decode( entry.getValue(), StandardCharsets.UTF_8 )+ "%'" )
@@ -1473,14 +1471,12 @@ public class ServiceSpecificationRepoService {
 	
 
     @Transactional
-    public String searchServiceSpecRefs(String searchText) {
+    public String searchServiceSpecRefs(List<String> searchText) {
       String res = "[]";
 
-      Map<String, String> criteria = new HashMap<>();
       try {
-        criteria.put("name", searchText);
-        criteria.put("description", searchText);
-        List<String> specs= this.searchSpecsInCategories( null, criteria);
+        
+        List<String> specs= this.searchSpecsInCategories( searchText);
         
         ObjectMapper mapper = new ObjectMapper();
         // Registering Hibernate4Module to support lazy objects
@@ -1509,27 +1505,40 @@ public class ServiceSpecificationRepoService {
      * @throws UnsupportedEncodingException
      */
     @Transactional
-    public List searchSpecsInCategories(@Valid String fields, Map<String, String> allParams)
+    public List searchSpecsInCategories( List<String> searchList )
             throws UnsupportedEncodingException {
 
+      if ( searchList == null || searchList.size() ==0) {
+        return new ArrayList<>();
+      }
+      
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
-        List<ServiceCategory> alist = null;
+        
         try {
           String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription";
                        
             
 
             sql += " FROM ServiceCategory as scateg JOIN  scateg.serviceCandidateObj as scandidate JOIN scandidate.serviceSpecificationObj as s ";
-            if (allParams.size() > 0) {
-                
-                String items = allParams.entrySet()
-                .stream()
-                .map(entry -> "s." + entry.getKey() + " LIKE '%" + URLDecoder.decode( entry.getValue(), StandardCharsets.UTF_8 )+ "%'" )
-                .collect(Collectors.joining(" OR "));
-                sql += " WHERE " + items;
-
+            sql += " WHERE " ;
+            
+                      
+            // Build the name LIKE clause
+            StringJoiner nameJoiner = new StringJoiner(" AND ");
+            for (String term : searchList) {
+                nameJoiner.add("s.name LIKE '%" + term + "%'");
             }
+
+            // Build the description LIKE clause
+            StringJoiner descriptionJoiner = new StringJoiner(" AND ");
+            for (String term : searchList) {
+                descriptionJoiner.add("s.description LIKE '%" + term + "%'");
+            }
+
+            // Combine both clauses with OR
+            sql += "(" + nameJoiner.toString() + ") OR (" + descriptionJoiner.toString() + ")";            
+            
             sql += " ORDER BY s.name";
             
 //            List<ServiceSpecification> specs = session

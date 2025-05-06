@@ -26,39 +26,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
+import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.pcm620.model.Category;
 import org.etsi.osl.tmf.pcm620.model.CategoryCreate;
 import org.etsi.osl.tmf.pcm620.model.CategoryRef;
 import org.etsi.osl.tmf.pcm620.model.CategoryUpdate;
 import org.etsi.osl.tmf.pcm620.model.ProductOffering;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingRef;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationRef;
 import org.etsi.osl.tmf.pcm620.repo.ProductCatalogRepository;
 import org.etsi.osl.tmf.pcm620.repo.ProductCategoriesRepository;
 import org.etsi.osl.tmf.pcm620.repo.ProductOfferingRepository;
+import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
+import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
 public class ProductCategoryRepoService {
 
-	@Autowired
-	ProductCategoriesRepository categsRepo;
-
-	@Autowired
-	ProductCatalogRepository catalogRepo;
+	private final ProductCategoriesRepository categsRepo;
 	
-	@Autowired
-	ProductOfferingRepository prodsOfferingRepo;
-
-	private SessionFactory sessionFactory;
+	private final ProductOfferingRepository prodsOfferingRepo;
 
 	/**
 	 * from
@@ -67,11 +69,11 @@ public class ProductCategoryRepoService {
 	 * @param factory
 	 */
 	@Autowired
-	public ProductCategoryRepoService(EntityManagerFactory factory) {
-		if (factory.unwrap(SessionFactory.class) == null) {
-			throw new NullPointerException("factory is not a hibernate factory");
-		}
-		this.sessionFactory = factory.unwrap(SessionFactory.class);
+	public ProductCategoryRepoService( ProductCategoriesRepository categsRepo, 
+	    ProductOfferingRepository prodsOfferingRepo) {
+	  
+	  this.categsRepo = categsRepo;
+	  this.prodsOfferingRepo = prodsOfferingRepo;
 	}
 	
 	
@@ -100,28 +102,31 @@ public class ProductCategoryRepoService {
 	}
 	
 
-	public Category findByIdEager(String id) {
-//		Optional<Category> optionalCat = this.categsRepo.findByIdEager( id );
-//		return optionalCat
-//				.orElse(null);
-		
-		 Session session = sessionFactory.openSession();
-		    Transaction tx = session.beginTransaction();
-		    Category dd = null;
-		    try {
-		        dd = (Category) session.get(Category.class, id);
-		        Hibernate.initialize( dd.getCategoryObj()  );
-		        Hibernate.initialize( dd.getProductOfferingRefs() );
-		        for (ProductOfferingRef sc : dd.getProductOfferingRefs()) {
-			        Hibernate.initialize(sc );
-				}
-		        
-		        tx.commit();
-		    } finally {
-		        session.close();
-		    }
-		    return dd;
-	}
+    @Transactional
+    public String findByIdEager(String id) {
+        Category sc = this.findByUuid( id );
+
+        String res= "{}";
+        
+        if ( sc == null ) {
+          return res;
+        }
+          
+        
+        ObjectMapper mapper = new ObjectMapper();
+          // Registering Hibernate4Module to support lazy objects
+          // this will fetch all lazy objects before marshaling
+          mapper.registerModule(new Hibernate5JakartaModule());     
+          
+          try {
+            res = mapper.writeValueAsString( sc );
+          } catch (JsonProcessingException e) {
+            e.printStackTrace();
+          }
+          
+          
+          return res;
+    }
 	
 	
 	
@@ -321,4 +326,35 @@ public class ProductCategoryRepoService {
 		return optionalCat
 				.orElse(null);
 	}
+	
+	   @Transactional
+	    public String findAllProductOfferingsByCategId(String categoryId) {
+	      
+
+	      String res="[]";
+	      List<ProductSpecificationRef> productSpecificationRefList = new ArrayList<>();
+	      Category category = this.findByUuid(categoryId);      
+	      
+	      if ( category == null ) {
+	        return res;
+	      }
+	      
+	      Set<ProductOffering> proffs = category.getProductOfferingObj();
+
+
+	      ObjectMapper mapper = new ObjectMapper();
+	      // Registering Hibernate4Module to support lazy objects
+	      // this will fetch all lazy objects before marshaling
+	      mapper.registerModule(new Hibernate5JakartaModule());     
+	      
+	      try {
+	        res = mapper.writeValueAsString( proffs );
+	      } catch (JsonProcessingException e) {
+	        e.printStackTrace();
+	      }
+	      
+	      
+	      return res;
+	      
+	    }
 }

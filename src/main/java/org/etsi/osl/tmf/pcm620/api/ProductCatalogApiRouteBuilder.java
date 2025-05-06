@@ -17,7 +17,7 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package org.etsi.osl.tmf.scm633.api;
+package org.etsi.osl.tmf.pcm620.api;
 
 import java.io.IOException;
 
@@ -29,15 +29,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductCatalogRepoService;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductCategoryRepoService;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationUpdate;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
-import org.etsi.osl.tmf.sim638.model.ServiceCreate;
-import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
-import org.etsi.osl.tmf.so641.api.ServiceOrderApiRouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -46,79 +45,77 @@ import org.springframework.stereotype.Component;
 @Configuration
 //@RefreshScope
 @Component
-public class ServiceCatalogApiRouteBuilder extends RouteBuilder {
+public class ProductCatalogApiRouteBuilder extends RouteBuilder {
 
-	private static final transient Log logger = LogFactory.getLog(ServiceCatalogApiRouteBuilder.class.getName());
+	private static final transient Log logger = LogFactory.getLog(ProductCatalogApiRouteBuilder.class.getName());
 
 	
 
-    @Value("${CATALOG_GET_SERVICECATALOGS}")
-    private String CATALOG_GET_SERVICECATALOGS = "";    
+    @Value("${CATALOG_GET_PRODUCTCATALOGS}")
+    private String CATALOG_GET_PRODUCTCATALOGS = "";    
 
-    @Value("${CATALOG_GET_SERVICECATALOG_BY_ID}")
-    private String CATALOG_GET_SERVICECATALOG_BY_ID = "";
+    @Value("${CATALOG_GET_PRODUCTCATALOG_BY_ID}")
+    private String CATALOG_GET_PRODUCTCATALOG_BY_ID = "";
     
-    @Value("${CATALOG_GET_SERVICECATALOG_BY_NAME}")
-    private String CATALOG_GET_SERVICECATALOG_BY_NAME = "";
+    @Value("${CATALOG_GET_PRODUCTCATALOG_BY_NAME}")
+    private String CATALOG_GET_PRODUCTCATALOG_BY_NAME = "";
     
-    @Value("${CATALOG_GET_SERVICECATEGORIES}")
-    private String CATALOG_GET_SERVICECATEGORIES = "";
+    @Value("${CATALOG_GET_PRODUCTCATEGORIES}")
+    private String CATALOG_GET_PRODUCTCATEGORIES = "";
     
-    @Value("${CATALOG_GET_SERVICECATEGORY_BY_ID}")
-    private String CATALOG_GET_SERVICECATEGORY_BY_ID = "";
+    @Value("${CATALOG_GET_PRODUCTCATEGORY_BY_ID}")
+    private String CATALOG_GET_PRODUCTCATEGORY_BY_ID = "";
 	
 
-    @Value("${CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID}")
-    private String CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID = "";
-    
-
+    @Value("${CATALOG_GET_PRODUCTOFFERINGS_BYCATEGORY_ID}")
+    private String CATALOG_GET_PRODUCTOFFERINGS_BYCATEGORY_ID = "";
 	
   
 	@Autowired
-	CatalogRepoService catalogRepoService;
+	ProductCatalogRepoService catalogRepoService;
 	
 
     @Autowired
-    CategoryRepoService categoryRepoService;
+    ProductCategoryRepoService categoryRepoService;
 	
 	
 	@Override
 	public void configure() throws Exception {
 		
-		from( CATALOG_GET_SERVICECATALOG_BY_ID )
-		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOG_BY_ID + " message received!")
+		from( CATALOG_GET_PRODUCTCATALOG_BY_ID )
+		.log(LoggingLevel.INFO, log, CATALOG_GET_PRODUCTCATALOG_BY_ID + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.bean( catalogRepoService, "findByUuidEager(${header.catalogId})");
 		
-		from( CATALOG_GET_SERVICECATALOGS )
-		.log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOGS + " message received!")
+		from( CATALOG_GET_PRODUCTCATALOGS )
+		.log(LoggingLevel.INFO, log, CATALOG_GET_PRODUCTCATALOGS + " message received!")
 		.to("log:DEBUG?showBody=true&showHeaders=true")	
 		.bean( catalogRepoService, "findAllEager()");
 		
-	    from( CATALOG_GET_SERVICECATALOG_BY_NAME )
-	    .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATALOG_BY_NAME + " message received!")
+	    from( CATALOG_GET_PRODUCTCATALOG_BY_NAME )
+	    .log(LoggingLevel.INFO, log, CATALOG_GET_PRODUCTCATALOG_BY_NAME + " message received!")
 	    .to("log:DEBUG?showBody=true&showHeaders=true")
         .bean( catalogRepoService, "findByNameEager(${header.catalogName})")
 	    .marshal().json( JsonLibrary.Jackson, String.class)
 	    .convertBodyTo( String.class );
 	      
 	    
-        from( CATALOG_GET_SERVICECATEGORIES )
-        .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATEGORIES + " message received!")
+        from( CATALOG_GET_PRODUCTCATEGORIES )
+        .log(LoggingLevel.INFO, log, CATALOG_GET_PRODUCTCATEGORIES + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .bean( catalogRepoService, "findAllCategoriesByCatalogName(${header.catalogName})");
           
         
-        from( CATALOG_GET_SERVICECATEGORY_BY_ID )
-        .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICECATEGORY_BY_ID + " message received!")
+        from( CATALOG_GET_PRODUCTCATEGORY_BY_ID )
+        .log(LoggingLevel.INFO, log, CATALOG_GET_PRODUCTCATEGORY_BY_ID + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
         .bean( categoryRepoService, "findByIdEager(${header.catalogId})");
         
         
-        from( CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID )
-        .log(LoggingLevel.INFO, log, CATALOG_GET_SERVICESPECREFS_BYCATEGORY_ID + " message received!")
+        from( CATALOG_GET_PRODUCTOFFERINGS_BYCATEGORY_ID )
+        .log(LoggingLevel.INFO, log, CATALOG_GET_PRODUCTOFFERINGS_BYCATEGORY_ID + " message received!")
         .to("log:DEBUG?showBody=true&showHeaders=true")
-        .bean( categoryRepoService, "findAllServiceSpecRefsByCategId(${header.categoryId})");
+        .bean( categoryRepoService, "findAllProductOfferingsByCategId(${header.categoryId})");
 	      
 	}
 
