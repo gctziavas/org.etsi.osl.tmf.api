@@ -35,7 +35,6 @@
       "groupCategory": "CPUGroup",
       "performanceIndicatorSpecification": [
         {
-          "uuid": "5000",
           "href": "https://host:port/tmf-api/performanceManagement/v5/performanceIndicatorSpecification/5000",
           "@type": "PerformanceIndicatorSpecificationRef"
         }
@@ -47,7 +46,6 @@
   ],
   "performanceIndicatorSpecification": [
     {
-      "uuid": "101",
       "href": "https://host:port/tmf-api/performanceManagement/v5/performanceIndicatorSpecification/101",
       "derivationAlgorithm": "na",
       "derivationMethod": "average",
@@ -60,7 +58,6 @@
       "indicatorType": "float",
       "performanceIndicatorSpecRelationship": [
         {
-          "uuid": "321",
           "href": "https://host:port/tmf-api/performanceManagement/v5/performanceIndicatorSpecRelationship/321",
           "relationshipType": "reliesOn",
           "validFor": {
