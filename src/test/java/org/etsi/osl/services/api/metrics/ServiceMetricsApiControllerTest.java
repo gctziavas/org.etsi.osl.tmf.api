@@ -78,7 +78,7 @@ public class ServiceMetricsApiControllerTest {
     public void testCountTotalServices() throws Exception {
         createService(ServiceStateType.ACTIVE);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/totalServices" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/totalServices" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
@@ -95,7 +95,7 @@ public class ServiceMetricsApiControllerTest {
         createService(ServiceStateType.ACTIVE);
         createService(ServiceStateType.INACTIVE);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/totalServices" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/totalServices" )
                         .param("state", "ACTIVE")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
@@ -125,7 +125,7 @@ public class ServiceMetricsApiControllerTest {
 
         String endTime = OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/servicesGroupByState")
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/servicesGroupByState")
                         .param("starttime", startTime)
                         .param("endtime", endTime)
                         .contentType(MediaType.APPLICATION_JSON))
