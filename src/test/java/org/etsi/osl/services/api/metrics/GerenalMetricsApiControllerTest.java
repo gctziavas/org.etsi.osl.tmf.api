@@ -75,7 +75,7 @@ public class GerenalMetricsApiControllerTest {
         individualCreate.setFullName("John Doe");
         individualRepoService.addIndividual(individualCreate);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/registeredIndividuals" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/registeredIndividuals" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
@@ -89,7 +89,7 @@ public class GerenalMetricsApiControllerTest {
     @Test
     public void testGetPublishedServiceSpecifications() throws Exception {
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/publishedServiceSpecifications" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/publishedServiceSpecifications" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
@@ -112,7 +112,7 @@ public class GerenalMetricsApiControllerTest {
     @Test
     public void testGetRegisteredResourceSpecifications() throws Exception {
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/registeredResourceSpecifications" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/registeredResourceSpecifications" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
