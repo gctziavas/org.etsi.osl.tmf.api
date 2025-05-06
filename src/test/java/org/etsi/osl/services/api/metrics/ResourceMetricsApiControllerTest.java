@@ -80,7 +80,7 @@ public class ResourceMetricsApiControllerTest {
     public void testCountTotalResources() throws Exception {
         createResource(ResourceStatusType.AVAILABLE);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/totalResources" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/totalResources" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
@@ -97,7 +97,7 @@ public class ResourceMetricsApiControllerTest {
         createResource(ResourceStatusType.AVAILABLE);
         createResource(ResourceStatusType.STANDBY);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/totalResources" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/totalResources" )
                         .param("state", "STANDBY")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
@@ -127,7 +127,7 @@ public class ResourceMetricsApiControllerTest {
 
         String endTime = OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/resourcesGroupByState")
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/resourcesGroupByState")
                         .param("starttime", startTime)
                         .param("endtime", endTime)
                         .contentType(MediaType.APPLICATION_JSON))
