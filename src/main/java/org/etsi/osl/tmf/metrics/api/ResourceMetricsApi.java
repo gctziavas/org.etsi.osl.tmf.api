@@ -28,7 +28,7 @@ public interface ResourceMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/totalResources", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/totalResources", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getTotalResources(
             @Valid @RequestParam(value = "state", required = false) ResourceStatusType state
     );
@@ -39,7 +39,7 @@ public interface ResourceMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/resourcesGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/resourcesGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Object>> getResourcesGroupedByState(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
