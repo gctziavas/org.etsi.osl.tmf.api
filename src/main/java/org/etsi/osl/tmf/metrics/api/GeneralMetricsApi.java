@@ -25,7 +25,7 @@ public interface GeneralMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/registeredIndividuals", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/registeredIndividuals", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getRegisteredIndividuals();
 
     @Operation(summary = "Get total number of published service specifications", operationId = "getPublishedServiceSpecifications")
@@ -34,7 +34,7 @@ public interface GeneralMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/publishedServiceSpecifications", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/publishedServiceSpecifications", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getPublishedServiceSpecifications();
 
     @Operation(summary = "Get total number of registered resource specifications", operationId = "getRegisteredResourceSpecifications")
@@ -43,6 +43,6 @@ public interface GeneralMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/registeredResourceSpecifications", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/registeredResourceSpecifications", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getRegisteredResourceSpecifications();
 }
