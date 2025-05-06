@@ -70,7 +70,7 @@ public class ServiceOrderMetricsApiControllerTest {
     public void testCountTotalServiceOrders() throws Exception {
         createServiceOrder(ServiceOrderStateType.INPROGRESS);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/totalServiceOrders" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/totalServiceOrders" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
@@ -87,7 +87,7 @@ public class ServiceOrderMetricsApiControllerTest {
         createServiceOrder(ServiceOrderStateType.INPROGRESS);
         createServiceOrder(ServiceOrderStateType.ACKNOWLEDGED);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/totalServiceOrders" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/totalServiceOrders" )
                         .param("state", "ACKNOWLEDGED")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
@@ -113,7 +113,7 @@ public class ServiceOrderMetricsApiControllerTest {
         createServiceOrder(ServiceOrderStateType.ACKNOWLEDGED);
         createServiceOrder(ServiceOrderStateType.REJECTED);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/activeServiceOrders" )
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/activeServiceOrders" )
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
@@ -137,7 +137,7 @@ public class ServiceOrderMetricsApiControllerTest {
 
         String endTime = OffsetDateTime.now(ZoneOffset.UTC).plusDays(4).format(DateTimeFormatter.ISO_INSTANT);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/serviceOrdersGroupByDay")
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/serviceOrdersGroupByDay")
                         .param("starttime", startTime)
                         .param("endtime", endTime)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -188,7 +188,7 @@ public class ServiceOrderMetricsApiControllerTest {
 
         String endTime = OffsetDateTime.now(ZoneOffset.UTC).plusDays(4).format(DateTimeFormatter.ISO_INSTANT);
 
-        String response = mvc.perform(MockMvcRequestBuilders.get("/tmf-api/metrics/serviceOrdersGroupByState")
+        String response = mvc.perform(MockMvcRequestBuilders.get("/metrics/serviceOrdersGroupByState")
                         .param("starttime", startTime)
                         .param("endtime", endTime)
                         .contentType(MediaType.APPLICATION_JSON))
