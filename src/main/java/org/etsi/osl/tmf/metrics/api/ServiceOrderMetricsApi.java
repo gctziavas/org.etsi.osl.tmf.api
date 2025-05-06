@@ -29,7 +29,7 @@ public interface ServiceOrderMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/totalServiceOrders", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/totalServiceOrders", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getTotalServiceOrders(
             @Valid @RequestParam(value = "state", required = false) ServiceOrderStateType state
     );
@@ -41,7 +41,7 @@ public interface ServiceOrderMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/activeServiceOrders", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/activeServiceOrders", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getTotalActiveServiceOrders();
 
 
@@ -51,7 +51,7 @@ public interface ServiceOrderMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/serviceOrdersGroupByDay", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/serviceOrdersGroupByDay", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Object>> getServiceOrdersGroupedByDay(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
@@ -64,7 +64,7 @@ public interface ServiceOrderMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/serviceOrdersGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/serviceOrdersGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Object>> getServiceOrdersGroupedByState(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
