@@ -28,7 +28,7 @@ public interface ServiceMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/totalServices", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/totalServices", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Integer>> getTotalServices(
             @Valid @RequestParam(value = "state", required = false) ServiceStateType state
     );
@@ -39,7 +39,7 @@ public interface ServiceMetricsApi {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    @RequestMapping(value = "/tmf-api/metrics/servicesGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "/metrics/servicesGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     ResponseEntity<Map<String, Object>> getServicesGroupedByState(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
