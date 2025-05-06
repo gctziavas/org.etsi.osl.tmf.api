@@ -39,18 +39,26 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class CandidateRepoService {
 
 
-	@Autowired
-	CandidateRepository candidateRepo;	
+	private final CandidateRepository candidateRepo;	
 
-	@Autowired
-	CategoryRepoService categsRepoService;
+	private final CategoryRepoService categoryRepoService;	
+
+	private final ServiceSpecificationRepository serviceSpecificationRepo;
 	
-
 	@Autowired
-	ServiceSpecificationRepository serviceSpecificationRepo;
+    public CandidateRepoService(
+        CandidateRepository candidateRepo,
+        CategoryRepoService categoryRepoService,
+        ServiceSpecificationRepository serviceSpecificationRepo
+    ) {
+        this.candidateRepo = candidateRepo;
+        this.categoryRepoService = categoryRepoService;
+        this.serviceSpecificationRepo = serviceSpecificationRepo;
+    }
 	
 	public ServiceCandidate addServiceCandidate( ServiceCandidate c) {
 
@@ -153,11 +161,11 @@ public class CandidateRepoService {
 		
 		if ( serviceCandidateUpd.getCategory() !=null ){
 			for (ServiceCategoryRef sCategD : serviceCandidateUpd.getCategory()) {			
-				ServiceCategory catObj = this.categsRepoService.findByIdEager(sCategD.getId());
+				ServiceCategory catObj = this.categoryRepoService.findByUuid(sCategD.getId());
 
 				if ( catObj!=null){
 					catObj.getServiceCandidateObj().add(savedCand); //add candidate ref to category
-					catObj = this.categsRepoService.categsRepo.save(catObj); 
+					catObj = this.categoryRepoService.getCategsRepo().save(catObj); 
 					
 				}
 			}			

@@ -34,10 +34,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.tmf.common.model.Any;
@@ -62,6 +64,7 @@ import org.etsi.osl.tmf.scm633.api.ServiceSpecificationApiRouteBuilderNSD;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateUpdate;
+import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecRelationship;
@@ -208,13 +211,12 @@ public class ServiceSpecificationRepoService {
 				
 			}			
 			sql += " FROM ServiceSpecification s";
-			if (allParams.size() > 0) {
-				sql += " WHERE ";
-				for (String pname : allParams.keySet()) {
-					sql += " " + pname + " LIKE ";
-					String pval = URLDecoder.decode(allParams.get(pname), StandardCharsets.UTF_8.toString());
-					sql += "'" + pval + "'";
-				}
+			if (allParams.size() > 0) {				
+				String items = allParams.entrySet()
+			    .stream()
+			    .map(entry -> "s." + entry.getKey() + " LIKE '%" + URLDecoder.decode( entry.getValue(), StandardCharsets.UTF_8 )+ "%'" )
+			    .collect(Collectors.joining(" OR "));
+				sql += " WHERE " + items;
 
 			}
 			sql += " ORDER BY s.name";
@@ -230,10 +232,10 @@ public class ServiceSpecificationRepoService {
 							Map<String, Object> result = new LinkedHashMap<String, Object>(tuple.length);
 							        for (int i = 0; i < tuple.length; i++) {
 							            String alias = aliases[i];
-							            if (alias.equals("type")) {
-							            	alias = "@type";
-							            }
 							            if (alias != null) {
+	                                        if (alias.equals("type")) {
+	                                            alias = "@type";
+	                                        }
 							                result.put(alias, tuple[i]);
 							            }
 							        }
@@ -271,7 +273,11 @@ public class ServiceSpecificationRepoService {
 
 	}
 
-//	 @Transactional(propagation=Propagation.REQUIRED , readOnly=true,
+
+
+
+
+  //	 @Transactional(propagation=Propagation.REQUIRED , readOnly=true,
 //	 noRollbackFor=Exception.class)
 	public ServiceSpecification findByUuid(String id) {
 		Optional<ServiceSpecification> optionalCat = this.serviceSpecificationRepo.findByUuid(id);
@@ -1463,6 +1469,124 @@ public class ServiceSpecificationRepoService {
 		return serviceSpecCharacteristicItem;
 	}
 	
+
+    @Transactional
+    public String searchServiceSpecRefs(List<String> searchText) {
+      String res = "[]";
+
+      try {
+        
+        List<String> specs= this.searchSpecsInCategories( searchText);
+        
+        ObjectMapper mapper = new ObjectMapper();
+        // Registering Hibernate4Module to support lazy objects
+        // this will fetch all lazy objects before marshaling
+        mapper.registerModule(new Hibernate5JakartaModule());   
+        res = mapper.writeValueAsString( specs );  
+        
+        
+      } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+      } catch (JsonProcessingException e) {
+        e.printStackTrace();
+      }
+
+      
+      return res;
+    }
+    
+    
+    /**
+     * 
+     * This findAll is optimized on fields. 
+     * @param fields
+     * @param allParams
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    @Transactional
+    public List searchSpecsInCategories( List<String> searchList )
+            throws UnsupportedEncodingException {
+
+      if ( searchList == null || searchList.size() ==0) {
+        return new ArrayList<>();
+      }
+      
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        
+        try {
+          String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription";
+                       
+            
+
+            sql += " FROM ServiceCategory as scateg JOIN  scateg.serviceCandidateObj as scandidate JOIN scandidate.serviceSpecificationObj as s ";
+            sql += " WHERE " ;
+            
+                      
+            // Build the name LIKE clause
+            StringJoiner nameJoiner = new StringJoiner(" AND ");
+            for (String term : searchList) {
+                nameJoiner.add("s.name LIKE '%" + term + "%'");
+            }
+
+            // Build the description LIKE clause
+            StringJoiner descriptionJoiner = new StringJoiner(" AND ");
+            for (String term : searchList) {
+                descriptionJoiner.add("s.description LIKE '%" + term + "%'");
+            }
+
+            // Combine both clauses with OR
+            sql += "(" + nameJoiner.toString() + ") OR (" + descriptionJoiner.toString() + ")";            
+            
+            sql += " ORDER BY s.name";
+            
+//            List<ServiceSpecification> specs = session
+//                .createQuery( sql, ServiceSpecification.class)
+//                .getResultList();
+            
+            
+            List<Object> mapaEntity = session
+                    .createQuery(sql )
+                    .setResultTransformer( new ResultTransformer() {
+                        
+                        @Override
+                        public Object transformTuple(Object[] tuple, String[] aliases) {
+                            Map<String, Object> result = new LinkedHashMap<String, Object>(tuple.length);
+                                    for (int i = 0; i < tuple.length; i++) {
+                                        String alias = aliases[i];
+                                        if (alias != null) {
+                                          if (alias.equals("type")) {
+                                              alias = "@type";
+                                          }
+                                            result.put(alias, tuple[i]);
+                                        }
+                                    }
+
+                                    return result;
+                        }
+                        
+                        @Override
+                        public List transformList(List collection) {
+                            return collection;
+                        }
+                    } )
+                    .list();
+            
+//          //this will fetch the whole object fields
+            
+            
+            return mapaEntity;
+        
+            
+            
+            
+        } finally {
+            tx.commit();
+            session.close();
+        }
+
+    }
 
 	
 

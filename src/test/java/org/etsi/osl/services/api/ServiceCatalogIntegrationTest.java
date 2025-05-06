@@ -164,7 +164,7 @@ public class ServiceCatalogIntegrationTest {
 		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
 		assertThat( categ.getServiceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
-		ServiceCategory categ2 = categRepoService.findByIdEager( categ.getId() );
+		ServiceCategory categ2 = categRepoService.findByUuid( categ.getId() );
 		assertThat( categ2.getServiceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
 		boolean vinnisbFound = false;
@@ -1014,7 +1014,7 @@ public class ServiceCatalogIntegrationTest {
 		logger.info("Test: testGSTUpdate " );
 		
 		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
-		ServiceCategory categ2 = categRepoService.findByIdEager( categ.getId() );
+		ServiceCategory categ2 = categRepoService.findByUuid( categ.getId() );
 		assertThat( categ2.getServiceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
 		ServiceSpecification spec = this.specRepoService.findByNameAndVersion("A GST(NEST) Service Example", "5.0.0" );
