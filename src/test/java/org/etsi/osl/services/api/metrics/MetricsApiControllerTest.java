@@ -5,10 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.Any;
-import org.etsi.osl.tmf.common.model.UserPartRoleType;
 import org.etsi.osl.tmf.common.model.service.Note;
-import org.etsi.osl.tmf.common.model.service.ResourceRef;
-import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.rcm634.model.*;
 import org.etsi.osl.tmf.ri639.model.*;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
@@ -56,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("testing")
 //@TestPropertySource(
 //		  locations = "classpath:application-testing.yml")
-public class ResourceMetricsApiControllerTest {
+public class MetricsApiControllerTest {
 
     @Autowired
     private MockMvc mvc;

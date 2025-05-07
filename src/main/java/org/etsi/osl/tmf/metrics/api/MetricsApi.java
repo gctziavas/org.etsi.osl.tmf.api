@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
-@Tag(name = "ResourceMetricsApi")
-public interface ResourceMetricsApi {
+@Tag(name = "MetricsApi")
+public interface MetricsApi {
 
-    Logger log = LoggerFactory.getLogger(ResourceMetricsApi.class);
+    Logger log = LoggerFactory.getLogger(MetricsApi.class);
 
     @Operation(summary = "Get total number of resources", operationId = "getTotalResources")
     @ApiResponses(value = {
