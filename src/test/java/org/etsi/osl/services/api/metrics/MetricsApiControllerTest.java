@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("testing")
 //@TestPropertySource(
 //		  locations = "classpath:application-testing.yml")
-public class ServiceOrderMetricsApiControllerTest {
+public class MetricsApiControllerTest {
 
     @Autowired
     private MockMvc mvc;

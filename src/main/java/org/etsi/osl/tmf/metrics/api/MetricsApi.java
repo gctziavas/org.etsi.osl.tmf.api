@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.etsi.osl.tmf.common.model.service.ServiceStateType;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
-@Tag(name = "ServiceOrderMetricsApi")
-public interface ServiceOrderMetricsApi {
+@Tag(name = "MetricsApi")
+public interface MetricsApi {
 
-    Logger log = LoggerFactory.getLogger(ServiceOrderMetricsApi.class);
+    Logger log = LoggerFactory.getLogger(MetricsApi.class);
 
     @Operation(summary = "Get total number of service orders", operationId = "getTotalServiceOrders")
     @ApiResponses(value = {
