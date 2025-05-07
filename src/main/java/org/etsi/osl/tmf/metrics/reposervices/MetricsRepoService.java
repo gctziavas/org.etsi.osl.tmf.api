@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class ServiceMetricsRepoService {
+public class MetricsRepoService {
 
     @Autowired
     ObjectMapper objectMapper;

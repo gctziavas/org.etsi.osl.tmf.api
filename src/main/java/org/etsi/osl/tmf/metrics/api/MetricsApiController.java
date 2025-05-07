@@ -1,7 +1,7 @@
 package org.etsi.osl.tmf.metrics.api;
 
 import org.etsi.osl.tmf.common.model.service.ServiceStateType;
-import org.etsi.osl.tmf.metrics.reposervices.ServiceMetricsRepoService;
+import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class ServiceMetricsApiController implements ServiceMetricsApi{
+public class MetricsApiController implements MetricsApi {
 
-    private static final Logger log = LoggerFactory.getLogger(ServiceMetricsApiController.class);
-    private final ServiceMetricsRepoService serviceMetricsRepoService;
+    private static final Logger log = LoggerFactory.getLogger(MetricsApiController.class);
+    private final MetricsRepoService serviceMetricsRepoService;
 
     @Autowired
-    public ServiceMetricsApiController(ServiceMetricsRepoService serviceMetricsRepoService) {
+    public MetricsApiController(MetricsRepoService serviceMetricsRepoService) {
         this.serviceMetricsRepoService = serviceMetricsRepoService;
     }
 
