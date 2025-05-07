@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@TestPropertySource(
 //		  locations = "classpath:application-testing.yml")
 
-public class GerenalMetricsApiControllerTest {
+public class MetricsApiControllerTest {
 
     @Autowired
     private MockMvc mvc;

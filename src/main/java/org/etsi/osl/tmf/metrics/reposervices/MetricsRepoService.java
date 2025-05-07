@@ -3,7 +3,6 @@ package org.etsi.osl.tmf.metrics.reposervices;
 import org.etsi.osl.tmf.pm632.repo.IndividualRepository;
 import org.etsi.osl.tmf.rcm634.repo.ResourceSpecificationRepository;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
-import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.repo.CandidateRepository;
 import org.etsi.osl.tmf.scm633.repo.CategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class GeneralMetricsRepoService {
+public class MetricsRepoService {
 
     @Autowired
     IndividualRepository individualRepository;

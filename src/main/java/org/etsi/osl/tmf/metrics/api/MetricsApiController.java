@@ -1,6 +1,6 @@
 package org.etsi.osl.tmf.metrics.api;
 
-import org.etsi.osl.tmf.metrics.reposervices.GeneralMetricsRepoService;
+import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class GerenalMetricsApiController implements GeneralMetricsApi {
+public class MetricsApiController implements MetricsApi {
 
-    private static final Logger log = LoggerFactory.getLogger(GerenalMetricsApiController.class);
+    private static final Logger log = LoggerFactory.getLogger(MetricsApiController.class);
 
-    private final GeneralMetricsRepoService generalMetricsRepoService;
+    private final MetricsRepoService generalMetricsRepoService;
 
     @Autowired
-    public GerenalMetricsApiController(GeneralMetricsRepoService generalMetricsRepoService) {
+    public MetricsApiController(MetricsRepoService generalMetricsRepoService) {
         this.generalMetricsRepoService = generalMetricsRepoService;
     }
 

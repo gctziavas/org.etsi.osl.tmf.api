@@ -4,20 +4,18 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@Tag(name = "GeneralMetricsApi")
-public interface GeneralMetricsApi {
+@Tag(name = "MetricsApi")
+public interface MetricsApi {
 
-    Logger log = LoggerFactory.getLogger(GeneralMetricsApi.class);
+    Logger log = LoggerFactory.getLogger(MetricsApi.class);
 
     @Operation(summary = "Get total number of registered individuals", operationId = "getRegisteredIndividuals")
     @ApiResponses(value = {
