@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.etsi.osl.tmf.common.model.service.ServiceStateType;
+import org.etsi.osl.tmf.metrics.ServicesGroupByState;
+import org.etsi.osl.tmf.metrics.TotalServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,7 +31,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/totalServices", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getTotalServices(
+    ResponseEntity<TotalServices> getTotalServices(
             @Valid @RequestParam(value = "state", required = false) ServiceStateType state
     );
 
@@ -40,7 +42,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/servicesGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Object>> getServicesGroupedByState(
+    ResponseEntity<ServicesGroupByState> getServicesGroupedByState(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
     );

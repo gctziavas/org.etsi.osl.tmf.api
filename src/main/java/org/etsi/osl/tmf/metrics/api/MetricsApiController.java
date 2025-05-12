@@ -1,6 +1,7 @@
 package org.etsi.osl.tmf.metrics.api;
 
 import org.etsi.osl.tmf.common.model.service.ServiceStateType;
+import org.etsi.osl.tmf.metrics.*;
 import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +28,10 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Integer>> getTotalServices(ServiceStateType state) {
+    public ResponseEntity<TotalServices> getTotalServices(ServiceStateType state) {
         try {
             int totalServices = serviceMetricsRepoService.countTotalServices(state);
-            Map<String, Integer> response = new HashMap<>();
-            response.put("totalServices", totalServices);
+            TotalServices response = new TotalServices(totalServices);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Couldn't retrieve total services. ", e);
@@ -40,7 +40,7 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> getServicesGroupedByState(OffsetDateTime starttime, OffsetDateTime endtime) {
+    public ResponseEntity<ServicesGroupByState> getServicesGroupedByState(OffsetDateTime starttime, OffsetDateTime endtime) {
         try {
             Map<String, Integer> servicesByState = serviceMetricsRepoService.getServicesGroupedByState(starttime, endtime);
 
@@ -55,25 +55,17 @@ public class MetricsApiController implements MetricsApi {
                 fullStateMap.put(key.toUpperCase(), value); // normalize case just in case
             });
 
-            // Build groupByState list
-            List<Map<String, Object>> groupByStateList = fullStateMap.entrySet().stream()
-                    .map(entry -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("key", entry.getKey());
-                        map.put("count", entry.getValue());
-                        return map;
-                    })
+            // Create aggregation items
+            List<GroupByItem> groupByStateList = fullStateMap.entrySet().stream()
+                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
                     .toList();
 
+            // Build response structure using metrics models
+            GroupByStateAggregations aggregations = new GroupByStateAggregations(groupByStateList);
+            int total = fullStateMap.values().stream().mapToInt(Integer::intValue).sum();
+            Services services = new Services(total, aggregations);
+            ServicesGroupByState response = new ServicesGroupByState(services);
 
-            // Wrap in response structure
-            Map<String, Object> aggregations = Map.of("groupByState", groupByStateList);
-            Map<String, Object> services = Map.of(
-                    "total", fullStateMap.values().stream().mapToInt(Integer::intValue).sum(),
-                    "aggregations", aggregations
-            );
-
-            Map<String, Object> response = Map.of("services", services);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
