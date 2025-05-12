@@ -39,22 +39,27 @@ public class MetricsRepoService {
         return serviceOrderRepository.countAllActive(currentDate, activeStates);
     }
 
-    public Map<String, Long> getServiceOrdersGroupedByDay(OffsetDateTime starttime, OffsetDateTime endtime) {
+    public Map<String, Integer> getServiceOrdersGroupedByDay(OffsetDateTime starttime, OffsetDateTime endtime) {
         if (starttime.plusDays(31).isBefore(endtime)) {
             starttime = endtime.minusDays(31);
         }
 
         List<OffsetDateTime> orderDates = serviceOrderRepository.getOrderDatesBetweenDates(starttime, endtime);
 
-        return orderDates.stream()
+        // First group by day with count as Long
+        Map<String, Long> grouped = orderDates.stream()
                 .map(dt -> dt.truncatedTo(ChronoUnit.DAYS))  // Remove time portion
                 .collect(Collectors.groupingBy(
                         dt -> dt.toInstant().toString(),      // Format as ISO string (Z)
                         Collectors.counting()
                 ));
 
-
-
+        // Convert Map<String, Long> to Map<String, Integer>
+        return grouped.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().intValue()
+                ));
     }
 
     public Map<String, Integer> getServiceOrdersGroupedByState(OffsetDateTime starttime, OffsetDateTime endtime) {

@@ -1,5 +1,6 @@
 package org.etsi.osl.tmf.metrics.api;
 
+import org.etsi.osl.tmf.metrics.*;
 import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.slf4j.Logger;
@@ -29,11 +30,10 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Integer>> getTotalServiceOrders(ServiceOrderStateType state) {
+    public ResponseEntity<TotalServiceOrders> getTotalServiceOrders(ServiceOrderStateType state) {
         try {
             int totalServiceOrders = serviceOrderMetricsRepoService.countTotalServiceOrders(state);
-            Map<String, Integer> response = new HashMap<>();
-            response.put("totalServiceOrders", totalServiceOrders);
+            TotalServiceOrders response = new TotalServiceOrders(totalServiceOrders);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Couldn't retrieve total service orders. ", e);
@@ -42,11 +42,10 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Integer>> getTotalActiveServiceOrders() {
+    public ResponseEntity<ActiveServiceOrders> getTotalActiveServiceOrders() {
         try {
             int totalActiveServiceOrders = serviceOrderMetricsRepoService.countTotalActiveServiceOrders();
-            Map<String, Integer> response = new HashMap<>();
-            response.put("activeServiceOrders", totalActiveServiceOrders);
+            ActiveServiceOrders response = new ActiveServiceOrders(totalActiveServiceOrders);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Couldn't retrieve total active service orders. ", e);
@@ -55,36 +54,29 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> getServiceOrdersGroupedByDay(OffsetDateTime starttime, OffsetDateTime endtime) {
+    public ResponseEntity<ServiceOrdersGroupByDay> getServiceOrdersGroupedByDay(OffsetDateTime starttime, OffsetDateTime endtime) {
         try {
-            Map<String, Long> orderDatesGroupedByDate = serviceOrderMetricsRepoService.getServiceOrdersGroupedByDay(starttime, endtime);
+            Map<String, Integer> orderDatesGroupedByDate = serviceOrderMetricsRepoService.getServiceOrdersGroupedByDay(starttime, endtime);
 
             // Fill missing days with count 0
-            Map<String, Long> fullDayMap = new LinkedHashMap<>();
+            Map<String, Integer> fullDayMap = new LinkedHashMap<>();
             OffsetDateTime cursor = starttime.truncatedTo(ChronoUnit.DAYS);
             OffsetDateTime endDay = endtime.truncatedTo(ChronoUnit.DAYS);
             while (!cursor.isAfter(endDay)) {
                 String key = cursor.toInstant().toString();
-                fullDayMap.put(key, orderDatesGroupedByDate.getOrDefault(key, 0L));
+                fullDayMap.put(key, orderDatesGroupedByDate.getOrDefault(key, 0));
                 cursor = cursor.plusDays(1);
             }
 
-            List<Map<String, Object>> groupByDayList = fullDayMap.entrySet().stream()
-                    .map(entry -> {
-                        Map<String, Object> dayMap = new HashMap<>();
-                        dayMap.put("key", entry.getKey());
-                        dayMap.put("count", entry.getValue());
-                        return dayMap;
-                    })
+            // Convert to model list
+            List<GroupByItem> groupByDayList = fullDayMap.entrySet().stream()
+                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
                     .toList();
 
-            Map<String, Object> aggregations = Map.of("groupByDay", groupByDayList);
-            Map<String, Object> serviceOrders = Map.of(
-                    "total", fullDayMap.values().stream().mapToLong(Long::longValue).sum(),
-                    "aggregations", aggregations
-            );
-
-            Map<String, Object> response = Map.of("serviceOrders", serviceOrders);
+            GroupByDayAggregations aggregations = new GroupByDayAggregations(groupByDayList);
+            int total = fullDayMap.values().stream().mapToInt(Integer::intValue).sum();
+            ServiceOrdersDay wrapper = new ServiceOrdersDay(total, aggregations);
+            ServiceOrdersGroupByDay response = new ServiceOrdersGroupByDay(wrapper);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
@@ -95,7 +87,7 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> getServiceOrdersGroupedByState(OffsetDateTime starttime, OffsetDateTime endtime) {
+    public ResponseEntity<ServiceOrdersGroupByState> getServiceOrdersGroupedByState(OffsetDateTime starttime, OffsetDateTime endtime) {
         try {
             Map<String, Integer> servicesByState = serviceOrderMetricsRepoService.getServiceOrdersGroupedByState(starttime, endtime);
 
@@ -110,25 +102,17 @@ public class MetricsApiController implements MetricsApi {
                 fullStateMap.put(key.toUpperCase(), value);
             });
 
-            // Build groupByState list
-            List<Map<String, Object>> groupByStateList = fullStateMap.entrySet().stream()
-                    .map(entry -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("key", entry.getKey());
-                        map.put("count", entry.getValue());
-                        return map;
-                    })
+            // Create aggregation items
+            List<GroupByItem> groupByStateList = fullStateMap.entrySet().stream()
+                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
                     .toList();
 
+            // Build response structure using models
+            GroupByStateAggregations aggregations = new GroupByStateAggregations(groupByStateList);
+            int total = fullStateMap.values().stream().mapToInt(Integer::intValue).sum();
+            ServiceOrders services = new ServiceOrders(total, aggregations);
+            ServiceOrdersGroupByState response = new ServiceOrdersGroupByState(services);
 
-            // Wrap in response structure
-            Map<String, Object> aggregations = Map.of("groupByState", groupByStateList);
-            Map<String, Object> services = Map.of(
-                    "total", fullStateMap.values().stream().mapToInt(Integer::intValue).sum(),
-                    "aggregations", aggregations
-            );
-
-            Map<String, Object> response = Map.of("serviceOrders", services);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {

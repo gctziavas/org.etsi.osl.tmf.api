@@ -5,6 +5,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.etsi.osl.tmf.metrics.ActiveServiceOrders;
+import org.etsi.osl.tmf.metrics.ServiceOrdersGroupByDay;
+import org.etsi.osl.tmf.metrics.ServiceOrdersGroupByState;
+import org.etsi.osl.tmf.metrics.TotalServiceOrders;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +33,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/totalServiceOrders", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getTotalServiceOrders(
+    ResponseEntity<TotalServiceOrders> getTotalServiceOrders(
             @Valid @RequestParam(value = "state", required = false) ServiceOrderStateType state
     );
 
@@ -41,7 +45,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/activeServiceOrders", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getTotalActiveServiceOrders();
+    ResponseEntity<ActiveServiceOrders> getTotalActiveServiceOrders();
 
 
     @Operation(summary = "Get service orders grouped by day", operationId = "getServiceOrdersGroupedByDay")
@@ -51,7 +55,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/serviceOrdersGroupByDay", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Object>> getServiceOrdersGroupedByDay(
+    ResponseEntity<ServiceOrdersGroupByDay> getServiceOrdersGroupedByDay(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
     );
@@ -64,7 +68,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/serviceOrdersGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Object>> getServiceOrdersGroupedByState(
+    ResponseEntity<ServiceOrdersGroupByState> getServiceOrdersGroupedByState(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
     );
