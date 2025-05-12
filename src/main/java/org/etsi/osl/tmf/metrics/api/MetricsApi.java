@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.etsi.osl.tmf.metrics.ResourcesGroupByState;
+import org.etsi.osl.tmf.metrics.TotalResources;
 import org.etsi.osl.tmf.ri639.model.ResourceStatusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +31,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/totalResources", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getTotalResources(
+    ResponseEntity<TotalResources> getTotalResources(
             @Valid @RequestParam(value = "state", required = false) ResourceStatusType state
     );
 
@@ -40,7 +42,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/resourcesGroupByState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Object>> getResourcesGroupedByState(
+    ResponseEntity<ResourcesGroupByState> getResourcesGroupedByState(
             @Valid @RequestParam(value = "starttime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime starttime,
             @Valid @RequestParam(value = "endtime", required = true) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endtime
     );
