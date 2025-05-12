@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.etsi.osl.tmf.metrics.PublishedServiceSpecifications;
+import org.etsi.osl.tmf.metrics.RegisteredIndividuals;
+import org.etsi.osl.tmf.metrics.RegisteredResourceSpecifications;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +27,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/registeredIndividuals", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getRegisteredIndividuals();
+    ResponseEntity<RegisteredIndividuals> getRegisteredIndividuals();
 
     @Operation(summary = "Get total number of published service specifications", operationId = "getPublishedServiceSpecifications")
     @ApiResponses(value = {
@@ -33,7 +36,7 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/publishedServiceSpecifications", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getPublishedServiceSpecifications();
+    ResponseEntity<PublishedServiceSpecifications> getPublishedServiceSpecifications();
 
     @Operation(summary = "Get total number of registered resource specifications", operationId = "getRegisteredResourceSpecifications")
     @ApiResponses(value = {
@@ -42,5 +45,5 @@ public interface MetricsApi {
             @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
     @RequestMapping(value = "/metrics/registeredResourceSpecifications", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    ResponseEntity<Map<String, Integer>> getRegisteredResourceSpecifications();
+    ResponseEntity<RegisteredResourceSpecifications> getRegisteredResourceSpecifications();
 }

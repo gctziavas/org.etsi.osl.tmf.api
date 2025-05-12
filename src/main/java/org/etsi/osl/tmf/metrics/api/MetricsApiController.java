@@ -1,5 +1,8 @@
 package org.etsi.osl.tmf.metrics.api;
 
+import org.etsi.osl.tmf.metrics.PublishedServiceSpecifications;
+import org.etsi.osl.tmf.metrics.RegisteredIndividuals;
+import org.etsi.osl.tmf.metrics.RegisteredResourceSpecifications;
 import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +27,10 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Integer>> getRegisteredIndividuals() {
+    public ResponseEntity<RegisteredIndividuals> getRegisteredIndividuals() {
         try {
             int totalIndividuals = generalMetricsRepoService.countRegisteredIndividuals();
-            Map<String, Integer> response = new HashMap<>();
-            response.put("registeredIndividuals", totalIndividuals);
+            RegisteredIndividuals response = new RegisteredIndividuals(totalIndividuals);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Couldn't retrieve total registered individuals. ", e);
@@ -37,11 +39,10 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Integer>> getPublishedServiceSpecifications() {
+    public ResponseEntity<PublishedServiceSpecifications> getPublishedServiceSpecifications() {
         try {
             int totalSpecifications = generalMetricsRepoService.countPublishedServiceSpecifications();
-            Map<String, Integer> response = new HashMap<>();
-            response.put("publishedServiceSpecifications", totalSpecifications);
+            PublishedServiceSpecifications response = new PublishedServiceSpecifications(totalSpecifications);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Couldn't retrieve total published service specifications. ", e);
@@ -50,11 +51,10 @@ public class MetricsApiController implements MetricsApi {
     }
 
     @Override
-    public ResponseEntity<Map<String, Integer>> getRegisteredResourceSpecifications() {
+    public ResponseEntity<RegisteredResourceSpecifications> getRegisteredResourceSpecifications() {
         try {
             int totalResourceSpecifications = generalMetricsRepoService.countRegisteredResourceSpecifications();
-            Map<String, Integer> response = new HashMap<>();
-            response.put("registeredResourceSpecifications", totalResourceSpecifications);
+            RegisteredResourceSpecifications response = new RegisteredResourceSpecifications(totalResourceSpecifications);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Couldn't retrieve total registered resource specifications. ", e);
