@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +55,12 @@ public class MetricsApiController implements MetricsApi {
             });
 
             // Create aggregation items
-            List<GroupByItem> groupByStateList = fullStateMap.entrySet().stream()
-                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
+            List<ServicesGroupByStateItem> groupByStateList = fullStateMap.entrySet().stream()
+                    .map(entry -> new ServicesGroupByStateItem(ServiceStateType.valueOf(entry.getKey()), entry.getValue()))
                     .toList();
 
             // Build response structure using metrics models
-            GroupByStateAggregations aggregations = new GroupByStateAggregations(groupByStateList);
+            ServicesGroupByStateAggregations aggregations = new ServicesGroupByStateAggregations(groupByStateList);
             int total = fullStateMap.values().stream().mapToInt(Integer::intValue).sum();
             Services services = new Services(total, aggregations);
             ServicesGroupByState response = new ServicesGroupByState(services);
