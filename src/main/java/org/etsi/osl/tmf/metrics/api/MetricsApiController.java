@@ -55,12 +55,12 @@ public class MetricsApiController implements MetricsApi {
             });
 
             // Create aggregation items
-            List<GroupByItem> groupByStateList = fullStateMap.entrySet().stream()
-                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
+            List<ResourcesGroupByStateItem> groupByStateList = fullStateMap.entrySet().stream()
+                    .map(entry -> new ResourcesGroupByStateItem(ResourceStatusType.valueOf(entry.getKey()), entry.getValue()))
                     .toList();
 
             // Build response structure using models
-            GroupByStateAggregations aggregations = new GroupByStateAggregations(groupByStateList);
+            ResourcesGroupByStateAggregations aggregations = new ResourcesGroupByStateAggregations(groupByStateList);
             int total = fullStateMap.values().stream().mapToInt(Integer::intValue).sum();
             Resources services = new Resources(total, aggregations);
             ResourcesGroupByState response = new ResourcesGroupByState(services);
