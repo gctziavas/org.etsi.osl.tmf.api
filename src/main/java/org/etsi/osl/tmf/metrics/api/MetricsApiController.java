@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,13 +68,13 @@ public class MetricsApiController implements MetricsApi {
             }
 
             // Convert to model list
-            List<GroupByItem> groupByDayList = fullDayMap.entrySet().stream()
-                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
+            List<ServiceOrdersGroupByDayItem> groupByDayList = fullDayMap.entrySet().stream()
+                    .map(entry -> new ServiceOrdersGroupByDayItem(entry.getKey(), entry.getValue()))
                     .toList();
 
-            GroupByDayAggregations aggregations = new GroupByDayAggregations(groupByDayList);
+            ServiceOrdersGroupByDayAggregations aggregations = new ServiceOrdersGroupByDayAggregations(groupByDayList);
             int total = fullDayMap.values().stream().mapToInt(Integer::intValue).sum();
-            ServiceOrdersDay wrapper = new ServiceOrdersDay(total, aggregations);
+            ServiceOrdersGroupByDayParent wrapper = new ServiceOrdersGroupByDayParent(total, aggregations);
             ServiceOrdersGroupByDay response = new ServiceOrdersGroupByDay(wrapper);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -103,14 +102,14 @@ public class MetricsApiController implements MetricsApi {
             });
 
             // Create aggregation items
-            List<GroupByItem> groupByStateList = fullStateMap.entrySet().stream()
-                    .map(entry -> new GroupByItem(entry.getKey(), entry.getValue()))
+            List<ServiceOrdersGroupByStateItem> groupByStateList = fullStateMap.entrySet().stream()
+                    .map(entry -> new ServiceOrdersGroupByStateItem(ServiceOrderStateType.valueOf(entry.getKey()), entry.getValue()))
                     .toList();
 
             // Build response structure using models
-            GroupByStateAggregations aggregations = new GroupByStateAggregations(groupByStateList);
+            ServiceOrdersGroupByStateAggregations aggregations = new ServiceOrdersGroupByStateAggregations(groupByStateList);
             int total = fullStateMap.values().stream().mapToInt(Integer::intValue).sum();
-            ServiceOrders services = new ServiceOrders(total, aggregations);
+            ServiceOrdersGroupByStateParent services = new ServiceOrdersGroupByStateParent(total, aggregations);
             ServiceOrdersGroupByState response = new ServiceOrdersGroupByState(services);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
