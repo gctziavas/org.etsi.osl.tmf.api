@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
-@Tag(name = "MetricsApi")
+@Tag(name = "ServiceOrderMetricsApi", description = "The Service Orders' Metrics API")
 public interface ServiceOrderMetricsApi {
 
     Logger log = LoggerFactory.getLogger(ServiceOrderMetricsApi.class);

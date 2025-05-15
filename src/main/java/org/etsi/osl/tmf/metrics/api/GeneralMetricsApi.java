@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Map;
 
-@Tag(name = "MetricsApi")
-public interface MetricsApi {
+@Tag(name = "GeneralMetricsApi", description = "The General Metrics API")
+public interface GeneralMetricsApi {
 
-    Logger log = LoggerFactory.getLogger(MetricsApi.class);
+    Logger log = LoggerFactory.getLogger(GeneralMetricsApi.class);
 
     @Operation(summary = "Get total number of registered individuals", operationId = "getRegisteredIndividuals")
     @ApiResponses(value = {
