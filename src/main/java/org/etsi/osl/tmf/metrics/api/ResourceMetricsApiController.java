@@ -1,7 +1,7 @@
 package org.etsi.osl.tmf.metrics.api;
 
 import org.etsi.osl.tmf.metrics.*;
-import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
+import org.etsi.osl.tmf.metrics.reposervices.ResourceMetricsRepoService;
 import org.etsi.osl.tmf.ri639.model.ResourceStatusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class MetricsApiController implements MetricsApi {
+public class ResourceMetricsApiController implements ResourceMetricsApi {
 
-    private static final Logger log = LoggerFactory.getLogger(MetricsApiController.class);
-    private final MetricsRepoService resourceMetricsRepoService;
+    private static final Logger log = LoggerFactory.getLogger(ResourceMetricsApiController.class);
+    private final ResourceMetricsRepoService resourceMetricsRepoService;
 
     @Autowired
-    public MetricsApiController(MetricsRepoService resourceMetricsRepoService) {
+    public ResourceMetricsApiController(ResourceMetricsRepoService resourceMetricsRepoService) {
         this.resourceMetricsRepoService = resourceMetricsRepoService;
     }
 
