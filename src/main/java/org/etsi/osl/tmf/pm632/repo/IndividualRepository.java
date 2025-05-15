@@ -22,6 +22,7 @@ package org.etsi.osl.tmf.pm632.repo;
 import java.util.List;
 import java.util.Optional;
 import org.etsi.osl.tmf.pm632.model.Individual;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
@@ -39,5 +40,11 @@ public interface IndividualRepository extends CrudRepository<Individual, Long>, 
 	List<Individual> findByOrderByFamilyName();
 
 	Optional<Individual> findByPreferredGivenName(String username);
+
+	//Methods for metrics
+
+	@Query("SELECT COUNT(ind) FROM Individual ind")
+	int countAll();
+
 
 }

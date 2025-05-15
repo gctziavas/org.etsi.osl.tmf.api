@@ -830,7 +830,7 @@ public GroupedOpenApi pim637() {
 		 SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
 		 
 	    return GroupedOpenApi.builder()
-	    		.group("OpensliceLCMRulesspecificationAPI")
+	    		.group("OpenSliceLCMRulesspecificationAPI")
 	    		.addOpenApiCustomizer( this.lcmOpenAPI() )
 	    		.packagesToScan("org.etsi.osl.tmf.lcm.api")
 	    		.build();
@@ -947,6 +947,39 @@ public GroupedOpenApi pim637() {
 				.build();
 
   }
+
+
+  	/**
+	 * Metrics
+	 * @return
+	 */
+	@Bean
+	public OpenApiCustomizer metricsOpenAPI() {
+		return openApi -> openApi
+				.specVersion( SpecVersion.V30 ).addSecurityItem(new SecurityRequirement().addList("security_auth")) 
+				.info(new Info().title("OpenSlice Metrics API")
+						.description("OpenAPI environment for OpenSlice Metrics")
+						.version("4.0.0")
+						.license(new License()
+								.name("Apache 2.0")
+								.url("https://osl.etsi.org")))
+				.externalDocs(new ExternalDocumentation()
+						.description("OpenSlice Metrics")
+						.url("https://osl.etsi.org"));	             
+	  }
+
+    @Bean
+    public GroupedOpenApi metrics(){
+
+	  	SpringDocUtils.getConfig().replaceWithClass(java.time.LocalDate.class, java.sql.Date.class);
+	  	SpringDocUtils.getConfig().replaceWithClass(java.time.OffsetDateTime.class, java.util.Date.class);
+        return GroupedOpenApi.builder()
+        		.group("OpenSliceMetricsAPI")
+        		.addOpenApiCustomizer( this.metricsOpenAPI() )
+        		.packagesToScan("org.etsi.osl.tmf.metrics.api")
+        		.build();
+
+    }
 	
 	
 //	@Bean
