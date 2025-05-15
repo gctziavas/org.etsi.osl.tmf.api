@@ -22,9 +22,9 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Tag(name = "MetricsApi")
-public interface MetricsApi {
+public interface ServiceOrderMetricsApi {
 
-    Logger log = LoggerFactory.getLogger(MetricsApi.class);
+    Logger log = LoggerFactory.getLogger(ServiceOrderMetricsApi.class);
 
     @Operation(summary = "Get total number of service orders", operationId = "getTotalServiceOrders")
     @ApiResponses(value = {

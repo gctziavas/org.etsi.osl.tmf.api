@@ -1,7 +1,7 @@
 package org.etsi.osl.tmf.metrics.api;
 
 import org.etsi.osl.tmf.metrics.*;
-import org.etsi.osl.tmf.metrics.reposervices.MetricsRepoService;
+import org.etsi.osl.tmf.metrics.reposervices.ServiceOrderMetricsRepoService;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +18,13 @@ import java.util.Map;
 
 
 @Controller
-public class MetricsApiController implements MetricsApi {
+public class ServiceOrderMetricsApiController implements ServiceOrderMetricsApi {
 
-    private static final Logger log = LoggerFactory.getLogger(MetricsApiController.class);
-    private final MetricsRepoService serviceOrderMetricsRepoService;
+    private static final Logger log = LoggerFactory.getLogger(ServiceOrderMetricsApiController.class);
+    private final ServiceOrderMetricsRepoService serviceOrderMetricsRepoService;
 
     @Autowired
-    public MetricsApiController(MetricsRepoService serviceOrderMetricsRepoService) {
+    public ServiceOrderMetricsApiController(ServiceOrderMetricsRepoService serviceOrderMetricsRepoService) {
         this.serviceOrderMetricsRepoService = serviceOrderMetricsRepoService;
     }
 
