@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -457,10 +458,41 @@ public class MeasurementCollectionJobService {
         routeBuilderEvents.publishEvent(event, mcj.getUuid());
     }
 
-    public List<MeasurementCollectionJob> findPendingOrInProgressMeasurementCollectionJobs(){
-        log.debug("findPendingOrInProgressMeasurementCollectionJobs");
+    /*
+    This method is creating the JSON array manually because of a bug in the object mapper where:
+        -> When the object mapper serializes 1 MeasurementCollectionJob it works fine
+        -> When the object mapper serializes a list of Measurement CollectionJob it ommits the "@type" field
+    As a result when de-serializing the list of MeasurementCollectionJob this error comes-up:
+            com.fasterxml.jackson.databind.exc.InvalidTypeIdException: Could not resolve subtype of [simple type, class org.etsi.osl.tmf.pm628.model.MeasurementCollectionJob]: missing type id property '@type'
+    */
+
+    @Transactional
+    public String findPendingOrInProgressMeasurementCollectionJobsAsJson() {
+        log.debug("findPendingOrInProgressMeasurementCollectionJobsAsJson");
         List<MeasurementCollectionJob> pendingOrInProgressMeasurementCollectionJobs = findAllByExecutionState(ExecutionStateType.PENDING);
         pendingOrInProgressMeasurementCollectionJobs.addAll(findAllByExecutionState(ExecutionStateType.INPROGRESS));
-        return pendingOrInProgressMeasurementCollectionJobs;
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonArray;
+
+            List<String> jobJsonStrings = new ArrayList<>();
+            for (MeasurementCollectionJob job : pendingOrInProgressMeasurementCollectionJobs) {
+                jobJsonStrings.add(objectMapper.writeValueAsString(job));
+            }
+            StringJoiner joiner = new StringJoiner(",", "[", "]");
+            for (String jobStr : jobJsonStrings) {
+                joiner.add(jobStr);
+            }
+            jsonArray = joiner.toString();
+            log.debug("Serialized JSON Array: {}", jsonArray);
+
+            return jsonArray;
+        } catch (JsonProcessingException e) {
+            log.error("Error serializing measurement collection jobs to JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to serialize jobs to JSON", e);
+        }
     }
+
+
 }

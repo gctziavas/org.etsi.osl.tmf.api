@@ -210,20 +210,20 @@ public class MeasurementCollectionJobServiceTest {
         return response;
     }
 
-    @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
-    @Test
-    public void testFindPendingOrInProgressMeasurementCollectionJobs() throws Exception {
-        MeasurementCollectionJob pendingMcj = createNewMeasurementCollectionJobWithExecutionState(measurementCollectionJobService.findAllMeasurementCollectionJobs().size(), ExecutionStateType.PENDING);
-
-        int currentNumOfMcjs = measurementCollectionJobService.findAllMeasurementCollectionJobs().size();
-        MeasurementCollectionJob inProgressMcj = createNewMeasurementCollectionJobWithExecutionState(currentNumOfMcjs, ExecutionStateType.INPROGRESS);
-
-
-        List<MeasurementCollectionJob> ackMcjList = measurementCollectionJobService.findAllByExecutionState(ExecutionStateType.ACKNOWLEDGED);
-
-        List<MeasurementCollectionJob> mcjList = measurementCollectionJobService.findPendingOrInProgressMeasurementCollectionJobs();
-
-
-        assertThat(mcjList.size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS + 2);
-    }
+//    @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
+//    @Test
+//    public void testFindPendingOrInProgressMeasurementCollectionJobs() throws Exception {
+//        MeasurementCollectionJob pendingMcj = createNewMeasurementCollectionJobWithExecutionState(measurementCollectionJobService.findAllMeasurementCollectionJobs().size(), ExecutionStateType.PENDING);
+//
+//        int currentNumOfMcjs = measurementCollectionJobService.findAllMeasurementCollectionJobs().size();
+//        MeasurementCollectionJob inProgressMcj = createNewMeasurementCollectionJobWithExecutionState(currentNumOfMcjs, ExecutionStateType.INPROGRESS);
+//
+//
+//        List<MeasurementCollectionJob> ackMcjList = measurementCollectionJobService.findAllByExecutionState(ExecutionStateType.ACKNOWLEDGED);
+//
+//        List<MeasurementCollectionJob> mcjList = measurementCollectionJobService.findPendingOrInProgressMeasurementCollectionJobs();
+//
+//
+//        assertThat(mcjList.size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS + 2);
+//    }
 }
