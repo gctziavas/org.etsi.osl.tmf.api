@@ -37,6 +37,7 @@ public class ResourceMetricsRepoService {
         List<Object[]> rawResults = resourceRepository.groupByStateBetweenDates(starttime, endtime);
 
         return rawResults.stream()
+                .filter(row -> row[0] != null)
                 .collect(Collectors.toMap(
                         row -> row[0].toString(),
                         row -> ((Number) row[1]).intValue()
