@@ -3,25 +3,20 @@ package org.etsi.osl.tmf.pm628.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.etsi.osl.centrallog.client.CentralLogger;
-import org.etsi.osl.tmf.pm628.model.ExecutionStateType;
 import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobFVO;
 import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobMVO;
 import org.etsi.osl.tmf.pm628.reposervices.MeasurementCollectionJobService;
-import org.etsi.osl.tmf.pm628.api.MeasurementCollectionJobApiRouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 @Configuration
 @Component
@@ -46,9 +41,6 @@ public class MeasurementCollectionJobApiRouteBuilder extends RouteBuilder {
 
     @Value("${PM_MEASUREMENT_COLLECTION_JOB_GET_INPROGRESS_OR_PENDING}")
     private String PM_MEASUREMENT_COLLECTION_JOB_GET_INPROGRESS_OR_PENDING;
-
-    @Autowired
-    private ProducerTemplate template;
 
     @Autowired
     MeasurementCollectionJobService measurementCollectionJobService;
