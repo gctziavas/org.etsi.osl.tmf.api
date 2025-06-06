@@ -2,15 +2,19 @@ package org.etsi.osl.tmf.metrics.reposervices;
 
 import org.etsi.osl.tmf.pm632.repo.IndividualRepository;
 import org.etsi.osl.tmf.rcm634.repo.ResourceSpecificationRepository;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.repo.CandidateRepository;
+import org.etsi.osl.tmf.scm633.repo.CatalogRepository;
 import org.etsi.osl.tmf.scm633.repo.CategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class GeneralMetricsRepoService {
@@ -20,6 +24,9 @@ public class GeneralMetricsRepoService {
 
     @Autowired
     ResourceSpecificationRepository resourceSpecificationRepository;
+
+    @Autowired
+    CatalogRepository catalogRepository;
 
     @Autowired
     CategoriesRepository categoriesRepository;
@@ -43,7 +50,12 @@ public class GeneralMetricsRepoService {
                 Duration.between(lastRetrieved, now).compareTo(CACHE_DURATION) > 0) {
 
             int count = 0;
-            List<ServiceCategory> serviceCategories = categoriesRepository.findByOrderByName();
+            Set<ServiceCategory> serviceCategories = new HashSet<>();
+            List<ServiceCatalog> serviceCatalogs = catalogRepository.findByOrderByName();
+
+            for (ServiceCatalog serviceCatalog: serviceCatalogs) {
+                serviceCategories.addAll(serviceCatalog.getCategoryObj());
+            }
 
             for (ServiceCategory serviceCategory : serviceCategories) {
                 count += serviceCategory.getServiceCandidateObj().size()

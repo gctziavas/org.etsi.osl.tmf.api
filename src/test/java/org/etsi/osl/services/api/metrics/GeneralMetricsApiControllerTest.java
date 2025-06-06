@@ -5,8 +5,10 @@ import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.pm632.model.IndividualCreate;
 import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
+import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +26,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -58,6 +62,9 @@ public class GeneralMetricsApiControllerTest {
 
     @Autowired
     CandidateRepoService candidateRepoService;
+
+    @Autowired
+    CatalogRepoService catalogRepoService;
 
     @Autowired
     CategoryRepoService categoryRepoService;
@@ -100,8 +107,13 @@ public class GeneralMetricsApiControllerTest {
 
         int totalSpecs = JsonPath.read(response, "$.publishedServiceSpecifications");
 
-        List<ServiceCategory> serviceCategories = categoryRepoService.findAll();
         int count = 0;
+        Set<ServiceCategory> serviceCategories = new HashSet<>();
+        List<ServiceCatalog> serviceCatalogs = catalogRepoService.findAll();
+
+        for (ServiceCatalog serviceCatalog : serviceCatalogs) {
+            serviceCategories.addAll(serviceCatalog.getCategoryObj());
+        }
 
         for (ServiceCategory serviceCategory : serviceCategories) {
             count += serviceCategory.getServiceCandidateObj().size() + serviceCategory.getServiceCandidateRefs().size();
