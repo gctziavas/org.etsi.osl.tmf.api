@@ -899,7 +899,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -970,8 +970,8 @@
 			"isUnique": true,
 			"maxCardinality": 1,
 			"minCardinality": 0,
-			"regex": "Conditional: This attribute must be present when Mission critical support is set to 1.",
-			"valueType": "ARRAY",
+			"regex": null,
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -1548,7 +1548,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -1716,7 +1716,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -1851,7 +1851,7 @@
 			"configurable": false,
 			"description": "This attribute describes if the network slice provides geo-localization methods or supporting methods.",
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"role": "Availability",
@@ -1879,7 +1879,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -2511,7 +2511,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"role": "3GPP 5QI",
@@ -3783,7 +3783,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "ENUM",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -3850,7 +3850,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -3898,7 +3898,7 @@
 					}
 				},
 				{
-					"isDefault": true,
+					"isDefault": false,
 					"rangeInterval": null,
 					"regex": null,
 					"unitOfMeasure": "N/A",
@@ -4315,7 +4315,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -4373,7 +4373,7 @@
 			"maxCardinality": 1,
 			"minCardinality": 0,
 			"regex": null,
-			"valueType": "ARRAY",
+			"valueType": "SET",
 			"serviceSpecCharRelationship": [
 				{
 					"name": "Character Attribute",
@@ -4404,7 +4404,7 @@
 					"unitOfMeasure": "N/A",
 					"valueFrom": null,
 					"valueTo": null,
-					"valueType": "ARRAY",
+					"valueType": "INTEGER",
 					"validFor": null,
 					"value": {
 						"value": "0",
@@ -4418,7 +4418,7 @@
 					"unitOfMeasure": "N/A",
 					"valueFrom": null,
 					"valueTo": null,
-					"valueType": "ARRAY",
+					"valueType": "INTEGER",
 					"validFor": null,
 					"value": {
 						"value": "1",
@@ -4432,7 +4432,7 @@
 					"unitOfMeasure": "N/A",
 					"valueFrom": null,
 					"valueTo": null,
-					"valueType": "ARRAY",
+					"valueType": "INTEGER",
 					"validFor": null,
 					"value": {
 						"value": "2",
