@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.etsi.osl</groupId>
 		<artifactId>org.etsi.osl.main</artifactId>
-		<version>2024Q4</version>
+		<version>2025Q2</version>
 		<relativePath>../org.etsi.osl.main</relativePath>
 	</parent>
 
@@ -305,7 +305,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>test</scope>
+			<version>2.3.232</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>

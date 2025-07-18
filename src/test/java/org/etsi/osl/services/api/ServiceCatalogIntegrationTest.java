@@ -164,7 +164,7 @@ public class ServiceCatalogIntegrationTest {
 		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
 		assertThat( categ.getServiceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
-		ServiceCategory categ2 = categRepoService.findByIdEager( categ.getId() );
+		ServiceCategory categ2 = categRepoService.findByUuid( categ.getId() );
 		assertThat( categ2.getServiceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
 		boolean vinnisbFound = false;
@@ -955,8 +955,8 @@ public class ServiceCatalogIntegrationTest {
 
 		logger.info("Test: testBundledSpec responseSpec1 = " + responseSpec1);
 
-		assertThat( responsesSpec1.getVersion()  ).isEqualTo("5.0.0");
-		assertThat( responsesSpec1.getServiceSpecCharacteristic().size() ).isEqualTo(80);
+		assertThat( responsesSpec1.getVersion()  ).isEqualTo("10.0.0");
+		assertThat( responsesSpec1.getServiceSpecCharacteristic().size() ).isEqualTo(88);
 		assertThat( responsesSpec1.getServiceSpecRelationship().size() ).isEqualTo(0);
 		boolean userPartyRoleOwnerexists = false;
 		for (RelatedParty r : responsesSpec1.getRelatedParty()) {
@@ -1014,10 +1014,10 @@ public class ServiceCatalogIntegrationTest {
 		logger.info("Test: testGSTUpdate " );
 		
 		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
-		ServiceCategory categ2 = categRepoService.findByIdEager( categ.getId() );
+		ServiceCategory categ2 = categRepoService.findByUuid( categ.getId() );
 		assertThat( categ2.getServiceCandidateRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 		
-		ServiceSpecification spec = this.specRepoService.findByNameAndVersion("A GST(NEST) Service Example", "5.0.0" );
+		ServiceSpecification spec = this.specRepoService.findByNameAndVersion("A GST(NEST) Service Example", "10.0.0" );
 		assertThat( spec ).isNotNull();
 		
 		spec.setVersion("0.x.0");

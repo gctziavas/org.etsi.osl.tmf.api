@@ -21,8 +21,12 @@ package org.etsi.osl.tmf.scm633.reposervices;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import org.etsi.osl.tmf.common.model.ELifecycle;
 import org.etsi.osl.tmf.common.model.TimePeriod;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
@@ -30,12 +34,21 @@ import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogUpdate;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryRef;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.repo.CatalogRepository;
+import org.hibernate.Hibernate;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class CatalogRepoService {
 
 
@@ -46,10 +59,8 @@ public class CatalogRepoService {
 	CategoryRepoService categRepoService;
 
 	@Autowired
-	ServiceSpecificationRepoService specRepoService;
-
-	@Autowired
-	CandidateRepoService candidateRepoService;
+	ServiceSpecificationRepoService specRepoService;	    
+    
 
 	public ServiceCatalog addCatalog(ServiceCatalog c) {
 
@@ -64,10 +75,75 @@ public class CatalogRepoService {
 		return this.catalogRepo.save(sc);
 	}
 
+	public String findAllEager() {
+	  
+	  List<ServiceCatalog> oids = (List<ServiceCatalog>) this.catalogRepo.findByOrderByName();
+	  ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());
+      String res;
+      try {
+        res = mapper.writeValueAsString( oids );
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return "{}";
+      }
+      
+	  return res;
+	}
+
+	   
+	   
 	public List<ServiceCatalog> findAll() {
 		return (List<ServiceCatalog>) this.catalogRepo.findByOrderByName();
 	}
 
+	
+	 public String findByUuidEager(String id) {
+       
+	      ServiceCatalog sc = this.findById(id);
+
+	      ObjectMapper mapper = new ObjectMapper();
+	      // Registering Hibernate4Module to support lazy objects
+	      // this will fetch all lazy objects before marshaling
+	      mapper.registerModule(new Hibernate5JakartaModule());
+	      String res;
+	      try {
+	        res = mapper.writeValueAsString( sc );
+	      } catch (JsonProcessingException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	        return "{}";
+	      }
+	      
+	      return res;
+	 }
+	 
+	 
+	 
+	public String findByNameEager(String aname) {
+	  ServiceCatalog sc = this.findByName(aname);
+
+	  ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());
+      String res;
+      try {
+        res = mapper.writeValueAsString( sc );
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        return "{}";
+      }
+      
+      return res;
+	       
+	}
+  
+	
 	public ServiceCatalog findById(String id) {
 		Optional<ServiceCatalog> optionalCat = this.catalogRepo.findByUuid(id);
 		return optionalCat.orElse(null);
@@ -136,6 +212,65 @@ public class CatalogRepoService {
 	public ServiceCatalog updateCatalog(ServiceCatalog scatalog) {
 		return this.catalogRepo.save(scatalog);
 	}
+	
+	
+	/**
+	 * return recursively all categories in catalog
+	 * @param catalogName
+	 */
+	@Transactional
+	public String findAllCategoriesByCatalogName(String catalogName) {
+	  String res="[]";
+
+	  Optional<ServiceCatalog> scopt = this.catalogRepo.findByName(catalogName);
+	  
+	  if (scopt.isEmpty() ) {
+	      return res;	    
+	  }
+	  
+	  ServiceCatalog sc = scopt.get();
+	  
+	  sc.getCategoryRefs();
+
+
+	  List<ServiceCategory> allcategories = this.getCategories( sc.getCategoryRefs());
+	  
+	  ObjectMapper mapper = new ObjectMapper();
+      // Registering Hibernate4Module to support lazy objects
+      // this will fetch all lazy objects before marshaling
+      mapper.registerModule(new Hibernate5JakartaModule());     
+      
+      
+      try {
+        res = mapper.writeValueAsString( allcategories );
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      
+      
+      return res;
+      
+	}
+	
+	
+	@Transactional
+	  private List<ServiceCategory> getCategories( @Valid List<ServiceCategoryRef> list) {
+	    List<ServiceCategory> categories = new ArrayList<ServiceCategory>();
+	    
+	    for (ServiceCategoryRef c : list ) {	      
+	     ServiceCategory category = this.categRepoService.findByUuid( c.getId());
+	     categories.add(category);
+	     
+	     if (category.getCategoryRefs()!=null && category.getCategoryRefs().size()>0) {
+	         List<ServiceCategory> subcategories = this.getCategories( category.getCategoryRefs() );
+	         categories.addAll(subcategories );//add children
+	     }
+	      
+	    }
+	    
+	    return categories;
+	  }
 
 	
 
