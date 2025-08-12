@@ -19,6 +19,7 @@
  */
 package org.etsi.osl.tmf.pcm620.reposervices;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,5 +62,9 @@ public class EventSubscriptionRepoService {
         if (optionalEventSubscription.isPresent()) {
             this.eventSubscriptionRepo.delete(optionalEventSubscription.get());
         }
+    }
+
+    public List<EventSubscription> findAll() {
+        return (List<EventSubscription>) this.eventSubscriptionRepo.findAll();
     }
 }
