@@ -37,6 +37,8 @@ import org.etsi.osl.tmf.pcm620.model.CatalogCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.CatalogDeleteNotification;
 import org.etsi.osl.tmf.pcm620.model.CategoryCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.CategoryDeleteNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreateNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductSpecificationDeleteNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -60,6 +62,12 @@ public class ProductCatalogApiRouteBuilderEvents extends RouteBuilder {
 	
 	@Value("${EVENT_PRODUCT_CATEGORY_DELETE}")
 	private String EVENT_CATEGORY_DELETE = "direct:EVENT_CATEGORY_DELETE";
+	
+	@Value("${EVENT_PRODUCT_SPECIFICATION_CREATE}")
+	private String EVENT_PRODUCT_SPECIFICATION_CREATE = "direct:EVENT_PRODUCT_SPECIFICATION_CREATE";
+	
+	@Value("${EVENT_PRODUCT_SPECIFICATION_DELETE}")
+	private String EVENT_PRODUCT_SPECIFICATION_DELETE = "direct:EVENT_PRODUCT_SPECIFICATION_DELETE";
 
 	@Value("${spring.application.name}")
 	private String compname;
@@ -94,7 +102,11 @@ public class ProductCatalogApiRouteBuilderEvents extends RouteBuilder {
 			} else if (n instanceof CategoryCreateNotification) {
 				 msgtopic = EVENT_CATEGORY_CREATE;
 			} else if (n instanceof CategoryDeleteNotification) {
-				 msgtopic = EVENT_CATEGORY_DELETE;				
+				 msgtopic = EVENT_CATEGORY_DELETE;
+			} else if (n instanceof ProductSpecificationCreateNotification) {
+				 msgtopic = EVENT_PRODUCT_SPECIFICATION_CREATE;
+			} else if (n instanceof ProductSpecificationDeleteNotification) {
+				 msgtopic = EVENT_PRODUCT_SPECIFICATION_DELETE;				
 			}
 			
 			Map<String, Object> map = new HashMap<>();
