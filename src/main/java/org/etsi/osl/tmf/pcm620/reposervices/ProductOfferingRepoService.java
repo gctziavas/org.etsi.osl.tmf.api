@@ -77,6 +77,9 @@ public class ProductOfferingRepoService {
 
     @Autowired
     ServiceSpecificationRepoService serviceSpecificationRepoService;
+    
+    @Autowired
+    private ProductOfferingNotificationService productOfferingNotificationService;
 
 	private SessionFactory sessionFactory;
 
@@ -101,8 +104,12 @@ public class ProductOfferingRepoService {
 		serviceSpec = this.updateProductOfferingDataFromAPIcall(serviceSpec, serviceProductOffering);
 		serviceSpec = this.prodsOfferingRepo.save(serviceSpec);
 
+		// Publish product offering create notification
+		if (productOfferingNotificationService != null) {
+			productOfferingNotificationService.publishProductOfferingCreateNotification(serviceSpec);
+		}
 	
-		return this.prodsOfferingRepo.save(serviceSpec);
+		return serviceSpec;
 	}
 
 	public List<ProductOffering> findAll() {
@@ -261,6 +268,12 @@ public class ProductOfferingRepoService {
 		 */
 
 		this.prodsOfferingRepo.delete(s);
+		
+		// Publish product offering delete notification
+		if (productOfferingNotificationService != null) {
+			productOfferingNotificationService.publishProductOfferingDeleteNotification(s);
+		}
+		
 		return null;
 	}
 	
@@ -273,14 +286,28 @@ public class ProductOfferingRepoService {
 		if (s == null) {
 			return null;
 		}
+		
+		// Store original state for comparison
+		String originalLifecycleStatus = s.getLifecycleStatus();
+		
 		ProductOffering prodOff = s;
 		prodOff = this.updateProductOfferingDataFromAPIcall(prodOff, aProductOffering);
 
 		prodOff = this.prodsOfferingRepo.save(prodOff);
 		
+		// Publish notifications
+		if (productOfferingNotificationService != null) {
+			// Always publish attribute value change notification on update
+			productOfferingNotificationService.publishProductOfferingAttributeValueChangeNotification(prodOff);
+			
+			// Publish state change notification if lifecycle status changed
+			if (originalLifecycleStatus != null && prodOff.getLifecycleStatus() != null 
+				&& !originalLifecycleStatus.equals(prodOff.getLifecycleStatus())) {
+				productOfferingNotificationService.publishProductOfferingStateChangeNotification(prodOff);
+			}
+		}
 		
-		
-		return this.prodsOfferingRepo.save(prodOff);
+		return prodOff;
 
 	}
 

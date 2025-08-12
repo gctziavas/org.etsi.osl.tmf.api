@@ -39,6 +39,10 @@ import org.etsi.osl.tmf.pcm620.model.CategoryCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.CategoryDeleteNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationDeleteNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingCreateNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingDeleteNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingAttributeValueChangeNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingStateChangeNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -68,6 +72,18 @@ public class ProductCatalogApiRouteBuilderEvents extends RouteBuilder {
 	
 	@Value("${EVENT_PRODUCT_SPECIFICATION_DELETE}")
 	private String EVENT_PRODUCT_SPECIFICATION_DELETE = "direct:EVENT_PRODUCT_SPECIFICATION_DELETE";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_CREATE}")
+	private String EVENT_PRODUCT_OFFERING_CREATE = "direct:EVENT_PRODUCT_OFFERING_CREATE";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_DELETE}")
+	private String EVENT_PRODUCT_OFFERING_DELETE = "direct:EVENT_PRODUCT_OFFERING_DELETE";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE}")
+	private String EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE = "direct:EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_STATE_CHANGE}")
+	private String EVENT_PRODUCT_OFFERING_STATE_CHANGE = "direct:EVENT_PRODUCT_OFFERING_STATE_CHANGE";
 
 	@Value("${spring.application.name}")
 	private String compname;
@@ -106,7 +122,15 @@ public class ProductCatalogApiRouteBuilderEvents extends RouteBuilder {
 			} else if (n instanceof ProductSpecificationCreateNotification) {
 				 msgtopic = EVENT_PRODUCT_SPECIFICATION_CREATE;
 			} else if (n instanceof ProductSpecificationDeleteNotification) {
-				 msgtopic = EVENT_PRODUCT_SPECIFICATION_DELETE;				
+				 msgtopic = EVENT_PRODUCT_SPECIFICATION_DELETE;
+			} else if (n instanceof ProductOfferingCreateNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_CREATE;
+			} else if (n instanceof ProductOfferingDeleteNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_DELETE;
+			} else if (n instanceof ProductOfferingAttributeValueChangeNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE;
+			} else if (n instanceof ProductOfferingStateChangeNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_STATE_CHANGE;				
 			}
 			
 			Map<String, Object> map = new HashMap<>();
