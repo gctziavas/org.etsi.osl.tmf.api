@@ -5,13 +5,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.pcm620.model.Catalog;
-import org.etsi.osl.tmf.pcm620.model.CatalogCreate;
+import org.etsi.osl.tmf.pcm620.model.Category;
+import org.etsi.osl.tmf.pcm620.model.CategoryCreate;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
 import org.etsi.osl.tmf.pcm620.model.EventSubscriptionInput;
-import org.etsi.osl.tmf.pcm620.reposervices.CatalogCallbackService;
+import org.etsi.osl.tmf.pcm620.reposervices.CategoryCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
-import org.etsi.osl.tmf.pcm620.reposervices.ProductCatalogRepoService;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductCategoryRepoService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +54,7 @@ import org.springframework.http.ResponseEntity;
 @AutoConfigureMockMvc
 @ActiveProfiles("testing")
 @AutoConfigureTestDatabase
-public class CatalogCallbackIntegrationTest {
+public class CategoryCallbackIntegrationTest {
 
     @Autowired
     private MockMvc mvc;
@@ -63,13 +63,13 @@ public class CatalogCallbackIntegrationTest {
     private WebApplicationContext context;
 
     @Autowired
-    private ProductCatalogRepoService productCatalogRepoService;
+    private ProductCategoryRepoService productCategoryRepoService;
 
     @Autowired
     private EventSubscriptionRepoService eventSubscriptionRepoService;
 
     @SpyBean
-    private CatalogCallbackService catalogCallbackService;
+    private CategoryCallbackService categoryCallbackService;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -96,7 +96,7 @@ public class CatalogCallbackIntegrationTest {
         // Step 1: Register a callback subscription via Hub API
         EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
         subscriptionInput.setCallback("http://localhost:8080/test-callback");
-        subscriptionInput.setQuery("catalog.create,catalog.delete");
+        subscriptionInput.setQuery("category.create,category.delete");
 
         MvcResult subscriptionResult = mvc.perform(MockMvcRequestBuilders.post("/productCatalogManagement/v4/hub")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
@@ -109,29 +109,29 @@ public class CatalogCallbackIntegrationTest {
         String subscriptionResponseBody = subscriptionResult.getResponse().getContentAsString();
         EventSubscription createdSubscription = objectMapper.readValue(subscriptionResponseBody, EventSubscription.class);
 
-        // Step 2: Create a catalog (should trigger callback)
-        CatalogCreate catalogCreate = new CatalogCreate();
-        catalogCreate.setName("Test Callback Catalog");
-        catalogCreate.setDescription("A catalog to test callback notifications");
-        catalogCreate.setVersion("1.0");
+        // Step 2: Create a category (should trigger callback)
+        CategoryCreate categoryCreate = new CategoryCreate();
+        categoryCreate.setName("Test Callback Category");
+        categoryCreate.setDescription("A category to test callback notifications");
+        categoryCreate.setVersion("1.0");
 
-        Catalog createdCatalog = productCatalogRepoService.addCatalog(catalogCreate);
+        Category createdCategory = productCategoryRepoService.addCategory(categoryCreate);
 
         // Step 3: Verify callback was sent
-        verify(catalogCallbackService, timeout(2000)).sendCatalogCreateCallback(any());
+        verify(categoryCallbackService, timeout(2000)).sendCategoryCreateCallback(any());
         verify(restTemplate, timeout(2000)).exchange(
-            eq("http://localhost:8080/test-callback/listener/catalogCreateEvent"),
+            eq("http://localhost:8080/test-callback/listener/categoryCreateEvent"),
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class));
 
-        // Step 4: Delete the catalog (should trigger delete callback)
-        productCatalogRepoService.deleteById(createdCatalog.getUuid());
+        // Step 4: Delete the category (should trigger delete callback)
+        productCategoryRepoService.deleteById(createdCategory.getUuid());
 
         // Step 5: Verify delete callback was sent
-        verify(catalogCallbackService, timeout(2000)).sendCatalogDeleteCallback(any());
+        verify(categoryCallbackService, timeout(2000)).sendCategoryDeleteCallback(any());
         verify(restTemplate, timeout(2000)).exchange(
-            eq("http://localhost:8080/test-callback/listener/catalogDeleteEvent"),
+            eq("http://localhost:8080/test-callback/listener/categoryDeleteEvent"),
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class));
@@ -143,7 +143,7 @@ public class CatalogCallbackIntegrationTest {
         // Step 1: Register subscription only for create events
         EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
         subscriptionInput.setCallback("http://localhost:9090/create-only");
-        subscriptionInput.setQuery("catalog.create");
+        subscriptionInput.setQuery("category.create");
 
         mvc.perform(MockMvcRequestBuilders.post("/productCatalogManagement/v4/hub")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
@@ -152,23 +152,54 @@ public class CatalogCallbackIntegrationTest {
                         .content(JsonUtils.toJson(subscriptionInput)))
                 .andExpect(status().isCreated());
 
-        // Step 2: Create and delete a catalog
-        CatalogCreate catalogCreate = new CatalogCreate();
-        catalogCreate.setName("Test Filter Catalog");
-        catalogCreate.setDescription("A catalog to test query filtering");
-        catalogCreate.setVersion("1.0");
+        // Step 2: Create and delete a category
+        CategoryCreate categoryCreate = new CategoryCreate();
+        categoryCreate.setName("Test Filter Category");
+        categoryCreate.setDescription("A category to test query filtering");
+        categoryCreate.setVersion("1.0");
 
-        Catalog createdCatalog = productCatalogRepoService.addCatalog(catalogCreate);
-        productCatalogRepoService.deleteById(createdCatalog.getUuid());
+        Category createdCategory = productCategoryRepoService.addCategory(categoryCreate);
+        productCategoryRepoService.deleteById(createdCategory.getUuid());
 
         // Step 3: Verify only create callback was sent (not delete)
         verify(restTemplate, timeout(2000)).exchange(
-            eq("http://localhost:9090/create-only/listener/catalogCreateEvent"),
+            eq("http://localhost:9090/create-only/listener/categoryCreateEvent"),
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class));
 
         // Note: In a more sophisticated test, we could verify that the delete callback was NOT sent
         // by using verify with never(), but this requires more complex mock setup
+    }
+
+    @Test
+    @WithMockUser(username = "osadmin", roles = {"ADMIN"})
+    public void testCategoryCallbackWithAllEventsQuery() throws Exception {
+        // Step 1: Register subscription for all events (empty query)
+        EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
+        subscriptionInput.setCallback("http://localhost:7070/all-events");
+        subscriptionInput.setQuery(""); // Empty query should receive all events
+
+        mvc.perform(MockMvcRequestBuilders.post("/productCatalogManagement/v4/hub")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(JsonUtils.toJson(subscriptionInput)))
+                .andExpect(status().isCreated());
+
+        // Step 2: Create a category
+        CategoryCreate categoryCreate = new CategoryCreate();
+        categoryCreate.setName("Test All Events Category");
+        categoryCreate.setDescription("A category to test all events subscription");
+        categoryCreate.setVersion("1.0");
+
+        Category createdCategory = productCategoryRepoService.addCategory(categoryCreate);
+
+        // Step 3: Verify callback was sent even with empty query
+        verify(restTemplate, timeout(2000)).exchange(
+            eq("http://localhost:7070/all-events/listener/categoryCreateEvent"),
+            eq(HttpMethod.POST), 
+            any(HttpEntity.class), 
+            eq(String.class));
     }
 }
