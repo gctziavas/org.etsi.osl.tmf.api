@@ -55,6 +55,9 @@ public class ProductOfferingPriceRepoService {
 	@Autowired
 	ProductOfferingPriceRepository prodsOfferingRepo;
 	
+	@Autowired
+	ProductOfferingPriceNotificationService productOfferingPriceNotificationService;
+	
 	
 
 	private SessionFactory sessionFactory;
@@ -80,6 +83,10 @@ public class ProductOfferingPriceRepoService {
 		serviceSpec = this.updateProductOfferingPriceDataFromAPIcall(serviceSpec, serviceProductOfferingPrice);
 		serviceSpec = this.prodsOfferingRepo.save(serviceSpec);
 
+		// Publish create notification
+		if (productOfferingPriceNotificationService != null) {
+			productOfferingPriceNotificationService.publishProductOfferingPriceCreateNotification(serviceSpec);
+		}
 	
 		return this.prodsOfferingRepo.save(serviceSpec);
 	}
@@ -231,6 +238,11 @@ public class ProductOfferingPriceRepoService {
 		 * prior deleting we need to delete other dependency objects
 		 */
 
+		// Publish delete notification before actual deletion
+		if (productOfferingPriceNotificationService != null) {
+			productOfferingPriceNotificationService.publishProductOfferingPriceDeleteNotification(s);
+		}
+		
 		this.prodsOfferingRepo.delete(s);
 		return null;
 	}
@@ -244,12 +256,25 @@ public class ProductOfferingPriceRepoService {
 		if (s == null) {
 			return null;
 		}
+		
+		// Store original state for comparison
+		String originalLifecycleStatus = s.getLifecycleStatus();
+		
 		ProductOfferingPrice prodOff = s;
 		prodOff = this.updateProductOfferingPriceDataFromAPIcall(prodOff, aProductOfferingPrice);
 
 		prodOff = this.prodsOfferingRepo.save(prodOff);
 		
-		
+		// Publish notifications
+		if (productOfferingPriceNotificationService != null) {
+			// Always publish attribute value change notification for updates
+			productOfferingPriceNotificationService.publishProductOfferingPriceAttributeValueChangeNotification(prodOff);
+			
+			// Check for state change and publish state change notification if needed
+			if (originalLifecycleStatus != null && !originalLifecycleStatus.equals(prodOff.getLifecycleStatus())) {
+				productOfferingPriceNotificationService.publishProductOfferingPriceStateChangeNotification(prodOff);
+			}
+		}
 		
 		return this.prodsOfferingRepo.save(prodOff);
 
