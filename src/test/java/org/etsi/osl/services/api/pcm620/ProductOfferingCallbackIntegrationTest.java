@@ -92,7 +92,7 @@ public class ProductOfferingCallbackIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "osadmin", roles = {"ADMIN"})
+    @WithMockUser(username = "osadmin", roles = {"USER"})
     public void testCompleteCallbackFlow() throws Exception {
         // Step 1: Register a callback subscription via Hub API
         EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
@@ -139,7 +139,7 @@ public class ProductOfferingCallbackIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "osadmin", roles = {"ADMIN"})
+    @WithMockUser(username = "osadmin", roles = {"USER"})
     public void testAttributeValueChangeAndStateChangeCallbacks() throws Exception {
         // Step 1: Register subscription for attribute and state change events
         EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
@@ -187,7 +187,7 @@ public class ProductOfferingCallbackIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "osadmin", roles = {"ADMIN"})
+    @WithMockUser(username = "osadmin", roles = {"USER"})
     public void testCallbackFilteringByEventType() throws Exception {
         // Step 1: Register subscription only for create events
         EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
@@ -222,7 +222,7 @@ public class ProductOfferingCallbackIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "osadmin", roles = {"ADMIN"})
+    @WithMockUser(username = "osadmin", roles = {"USER"})
     public void testProductOfferingCallbackWithAllEventsQuery() throws Exception {
         // Step 1: Register subscription for all events (empty query)
         EventSubscriptionInput subscriptionInput = new EventSubscriptionInput();
