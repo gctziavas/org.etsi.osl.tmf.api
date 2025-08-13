@@ -70,14 +70,14 @@ public class HubApiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 .content( JsonUtils.toJson( eventSubscriptionInput ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().isCreated());
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/hub")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( eventSubscriptionInput ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().isCreated());
     }
 
 
@@ -89,6 +89,6 @@ public class HubApiControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(501));
+                .andExpect(status().isNotFound());
     }
 }
