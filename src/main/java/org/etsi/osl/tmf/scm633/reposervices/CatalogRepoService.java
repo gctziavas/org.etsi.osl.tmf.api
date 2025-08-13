@@ -60,11 +60,14 @@ public class CatalogRepoService {
 
 	@Autowired
 	ServiceSpecificationRepoService specRepoService;	    
-    
+
+	@Autowired
+	ServiceCatalogNotificationService serviceCatalogNotificationService;
 
 	public ServiceCatalog addCatalog(ServiceCatalog c) {
-
-		return this.catalogRepo.save(c);
+		ServiceCatalog savedCatalog = this.catalogRepo.save(c);
+		serviceCatalogNotificationService.publishServiceCatalogCreateNotification(savedCatalog);
+		return savedCatalog;
 	}
 
 	public ServiceCatalog addCatalog(@Valid ServiceCatalogCreate serviceCat) {
@@ -72,7 +75,9 @@ public class CatalogRepoService {
 		ServiceCatalog sc = new ServiceCatalog();
 
 		sc = updateCatalogDataFromAPICall(sc, serviceCat);
-		return this.catalogRepo.save(sc);
+		ServiceCatalog savedCatalog = this.catalogRepo.save(sc);
+		serviceCatalogNotificationService.publishServiceCatalogCreateNotification(savedCatalog);
+		return savedCatalog;
 	}
 
 	public String findAllEager() {
@@ -157,9 +162,12 @@ public class CatalogRepoService {
 
 	public Void deleteById(String id) {
 		Optional<ServiceCatalog> optionalCat = this.catalogRepo.findByUuid(id);
-		this.catalogRepo.delete(optionalCat.get());
+		if (optionalCat.isPresent()) {
+			ServiceCatalog catalogToDelete = optionalCat.get();
+			serviceCatalogNotificationService.publishServiceCatalogDeleteNotification(catalogToDelete);
+			this.catalogRepo.delete(catalogToDelete);
+		}
 		return null;
-
 	}
 
 	public ServiceCatalog updateCatalog(String id, ServiceCatalogUpdate serviceCatalog) {
