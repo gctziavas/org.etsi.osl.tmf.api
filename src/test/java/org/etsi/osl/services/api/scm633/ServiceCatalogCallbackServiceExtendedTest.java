@@ -12,11 +12,16 @@ import java.util.List;
 import org.etsi.osl.tmf.scm633.model.EventSubscription;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateEvent;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteEvent;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateEvent;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteEvent;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeEvent;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
 import org.etsi.osl.tmf.scm633.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceCatalogCallbackService;
 import org.junit.Before;
@@ -76,8 +81,10 @@ public class ServiceCatalogCallbackServiceExtendedTest {
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
+        ServiceCategoryCreateNotification notif = new ServiceCategoryCreateNotification();
+        notif.setEvent(event);
         // Act
-        serviceCatalogCallbackService.sendServiceCategoryCreateCallback(event);
+        serviceCatalogCallbackService.sendServiceCategoryCreateCallback(notif );
 
         // Assert
         verify(restTemplate, times(2)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
@@ -104,8 +111,11 @@ public class ServiceCatalogCallbackServiceExtendedTest {
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
+
+        ServiceCategoryDeleteNotification notif = new ServiceCategoryDeleteNotification();
+        notif.setEvent(event);
         // Act
-        serviceCatalogCallbackService.sendServiceCategoryDeleteCallback(event);
+        serviceCatalogCallbackService.sendServiceCategoryDeleteCallback(notif);
 
         // Assert
         verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
@@ -133,7 +143,10 @@ public class ServiceCatalogCallbackServiceExtendedTest {
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Act
-        serviceCatalogCallbackService.sendServiceSpecificationCreateCallback(event);
+
+        ServiceSpecificationCreateNotification notif = new ServiceSpecificationCreateNotification();
+        notif.setEvent(event);
+        serviceCatalogCallbackService.sendServiceSpecificationCreateCallback(notif);
 
         // Assert
         verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
@@ -160,7 +173,9 @@ public class ServiceCatalogCallbackServiceExtendedTest {
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Act
-        serviceCatalogCallbackService.sendServiceSpecificationDeleteCallback(event);
+        ServiceSpecificationDeleteNotification notif = new ServiceSpecificationDeleteNotification();
+        notif.setEvent(event);
+        serviceCatalogCallbackService.sendServiceSpecificationDeleteCallback(notif);
 
         // Assert
         verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
@@ -188,7 +203,9 @@ public class ServiceCatalogCallbackServiceExtendedTest {
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Act
-        serviceCatalogCallbackService.sendServiceSpecificationChangeCallback(event);
+        ServiceSpecificationChangeNotification notif = new ServiceSpecificationChangeNotification();
+        notif.setEvent(event);
+        serviceCatalogCallbackService.sendServiceSpecificationChangeCallback(notif);
 
         // Assert
         verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
@@ -214,7 +231,9 @@ public class ServiceCatalogCallbackServiceExtendedTest {
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Act
-        serviceCatalogCallbackService.sendServiceCategoryCreateCallback(event);
+        ServiceCategoryCreateNotification notif = new ServiceCategoryCreateNotification();
+        notif.setEvent(event);
+        serviceCatalogCallbackService.sendServiceCategoryCreateCallback(notif);
 
         // Assert - should call callback even with no query
         verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
@@ -240,7 +259,9 @@ public class ServiceCatalogCallbackServiceExtendedTest {
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Act
-        serviceCatalogCallbackService.sendServiceSpecificationCreateCallback(event);
+        ServiceSpecificationCreateNotification notif = new ServiceSpecificationCreateNotification();
+        notif.setEvent(event);
+        serviceCatalogCallbackService.sendServiceSpecificationCreateCallback(notif);
 
         // Assert
         verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));

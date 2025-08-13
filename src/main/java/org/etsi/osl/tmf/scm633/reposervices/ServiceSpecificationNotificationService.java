@@ -59,7 +59,7 @@ public class ServiceSpecificationNotificationService {
             eventPublisher.publishEvent(notification, serviceSpecification.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceSpecificationCreateCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceSpecificationCreateCallback(notification);
             
             logger.info("Published service specification create notification for service specification ID: {}", serviceSpecification.getUuid());
         } catch (Exception e) {
@@ -77,7 +77,7 @@ public class ServiceSpecificationNotificationService {
             eventPublisher.publishEvent(notification, serviceSpecification.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceSpecificationDeleteCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceSpecificationDeleteCallback(notification);
             
             logger.info("Published service specification delete notification for service specification ID: {}", serviceSpecification.getUuid());
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class ServiceSpecificationNotificationService {
             eventPublisher.publishEvent(notification, serviceSpecification.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceSpecificationChangeCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceSpecificationChangeCallback(notification);
             
             logger.info("Published service specification change notification for service specification ID: {}", serviceSpecification.getUuid());
         } catch (Exception e) {

@@ -20,15 +20,14 @@
 package org.etsi.osl.tmf.scm633.reposervices;
 
 import java.util.List;
-
-import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreateEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceCatalogDeleteEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeEvent;
 import org.etsi.osl.tmf.scm633.model.EventSubscription;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreateNotification;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalogDeleteNotification;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateNotification;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateNotification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,84 +47,84 @@ public class ServiceCatalogCallbackService {
 
     @Autowired
     @Qualifier("scm633EventSubscriptionRepoService")
-    private EventSubscriptionRepoService eventSubscriptionRepoService;
+    private EventSubscriptionRepoService notificationSubscriptionRepoService;
 
     @Autowired
     private RestTemplate restTemplate;
 
     /**
-     * Send service catalog create event to all registered callback URLs
-     * @param serviceCatalogCreateEvent The service catalog create event to send
+     * Send service catalog create notification to all registered callback URLs
+     * @param serviceCatalogCreateNotification The service catalog create notification to send
      */
-    public void sendServiceCatalogCreateCallback(ServiceCatalogCreateEvent serviceCatalogCreateEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceCatalogCreateCallback(ServiceCatalogCreateNotification serviceCatalogCreateNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceCatalogCreateEvent")) {
-                sendServiceCatalogCreateEventToCallback(subscription.getCallback(), serviceCatalogCreateEvent);
+            if (shouldNotifySubscription(subscription, "serviceCatalogCreateNotification")) {
+                sendServiceCatalogCreateNotificationToCallback(subscription.getCallback(), serviceCatalogCreateNotification);
             }
         }
     }
 
     /**
-     * Send service catalog delete event to all registered callback URLs
-     * @param serviceCatalogDeleteEvent The service catalog delete event to send
+     * Send service catalog delete notification to all registered callback URLs
+     * @param serviceCatalogDeleteEvent The service catalog delete notification to send
      */
-    public void sendServiceCatalogDeleteCallback(ServiceCatalogDeleteEvent serviceCatalogDeleteEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceCatalogDeleteCallback(ServiceCatalogDeleteNotification serviceCatalogDeleteNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceCatalogDeleteEvent")) {
-                sendServiceCatalogDeleteEventToCallback(subscription.getCallback(), serviceCatalogDeleteEvent);
+            if (shouldNotifySubscription(subscription, "serviceCatalogDeleteNotification")) {
+                sendServiceCatalogDeleteNotificationToCallback(subscription.getCallback(), serviceCatalogDeleteNotification);
             }
         }
     }
 
     /**
-     * Send service catalog create event to a specific callback URL
+     * Send service catalog create notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service catalog create event
+     * @param notification The service catalog create notification
      */
-    private void sendServiceCatalogCreateEventToCallback(String callbackUrl, ServiceCatalogCreateEvent event) {
+    private void sendServiceCatalogCreateNotificationToCallback(String callbackUrl, ServiceCatalogCreateNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCatalogCreateEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCatalogCreateNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceCatalogCreateEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceCatalogCreateNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service catalog create event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service catalog create notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service catalog create event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service catalog create notification to callback URL: {}", callbackUrl, e);
         }
     }
 
     /**
-     * Send service catalog delete event to a specific callback URL
+     * Send service catalog delete notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service catalog delete event
+     * @param notification The service catalog delete notification
      */
-    private void sendServiceCatalogDeleteEventToCallback(String callbackUrl, ServiceCatalogDeleteEvent event) {
+    private void sendServiceCatalogDeleteNotificationToCallback(String callbackUrl, ServiceCatalogDeleteNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCatalogDeleteEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCatalogDeleteNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceCatalogDeleteEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceCatalogDeleteNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service catalog delete event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service catalog delete notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service catalog delete event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service catalog delete notification to callback URL: {}", callbackUrl, e);
         }
     }
 
@@ -144,213 +143,213 @@ public class ServiceCatalogCallbackService {
     }
 
     /**
-     * Send service category create event to all registered callback URLs
-     * @param serviceCategoryCreateEvent The service category create event to send
+     * Send service category create notification to all registered callback URLs
+     * @param serviceCategoryCreateNotification The service category create notification to send
      */
-    public void sendServiceCategoryCreateCallback(ServiceCategoryCreateEvent serviceCategoryCreateEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceCategoryCreateCallback(ServiceCategoryCreateNotification serviceCategoryCreateNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceCategoryCreateEvent")) {
-                sendServiceCategoryCreateEventToCallback(subscription.getCallback(), serviceCategoryCreateEvent);
+            if (shouldNotifySubscription(subscription, "serviceCategoryCreateNotification")) {
+                sendServiceCategoryCreateNotificationToCallback(subscription.getCallback(), serviceCategoryCreateNotification);
             }
         }
     }
 
     /**
-     * Send service category delete event to all registered callback URLs
-     * @param serviceCategoryDeleteEvent The service category delete event to send
+     * Send service category delete notification to all registered callback URLs
+     * @param serviceCategoryDeleteNotification The service category delete notification to send
      */
-    public void sendServiceCategoryDeleteCallback(ServiceCategoryDeleteEvent serviceCategoryDeleteEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceCategoryDeleteCallback(ServiceCategoryDeleteNotification serviceCategoryDeleteNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceCategoryDeleteEvent")) {
-                sendServiceCategoryDeleteEventToCallback(subscription.getCallback(), serviceCategoryDeleteEvent);
+            if (shouldNotifySubscription(subscription, "serviceCategoryDeleteNotification")) {
+                sendServiceCategoryDeleteNotificationToCallback(subscription.getCallback(), serviceCategoryDeleteNotification);
             }
         }
     }
 
     /**
-     * Send service specification create event to all registered callback URLs
-     * @param serviceSpecificationCreateEvent The service specification create event to send
+     * Send service specification create notification to all registered callback URLs
+     * @param serviceSpecificationCreateNotification The service specification create notification to send
      */
-    public void sendServiceSpecificationCreateCallback(ServiceSpecificationCreateEvent serviceSpecificationCreateEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceSpecificationCreateCallback(ServiceSpecificationCreateNotification serviceSpecificationCreateNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceSpecificationCreateEvent")) {
-                sendServiceSpecificationCreateEventToCallback(subscription.getCallback(), serviceSpecificationCreateEvent);
+            if (shouldNotifySubscription(subscription, "serviceSpecificationCreateNotification")) {
+                sendServiceSpecificationCreateNotificationToCallback(subscription.getCallback(), serviceSpecificationCreateNotification);
             }
         }
     }
 
     /**
-     * Send service specification delete event to all registered callback URLs
-     * @param serviceSpecificationDeleteEvent The service specification delete event to send
+     * Send service specification delete notification to all registered callback URLs
+     * @param serviceSpecificationDeleteNotification The service specification delete notification to send
      */
-    public void sendServiceSpecificationDeleteCallback(ServiceSpecificationDeleteEvent serviceSpecificationDeleteEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceSpecificationDeleteCallback(ServiceSpecificationDeleteNotification serviceSpecificationDeleteNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceSpecificationDeleteEvent")) {
-                sendServiceSpecificationDeleteEventToCallback(subscription.getCallback(), serviceSpecificationDeleteEvent);
+            if (shouldNotifySubscription(subscription, "serviceSpecificationDeleteNotification")) {
+                sendServiceSpecificationDeleteNotificationToCallback(subscription.getCallback(), serviceSpecificationDeleteNotification);
             }
         }
     }
 
     /**
-     * Send service specification change event to all registered callback URLs
-     * @param serviceSpecificationChangeEvent The service specification change event to send
+     * Send service specification change notification to all registered callback URLs
+     * @param serviceSpecificationChangeNotification The service specification change notification to send
      */
-    public void sendServiceSpecificationChangeCallback(ServiceSpecificationChangeEvent serviceSpecificationChangeEvent) {
-        List<EventSubscription> subscriptions = eventSubscriptionRepoService.findAll();
+    public void sendServiceSpecificationChangeCallback(ServiceSpecificationChangeNotification serviceSpecificationChangeNotification) {
+        List<EventSubscription> subscriptions = notificationSubscriptionRepoService.findAll();
         
         for (EventSubscription subscription : subscriptions) {
-            if (shouldNotifySubscription(subscription, "serviceSpecificationChangeEvent")) {
-                sendServiceSpecificationChangeEventToCallback(subscription.getCallback(), serviceSpecificationChangeEvent);
+            if (shouldNotifySubscription(subscription, "serviceSpecificationChangeNotification")) {
+                sendServiceSpecificationChangeNotificationToCallback(subscription.getCallback(), serviceSpecificationChangeNotification);
             }
         }
     }
 
     /**
-     * Send service category create event to a specific callback URL
+     * Send service category create notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service category create event
+     * @param notification The service category create notification
      */
-    private void sendServiceCategoryCreateEventToCallback(String callbackUrl, ServiceCategoryCreateEvent event) {
+    private void sendServiceCategoryCreateNotificationToCallback(String callbackUrl, ServiceCategoryCreateNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCategoryCreateEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCategoryCreateNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceCategoryCreateEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceCategoryCreateNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service category create event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service category create notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service category create event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service category create notification to callback URL: {}", callbackUrl, e);
         }
     }
 
     /**
-     * Send service category delete event to a specific callback URL
+     * Send service category delete notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service category delete event
+     * @param notification The service category delete notification
      */
-    private void sendServiceCategoryDeleteEventToCallback(String callbackUrl, ServiceCategoryDeleteEvent event) {
+    private void sendServiceCategoryDeleteNotificationToCallback(String callbackUrl, ServiceCategoryDeleteNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCategoryDeleteEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceCategoryDeleteNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceCategoryDeleteEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceCategoryDeleteNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service category delete event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service category delete notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service category delete event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service category delete notification to callback URL: {}", callbackUrl, e);
         }
     }
 
     /**
-     * Send service specification create event to a specific callback URL
+     * Send service specification create notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service specification create event
+     * @param notification The service specification create notification
      */
-    private void sendServiceSpecificationCreateEventToCallback(String callbackUrl, ServiceSpecificationCreateEvent event) {
+    private void sendServiceSpecificationCreateNotificationToCallback(String callbackUrl, ServiceSpecificationCreateNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceSpecificationCreateEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceSpecificationCreateNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceSpecificationCreateEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceSpecificationCreateNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service specification create event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service specification create notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service specification create event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service specification create notification to callback URL: {}", callbackUrl, e);
         }
     }
 
     /**
-     * Send service specification delete event to a specific callback URL
+     * Send service specification delete notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service specification delete event
+     * @param notification The service specification delete notification
      */
-    private void sendServiceSpecificationDeleteEventToCallback(String callbackUrl, ServiceSpecificationDeleteEvent event) {
+    private void sendServiceSpecificationDeleteNotificationToCallback(String callbackUrl, ServiceSpecificationDeleteNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceSpecificationDeleteEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceSpecificationDeleteNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceSpecificationDeleteEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceSpecificationDeleteNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service specification delete event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service specification delete notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service specification delete event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service specification delete notification to callback URL: {}", callbackUrl, e);
         }
     }
 
     /**
-     * Send service specification change event to a specific callback URL
+     * Send service specification change notification to a specific callback URL
      * @param callbackUrl The callback URL to send to
-     * @param event The service specification change event
+     * @param notification The service specification change notification
      */
-    private void sendServiceSpecificationChangeEventToCallback(String callbackUrl, ServiceSpecificationChangeEvent event) {
+    private void sendServiceSpecificationChangeNotificationToCallback(String callbackUrl, ServiceSpecificationChangeNotification notification) {
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/serviceSpecificationChangeEvent");
+            String url = buildCallbackUrl(callbackUrl, "/listener/serviceSpecificationChangeNotification");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ServiceSpecificationChangeEvent> entity = new HttpEntity<>(event, headers);
+            HttpEntity<ServiceSpecificationChangeNotification> entity = new HttpEntity<>(notification, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent service specification change event to callback URL: {} - Response: {}", 
+            logger.info("Successfully sent service specification change notification to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send service specification change event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send service specification change notification to callback URL: {}", callbackUrl, e);
         }
     }
 
     /**
-     * Check if a subscription should be notified for a specific event type
-     * @param subscription The event subscription
-     * @param eventType The event type to check
+     * Check if a subscription should be notified for a specific notification type
+     * @param subscription The notification subscription
+     * @param notificationType The notification type to check
      * @return true if the subscription should be notified
      */
-    private boolean shouldNotifySubscription(EventSubscription subscription, String eventType) {
-        // If no query is specified, notify all events
+    private boolean shouldNotifySubscription(EventSubscription subscription, String notificationType) {
+        // If no query is specified, notify all notifications
         if (subscription.getQuery() == null || subscription.getQuery().trim().isEmpty()) {
             return true;
         }
         
-        // Check if the query contains the event type
+        // Check if the query contains the notification type
         String query = subscription.getQuery().toLowerCase();
         return query.contains("servicecatalog") || 
                query.contains("servicecategory") ||
                query.contains("servicespecification") ||
-               query.contains(eventType.toLowerCase()) ||
+               query.contains(notificationType.toLowerCase()) ||
                query.contains("servicecatalog.create") ||
                query.contains("servicecatalog.delete") ||
                query.contains("servicecategory.create") ||

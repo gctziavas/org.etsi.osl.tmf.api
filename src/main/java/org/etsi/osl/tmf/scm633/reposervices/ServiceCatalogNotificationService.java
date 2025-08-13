@@ -57,7 +57,7 @@ public class ServiceCatalogNotificationService {
             eventPublisher.publishEvent(notification, serviceCatalog.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceCatalogCreateCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceCatalogCreateCallback(notification);
             
             logger.info("Published service catalog create notification for service catalog ID: {}", serviceCatalog.getUuid());
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class ServiceCatalogNotificationService {
             eventPublisher.publishEvent(notification, serviceCatalog.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceCatalogDeleteCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceCatalogDeleteCallback(notification);
             
             logger.info("Published service catalog delete notification for service catalog ID: {}", serviceCatalog.getUuid());
         } catch (Exception e) {

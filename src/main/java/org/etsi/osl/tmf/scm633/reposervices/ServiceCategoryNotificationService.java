@@ -57,7 +57,7 @@ public class ServiceCategoryNotificationService {
             eventPublisher.publishEvent(notification, serviceCategory.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceCategoryCreateCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceCategoryCreateCallback(notification);
             
             logger.info("Published service category create notification for service category ID: {}", serviceCategory.getUuid());
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class ServiceCategoryNotificationService {
             eventPublisher.publishEvent(notification, serviceCategory.getUuid());
             
             // Send callbacks to registered subscribers
-            serviceCatalogCallbackService.sendServiceCategoryDeleteCallback(notification.getEvent());
+            serviceCatalogCallbackService.sendServiceCategoryDeleteCallback(notification);
             
             logger.info("Published service category delete notification for service category ID: {}", serviceCategory.getUuid());
         } catch (Exception e) {
