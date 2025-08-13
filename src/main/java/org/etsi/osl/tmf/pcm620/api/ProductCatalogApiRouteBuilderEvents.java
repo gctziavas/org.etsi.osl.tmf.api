@@ -43,6 +43,10 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingDeleteNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingAttributeValueChangeNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingStateChangeNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceCreateNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceDeleteNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceAttributeValueChangeNotification;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -56,34 +60,46 @@ public class ProductCatalogApiRouteBuilderEvents extends RouteBuilder {
 	private static final transient Log logger = LogFactory.getLog(ProductCatalogApiRouteBuilderEvents.class.getName());
 
 	@Value("${EVENT_PRODUCT_CATALOG_CREATE}")
-	private String EVENT_CATALOG_CREATE = "direct:EVENT_CATALOG_CREATE";
+	private String EVENT_CATALOG_CREATE = "";
 	
 	@Value("${EVENT_PRODUCT_CATALOG_DELETE}")
-	private String EVENT_CATALOG_DELETE = "direct:EVENT_CATALOG_DELETE";
+	private String EVENT_CATALOG_DELETE = "";
 	
 	@Value("${EVENT_PRODUCT_CATEGORY_CREATE}")
-	private String EVENT_CATEGORY_CREATE = "direct:EVENT_CATEGORY_CREATE";
+	private String EVENT_CATEGORY_CREATE = "";
 	
 	@Value("${EVENT_PRODUCT_CATEGORY_DELETE}")
-	private String EVENT_CATEGORY_DELETE = "direct:EVENT_CATEGORY_DELETE";
+	private String EVENT_CATEGORY_DELETE = "";
 	
 	@Value("${EVENT_PRODUCT_SPECIFICATION_CREATE}")
-	private String EVENT_PRODUCT_SPECIFICATION_CREATE = "direct:EVENT_PRODUCT_SPECIFICATION_CREATE";
+	private String EVENT_PRODUCT_SPECIFICATION_CREATE = "";
 	
 	@Value("${EVENT_PRODUCT_SPECIFICATION_DELETE}")
-	private String EVENT_PRODUCT_SPECIFICATION_DELETE = "direct:EVENT_PRODUCT_SPECIFICATION_DELETE";
+	private String EVENT_PRODUCT_SPECIFICATION_DELETE  = "";
 	
 	@Value("${EVENT_PRODUCT_OFFERING_CREATE}")
-	private String EVENT_PRODUCT_OFFERING_CREATE = "direct:EVENT_PRODUCT_OFFERING_CREATE";
+	private String EVENT_PRODUCT_OFFERING_CREATE = "";
 	
 	@Value("${EVENT_PRODUCT_OFFERING_DELETE}")
-	private String EVENT_PRODUCT_OFFERING_DELETE = "direct:EVENT_PRODUCT_OFFERING_DELETE";
+	private String EVENT_PRODUCT_OFFERING_DELETE = "";
 	
 	@Value("${EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE}")
-	private String EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE = "direct:EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE";
+	private String EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE = "";
 	
 	@Value("${EVENT_PRODUCT_OFFERING_STATE_CHANGE}")
-	private String EVENT_PRODUCT_OFFERING_STATE_CHANGE = "direct:EVENT_PRODUCT_OFFERING_STATE_CHANGE";
+	private String EVENT_PRODUCT_OFFERING_STATE_CHANGE = "";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_PRICE_CREATE}")
+	private String EVENT_PRODUCT_OFFERING_PRICE_CREATE = "";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_PRICE_DELETE}")
+	private String EVENT_PRODUCT_OFFERING_PRICE_DELETE = "";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_PRICE_ATTRIBUTE_VALUE_CHANGE}")
+	private String EVENT_PRODUCT_OFFERING_PRICE_ATTRIBUTE_VALUE_CHANGE = "";
+	
+	@Value("${EVENT_PRODUCT_OFFERING_PRICE_STATE_CHANGE}")
+	private String EVENT_PRODUCT_OFFERING_PRICE_STATE_CHANGE = "";
 
 	@Value("${spring.application.name}")
 	private String compname;
@@ -130,7 +146,15 @@ public class ProductCatalogApiRouteBuilderEvents extends RouteBuilder {
 			} else if (n instanceof ProductOfferingAttributeValueChangeNotification) {
 				 msgtopic = EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE;
 			} else if (n instanceof ProductOfferingStateChangeNotification) {
-				 msgtopic = EVENT_PRODUCT_OFFERING_STATE_CHANGE;				
+				 msgtopic = EVENT_PRODUCT_OFFERING_STATE_CHANGE;
+			} else if (n instanceof ProductOfferingPriceCreateNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_PRICE_CREATE;
+			} else if (n instanceof ProductOfferingPriceDeleteNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_PRICE_DELETE;
+			} else if (n instanceof ProductOfferingPriceAttributeValueChangeNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_PRICE_ATTRIBUTE_VALUE_CHANGE;
+			} else if (n instanceof ProductOfferingPriceStateChangeNotification) {
+				 msgtopic = EVENT_PRODUCT_OFFERING_PRICE_STATE_CHANGE;
 			}
 			
 			Map<String, Object> map = new HashMap<>();
