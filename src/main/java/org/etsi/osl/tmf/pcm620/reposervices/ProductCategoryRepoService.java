@@ -61,6 +61,9 @@ public class ProductCategoryRepoService {
 	private final ProductCategoriesRepository categsRepo;
 	
 	private final ProductOfferingRepository prodsOfferingRepo;
+	
+	@Autowired
+	private CategoryNotificationService categoryNotificationService;
 
 	/**
 	 * from
@@ -78,8 +81,14 @@ public class ProductCategoryRepoService {
 	
 	
 	public Category addCategory(Category c) {
-
-		return this.categsRepo.save( c );
+		Category savedCategory = this.categsRepo.save( c );
+		
+		// Publish category create notification
+		if (categoryNotificationService != null) {
+			categoryNotificationService.publishCategoryCreateNotification(savedCategory);
+		}
+		
+		return savedCategory;
 	}
 
 	public Category addCategory(@Valid CategoryCreate Category) {	
@@ -87,7 +96,14 @@ public class ProductCategoryRepoService {
 		
 		Category sc = new Category() ;
 		sc = updateCategoryDataFromAPICall(sc, Category);
-		return this.categsRepo.save( sc );
+		Category savedCategory = this.categsRepo.save( sc );
+		
+		// Publish category create notification
+		if (categoryNotificationService != null) {
+			categoryNotificationService.publishCategoryCreateNotification(savedCategory);
+		}
+		
+		return savedCategory;
 		
 	}
 
@@ -138,13 +154,14 @@ public class ProductCategoryRepoService {
 			return false; //has children
 		}
 		
+		Category categoryToDelete = optionalCat.get();
 		
-		if ( optionalCat.get().getParentId() != null ) {
-			Category parentCat = (this.categsRepo.findByUuid( optionalCat.get().getParentId() )).get();
+		if ( categoryToDelete.getParentId() != null ) {
+			Category parentCat = (this.categsRepo.findByUuid( categoryToDelete.getParentId() )).get();
 			
 			//remove from parent category
 			for (Category ss : parentCat.getCategoryObj()) {
-				if  ( ss.getId()  == optionalCat.get().getId() ) {
+				if  ( ss.getId()  == categoryToDelete.getId() ) {
 					 parentCat.getCategoryObj().remove(ss);
 					 break;
 				}
@@ -152,8 +169,13 @@ public class ProductCategoryRepoService {
 			parentCat = this.categsRepo.save(parentCat);
 		}
 		
+		this.categsRepo.delete( categoryToDelete);
 		
-		this.categsRepo.delete( optionalCat.get());
+		// Publish category delete notification
+		if (categoryNotificationService != null) {
+			categoryNotificationService.publishCategoryDeleteNotification(categoryToDelete);
+		}
+		
 		return true;
 		
 	}
