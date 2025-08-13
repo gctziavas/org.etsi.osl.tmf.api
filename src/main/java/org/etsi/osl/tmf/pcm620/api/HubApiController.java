@@ -71,7 +71,7 @@ public class HubApiController implements HubApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<EventSubscription> registerListener(@Parameter(description = "Data containing the callback endpoint to deliver the information", required = true) @Valid @RequestBody EventSubscriptionInput data) {
         try {
             EventSubscription eventSubscription = eventSubscriptionRepoService.addEventSubscription(data);
@@ -86,7 +86,7 @@ public class HubApiController implements HubApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<Void> unregisterListener(@Parameter(description = "The id of the registered listener", required = true) @PathVariable("id") String id) {
         try {
             EventSubscription existing = eventSubscriptionRepoService.findById(id);
