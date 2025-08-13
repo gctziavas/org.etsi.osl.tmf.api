@@ -156,6 +156,15 @@ public class ProductCategoryRepoService {
 		
 		Category categoryToDelete = optionalCat.get();
 		
+		// Trigger lazy loading of associations before deletion to avoid lazy initialization exception
+		categoryToDelete.getProductOfferingObj().size(); // This will initialize the lazy collection
+		categoryToDelete.getCategoryObj().size(); // This will initialize the lazy collection
+		
+		// Publish category delete notification BEFORE deletion to ensure session is still active
+		if (categoryNotificationService != null) {
+			categoryNotificationService.publishCategoryDeleteNotification(categoryToDelete);
+		}
+		
 		if ( categoryToDelete.getParentId() != null ) {
 			Category parentCat = (this.categsRepo.findByUuid( categoryToDelete.getParentId() )).get();
 			
@@ -170,11 +179,6 @@ public class ProductCategoryRepoService {
 		}
 		
 		this.categsRepo.delete( categoryToDelete);
-		
-		// Publish category delete notification
-		if (categoryNotificationService != null) {
-			categoryNotificationService.publishCategoryDeleteNotification(categoryToDelete);
-		}
 		
 		return true;
 		

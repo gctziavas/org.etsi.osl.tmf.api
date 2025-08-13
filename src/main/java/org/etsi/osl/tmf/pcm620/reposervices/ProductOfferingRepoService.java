@@ -266,13 +266,13 @@ public class ProductOfferingRepoService {
 		/**
 		 * prior deleting we need to delete other dependency objects
 		 */
-
-		this.prodsOfferingRepo.delete(s);
 		
-		// Publish product offering delete notification
+		// Publish product offering delete notification BEFORE deletion to ensure session is still active
 		if (productOfferingNotificationService != null) {
 			productOfferingNotificationService.publishProductOfferingDeleteNotification(s);
 		}
+
+		this.prodsOfferingRepo.delete(s);
 		
 		return null;
 	}

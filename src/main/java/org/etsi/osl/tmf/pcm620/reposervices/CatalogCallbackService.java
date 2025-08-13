@@ -80,8 +80,9 @@ public class CatalogCallbackService {
      * @param event The catalog create event
      */
     private void sendCatalogCreateEventToCallback(String callbackUrl, CatalogCreateEvent event) {
+      
+        String url = buildCallbackUrl(callbackUrl, "/listener/catalogCreateEvent");
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/catalogCreateEvent");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -94,7 +95,7 @@ public class CatalogCallbackService {
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send catalog create event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send catalog create event to callback URL: {}", url, e);
         }
     }
 
@@ -104,8 +105,8 @@ public class CatalogCallbackService {
      * @param event The catalog delete event
      */
     private void sendCatalogDeleteEventToCallback(String callbackUrl, CatalogDeleteEvent event) {
+        String url = buildCallbackUrl(callbackUrl, "/listener/catalogDeleteEvent");
         try {
-            String url = buildCallbackUrl(callbackUrl, "/listener/catalogDeleteEvent");
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -118,7 +119,7 @@ public class CatalogCallbackService {
                 url, response.getStatusCode());
             
         } catch (Exception e) {
-            logger.error("Failed to send catalog delete event to callback URL: {}", callbackUrl, e);
+            logger.error("Failed to send catalog delete event to callback URL: {}", url, e);
         }
     }
 
