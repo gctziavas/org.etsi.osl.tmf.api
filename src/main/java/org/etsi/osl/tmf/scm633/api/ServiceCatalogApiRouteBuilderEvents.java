@@ -139,8 +139,8 @@ public class ServiceCatalogApiRouteBuilderEvents extends RouteBuilder {
 			centralLogger.log(CLevel.INFO, msgtxt, compname());
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error("Cannot send Event . " + e.getMessage());
+			//e.printStackTrace();
+			logger.error("Cannot send Event to message bus. " + e.getMessage());
 		}
 	}
 
