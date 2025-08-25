@@ -1,8 +1,8 @@
-package org.openapitools.api;
+package org.etsi.osl.tmf.aim915.api;
 
-import org.openapitools.model.Error;
-import org.openapitools.model.EventSubscription;
-import org.openapitools.model.EventSubscriptionInput;
+import org.etsi.osl.tmf.aim915.model.Error;
+import org.etsi.osl.tmf.aim915.model.EventSubscription;
+import org.etsi.osl.tmf.aim915.model.EventSubscriptionInput;
 
 
 import org.springframework.beans.factory.annotation.Autowired;

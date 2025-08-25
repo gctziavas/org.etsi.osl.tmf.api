@@ -1,4 +1,4 @@
-package org.openapitools.api;
+package org.etsi.osl.tmf.aim915.api;
 
 import org.springframework.web.context.request.NativeWebRequest;
 

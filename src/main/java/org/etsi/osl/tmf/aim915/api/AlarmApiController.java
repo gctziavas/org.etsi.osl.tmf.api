@@ -1,9 +1,9 @@
-package org.openapitools.api;
+package org.etsi.osl.tmf.aim915.api;
 
-import org.openapitools.model.Alarm;
-import org.openapitools.model.AlarmCreate;
-import org.openapitools.model.AlarmUpdate;
-import org.openapitools.model.Error;
+import org.etsi.osl.tmf.aim915.model.Alarm;
+import org.etsi.osl.tmf.aim915.model.AlarmCreate;
+import org.etsi.osl.tmf.aim915.model.AlarmUpdate;
+import org.etsi.osl.tmf.aim915.model.Error;
 
 
 import org.springframework.beans.factory.annotation.Autowired;

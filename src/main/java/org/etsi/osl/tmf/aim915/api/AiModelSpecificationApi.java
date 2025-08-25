@@ -3,12 +3,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-package org.openapitools.api;
+package org.etsi.osl.tmf.aim915.api;
 
-import org.openapitools.model.AiModelSpecification;
-import org.openapitools.model.AiModelSpecificationCreate;
-import org.openapitools.model.AiModelSpecificationUpdate;
-import org.openapitools.model.Error;
+import org.etsi.osl.tmf.aim915.model.AiModelSpecification;
+import org.etsi.osl.tmf.aim915.model.AiModelSpecificationCreate;
+import org.etsi.osl.tmf.aim915.model.AiModelSpecificationUpdate;
+import org.etsi.osl.tmf.aim915.model.Error;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -3,12 +3,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-package org.openapitools.api;
+package org.etsi.osl.tmf.aim915.api;
 
-import org.openapitools.model.Alarm;
-import org.openapitools.model.AlarmCreate;
-import org.openapitools.model.AlarmUpdate;
-import org.openapitools.model.Error;
+import org.etsi.osl.tmf.aim915.model.Alarm;
+import org.etsi.osl.tmf.aim915.model.AlarmCreate;
+import org.etsi.osl.tmf.aim915.model.AlarmUpdate;
+import org.etsi.osl.tmf.aim915.model.Error;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

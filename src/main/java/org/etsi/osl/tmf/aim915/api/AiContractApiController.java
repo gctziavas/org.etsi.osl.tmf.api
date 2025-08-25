@@ -1,9 +1,9 @@
-package org.openapitools.api;
+package org.etsi.osl.tmf.aim915.api;
 
-import org.openapitools.model.AiContract;
-import org.openapitools.model.AiContractCreate;
-import org.openapitools.model.AiContractUpdate;
-import org.openapitools.model.Error;
+import org.etsi.osl.tmf.aim915.model.AiContract;
+import org.etsi.osl.tmf.aim915.model.AiContractCreate;
+import org.etsi.osl.tmf.aim915.model.AiContractUpdate;
+import org.etsi.osl.tmf.aim915.model.Error;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
