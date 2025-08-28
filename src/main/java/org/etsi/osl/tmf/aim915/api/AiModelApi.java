@@ -302,6 +302,7 @@ public interface AiModelApi {
     )
     
     default ResponseEntity<List<AiModel>> listAiModel(
+            Principal principal,
         @Parameter(name = "fields", description = "Comma-separated properties to be provided in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "fields", required = false) @Nullable String fields,
         @Parameter(name = "offset", description = "Requested index for start of resources to be provided in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "offset", required = false) @Nullable Integer offset,
         @Parameter(name = "limit", description = "Requested number of resources to be provided in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "limit", required = false) @Nullable Integer limit
@@ -412,6 +413,7 @@ public interface AiModelApi {
     )
     
     default ResponseEntity<AiModel> patchAiModel(
+        Principal principal,
         @Parameter(name = "id", description = "Identifier of the AiModel", required = true, in = ParameterIn.PATH) @PathVariable("id") String id,
         @Parameter(name = "aiModel", description = "The AiModel to be updated", required = true) @Valid @RequestBody AiModelUpdate aiModel
     ) {
@@ -518,6 +520,7 @@ public interface AiModelApi {
     )
     
     default ResponseEntity<AiModel> retrieveAiModel(
+        Principal principal,
         @Parameter(name = "id", description = "Identifier of the AiModel", required = true, in = ParameterIn.PATH) @PathVariable("id") String id,
         @Parameter(name = "fields", description = "Comma-separated properties to provide in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "fields", required = false) @Nullable String fields
     ) {

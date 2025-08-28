@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -96,6 +97,7 @@ public interface AiModelSpecificationApi {
     )
     
     default ResponseEntity<AiModelSpecification> createAiModelSpecification(
+        Principal principal,
         @Parameter(name = "aiModelSpecification", description = "The AiModelSpecification to be created", required = true) @Valid @RequestBody AiModelSpecificationCreate aiModelSpecification
     ) {
         getRequest().ifPresent(request -> {
@@ -294,6 +296,7 @@ public interface AiModelSpecificationApi {
     )
     
     default ResponseEntity<List<AiModelSpecification>> listAiModelSpecification(
+        Principal principal,
         @Parameter(name = "fields", description = "Comma-separated properties to be provided in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "fields", required = false) @Nullable String fields,
         @Parameter(name = "offset", description = "Requested index for start of resources to be provided in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "offset", required = false) @Nullable Integer offset,
         @Parameter(name = "limit", description = "Requested number of resources to be provided in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "limit", required = false) @Nullable Integer limit
@@ -402,6 +405,7 @@ public interface AiModelSpecificationApi {
     )
     
     default ResponseEntity<AiModelSpecification> patchAiModelSpecification(
+        Principal principal,
         @Parameter(name = "id", description = "Identifier of the AiModelSpecification", required = true, in = ParameterIn.PATH) @PathVariable("id") String id,
         @Parameter(name = "aiModelSpecification", description = "The AiModelSpecification to be updated", required = true) @Valid @RequestBody AiModelSpecificationUpdate aiModelSpecification
     ) {
@@ -508,6 +512,7 @@ public interface AiModelSpecificationApi {
     )
     
     default ResponseEntity<AiModelSpecification> retrieveAiModelSpecification(
+        Principal principal,
         @Parameter(name = "id", description = "Identifier of the AiModelSpecification", required = true, in = ParameterIn.PATH) @PathVariable("id") String id,
         @Parameter(name = "fields", description = "Comma-separated properties to provide in response", in = ParameterIn.QUERY) @Valid @RequestParam(value = "fields", required = false) @Nullable String fields
     ) {

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +31,7 @@ import java.util.Optional;
 import javax.annotation.Generated;
 
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-08-20T10:28:49.370045968Z[Etc/UTC]", comments = "Generator version: 7.14.0")
-@Controller
+@Controller("AiManagementApiController915")
 @RequestMapping("/AiM/v4/")
 public class AiModelApiController implements AiModelApi {
 
@@ -51,8 +52,8 @@ public class AiModelApiController implements AiModelApi {
         return Optional.ofNullable(request);
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')")
     public ResponseEntity<AiModel> createAiModel(Principal principal, @Valid @RequestBody AiModelCreate aiModel) {
         try {
             if(SecurityContextHolder.getContext().getAuthentication()!= null){
@@ -65,7 +66,6 @@ public class AiModelApiController implements AiModelApi {
                                 aiModel.getRelatedParty()
                         )
                 );
-
                 AiModel createdAiModel = aiModelRepositoryService.createAiModel(aiModel);
                 return new ResponseEntity<AiModel>(createdAiModel, HttpStatus.CREATED);
             } else{
@@ -77,6 +77,7 @@ public class AiModelApiController implements AiModelApi {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
     @Override
     public ResponseEntity<Void> deleteAiModel(@PathVariable("id") String id) {
         try {
@@ -90,21 +91,49 @@ public class AiModelApiController implements AiModelApi {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
     public ResponseEntity<List<AiModel>> listAiModel(
+            Principal principal,
             @RequestParam(value = "fields", required = false) String fields,
             @RequestParam(value = "offset", required = false) Integer offset,
             @RequestParam(value = "limit", required = false) Integer limit) {
         try {
-            List<AiModel> models = aiModelRepositoryService.findAllAiModels();
-            // Optionally handle offset/limit here if needed
-            return new ResponseEntity<>(models, HttpStatus.OK);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            } else {
+
+                try {
+                    List<AiModel> models = aiModelRepositoryService.findAllAiModels();
+
+                    if (offset == null || offset < 0) {
+                        offset = 0;
+                    }
+                    if (limit != null && limit > 0) {
+                        int toIndex = Math.min(offset + limit, models.size());
+                        if (offset > models.size()) {
+                            models = List.of();
+                        } else {
+                            models = models.subList(offset, toIndex);
+                        }
+                    } else if (offset > 0 && offset < models.size()) {
+                        models = models.subList(offset, models.size());
+                    }
+                    return new ResponseEntity<>(models, HttpStatus.OK);
+                } catch (Exception e) {
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
         } catch (Exception e) {
+            log.error("Couldn't serialize response for content type application/json", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
     @Override
     public ResponseEntity<AiModel> patchAiModel(
+            Principal principal,
             @PathVariable("id") String id,
             @Valid @RequestBody AiModelUpdate aiModel) {
         try {
@@ -117,8 +146,10 @@ public class AiModelApiController implements AiModelApi {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_USER')" )
     @Override
     public ResponseEntity<AiModel> retrieveAiModel(
+            Principal principal,
             @PathVariable("id") String id,
             @RequestParam(value = "fields", required = false) String fields) {
         try {
