@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -423,5 +424,77 @@ public class ServiceSpecificationApiControllerTest {
         assertThat(attachment.getUrl()).contains(serviceSpecId);
 
         return response;
+    }
+
+    @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
+    @Test
+    public void testServiceSpecInvalidRangeIntervalIsBadRequest() throws Exception {
+        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
+        File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecInvalidRangeInterval.json");
+        InputStream in = new FileInputStream(serviceSpec);
+        String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
+        ServiceSpecificationCreate serviceSpecificationCreate = JsonUtils.toJsonObj(serviceSpecText, ServiceSpecificationCreate.class);
+        mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtils.toJson(serviceSpecificationCreate)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
+    @Test
+    public void testServiceSpecInvalidTypesIsBadRequest() throws Exception {
+        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
+        File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecInvalidTypes.json");
+        InputStream in = new FileInputStream(serviceSpec);
+        String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
+        ServiceSpecificationCreate serviceSpecificationCreate = JsonUtils.toJsonObj(serviceSpecText, ServiceSpecificationCreate.class);
+        mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtils.toJson(serviceSpecificationCreate)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
+    @Test
+    public void testServiceSpecValidRangeIntervalIsOk() throws Exception {
+        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
+        File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecValidRangeInterval.json");
+        InputStream in = new FileInputStream(serviceSpec);
+        String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
+        ServiceSpecificationCreate serviceSpecificationCreate = JsonUtils.toJsonObj(serviceSpecText, ServiceSpecificationCreate.class);
+        String response = mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtils.toJson(serviceSpecificationCreate)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS + 1);
+        ServiceSpecification responseSpec = JsonUtils.toJsonObj(response, ServiceSpecification.class);
+        assertThat(responseSpec.getName()).isEqualTo("Test Spec");
+    }
+
+    @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
+    @Test
+    public void testServiceSpecValidTypesIsOk() throws Exception {
+        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
+        File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecValidTypes.json");
+        InputStream in = new FileInputStream(serviceSpec);
+        String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
+        ServiceSpecificationCreate serviceSpecificationCreate = JsonUtils.toJsonObj(serviceSpecText, ServiceSpecificationCreate.class);
+        String response = mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceSpecification")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JsonUtils.toJson(serviceSpecificationCreate)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS + 1);
+        ServiceSpecification responseSpec = JsonUtils.toJsonObj(response, ServiceSpecification.class);
+        assertThat(responseSpec.getName()).isEqualTo("Test Spec");
     }
 }
