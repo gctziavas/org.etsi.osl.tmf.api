@@ -679,7 +679,8 @@ public class ProductOfferingRepoService {
       Transaction tx = session.beginTransaction();
       
       try {
-        String sql = "SELECT p.id as productOfferingId, p.name as productName, p.description as productDescription";
+        String sql = "SELECT p.id as productOfferingId, p.name as productName, p.description as productDescription,"
+            + "  p.type, p.isBundle, pcateg.name as categoryName";
                      
           
 
