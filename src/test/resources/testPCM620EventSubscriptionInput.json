@@ -1,0 +1,4 @@
+{
+  "callback": "http://localhost:8080/callback",
+  "query": "productOffering.create,productOffering.delete"
+}
