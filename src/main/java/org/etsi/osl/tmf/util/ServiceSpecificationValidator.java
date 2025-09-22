@@ -1,5 +1,6 @@
 package org.etsi.osl.tmf.util;
 
+import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.ERangeInterval;
 import org.etsi.osl.tmf.common.model.EValueType;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
@@ -42,18 +43,22 @@ public class ServiceSpecificationValidator implements Validator {
         if (serviceSpecCharacteristicValue.getValueType() == null) {
             return true;
         }
-        String value = serviceSpecCharacteristicValue.getValue().getValue();
-        if (value == null || value.isBlank()) {
+        Any value = serviceSpecCharacteristicValue.getValue();
+        if (value == null) {
+            return true;
+        }
+        String stringValue = value.getValue();
+        if (stringValue == null || stringValue.isBlank()) {
             return true;
         }
         try {
             return switch (EValueType.getEnum(serviceSpecCharacteristicValue.getValueType())) {
-                case INTEGER, SMALLINT, lONGINT -> value.matches(INTEGER_REGEX);
-                case FLOAT -> value.matches(FLOAT_REGEX);
-                case BOOLEAN -> value.matches(BOOLEAN_REGEX) || value.matches(INTEGER_REGEX);
+                case INTEGER, SMALLINT, lONGINT -> stringValue.matches(INTEGER_REGEX);
+                case FLOAT -> stringValue.matches(FLOAT_REGEX);
+                case BOOLEAN -> stringValue.matches(BOOLEAN_REGEX) || stringValue.matches(INTEGER_REGEX);
                 case TIMESTAMP -> {
                     try {
-                        LocalDateTime.parse(value, TIMESTAMP_FORMATTER);
+                        LocalDateTime.parse(stringValue, TIMESTAMP_FORMATTER);
                         yield true;
                     } catch (DateTimeParseException e) {
                         yield false;
@@ -75,6 +80,10 @@ public class ServiceSpecificationValidator implements Validator {
                 !Objects.equals(serviceSpecCharacteristicValue.getValueType(), EValueType.lONGINT.getValue())) {
             return true;
         }
+        Any value = serviceSpecCharacteristicValue.getValue();
+        if (value == null) {
+            return true;
+        }
         String stringValue = serviceSpecCharacteristicValue.getValue().getValue();
         if (stringValue == null || stringValue.isBlank()) {
             return true;
@@ -82,12 +91,12 @@ public class ServiceSpecificationValidator implements Validator {
         int valueFrom = serviceSpecCharacteristicValue.getValueFrom() != null ? serviceSpecCharacteristicValue.getValueFrom() : Integer.MIN_VALUE;
         int valueTo = serviceSpecCharacteristicValue.getValueTo() != null ? serviceSpecCharacteristicValue.getValueTo() : Integer.MAX_VALUE;
         try {
-            int value = Integer.parseInt(stringValue);
+            int intValue = Integer.parseInt(stringValue);
             return switch (ERangeInterval.getEnum(serviceSpecCharacteristicValue.getRangeInterval())) {
-                case OPEN -> value > valueFrom && value < valueTo;
-                case CLOSED -> value >= valueFrom && value <= valueTo;
-                case CLOSED_BOTTOM -> value >= valueFrom && value < valueTo;
-                case CLOSED_TOP -> value > valueFrom && value <= valueTo;
+                case OPEN -> intValue > valueFrom && intValue < valueTo;
+                case CLOSED -> intValue >= valueFrom && intValue <= valueTo;
+                case CLOSED_BOTTOM -> intValue >= valueFrom && intValue < valueTo;
+                case CLOSED_TOP -> intValue > valueFrom && intValue <= valueTo;
             };
         } catch (IllegalArgumentException e) {
             return false;
