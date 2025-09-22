@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.pcm620.api.ProductCatalogApiRouteBuilderEvents;
 import org.etsi.osl.tmf.pcm620.model.Catalog;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreateNotification;
@@ -16,11 +16,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
 @ActiveProfiles("testing")
+@AutoConfigureMockMvc
 public class CatalogNotificationServiceTest {
 
     @Mock

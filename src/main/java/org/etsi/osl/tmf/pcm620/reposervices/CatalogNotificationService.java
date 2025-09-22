@@ -59,7 +59,8 @@ public class CatalogNotificationService {
             eventPublisher.publishEvent(notification, catalog.getUuid());
             
             // Send callbacks to registered subscribers
-            catalogCallbackService.sendCatalogCreateCallback(notification.getEvent());
+            if ( catalogCallbackService!=null )
+              catalogCallbackService.sendCatalogCreateCallback(notification.getEvent());
             
             logger.info("Published catalog create notification for catalog ID: {}", catalog.getUuid());
         } catch (Exception e) {
@@ -77,7 +78,8 @@ public class CatalogNotificationService {
             eventPublisher.publishEvent(notification, catalog.getUuid());
             
             // Send callbacks to registered subscribers
-            catalogCallbackService.sendCatalogDeleteCallback(notification.getEvent());
+            if ( catalogCallbackService!=null )
+              catalogCallbackService.sendCatalogDeleteCallback(notification.getEvent());
             
             logger.info("Published catalog delete notification for catalog ID: {}", catalog.getUuid());
         } catch (Exception e) {
