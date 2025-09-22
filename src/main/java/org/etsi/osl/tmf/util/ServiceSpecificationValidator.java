@@ -84,7 +84,7 @@ public class ServiceSpecificationValidator implements Validator {
         if (value == null) {
             return true;
         }
-        String stringValue = serviceSpecCharacteristicValue.getValue().getValue();
+        String stringValue = value.getValue();
         if (stringValue == null || stringValue.isBlank()) {
             return true;
         }
