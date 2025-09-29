@@ -180,7 +180,7 @@ public class HubApiControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @WithMockUser(username = "user", roles = {"USER"})
+    @WithMockUser(username = "user", roles = {"OTHER"})
     @Test
     public void testRegisterListenerUnauthorized() throws Exception {
         File resourceSpecFile = new File("src/test/resources/testPCM620EventSubscriptionInput.json");
@@ -196,7 +196,7 @@ public class HubApiControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    @WithMockUser(username = "user", roles = {"USER"})
+    @WithMockUser(username = "user", roles = {"OTHER"})
     @Test
     public void testUnregisterListenerUnauthorized() throws Exception {
         // First create a subscription as admin
