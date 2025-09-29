@@ -70,6 +70,9 @@ public class ProductSpecificationRepoService {
 
     @Autowired
     ServiceSpecificationRepoService serviceSpecificationRepoService;
+    
+    @Autowired
+    private ProductSpecificationNotificationService productSpecificationNotificationService;
 
 	private SessionFactory sessionFactory;
 
@@ -94,8 +97,12 @@ public class ProductSpecificationRepoService {
 		serviceSpec = this.updateProductSpecificationDataFromAPIcall(serviceSpec, serviceProductSpecification);
 		serviceSpec = this.prodsOfferingRepo.save(serviceSpec);
 
+		// Publish product specification create notification
+		if (productSpecificationNotificationService != null) {
+			productSpecificationNotificationService.publishProductSpecificationCreateNotification(serviceSpec);
+		}
 	
-		return this.prodsOfferingRepo.save(serviceSpec);
+		return serviceSpec;
 	}
 
 	public List<ProductSpecification> findAll() {
@@ -250,8 +257,14 @@ public class ProductSpecificationRepoService {
 		/**
 		 * prior deleting we need to delete other dependency objects
 		 */
+		
+		// Publish product specification delete notification BEFORE deletion to ensure session is still active
+		if (productSpecificationNotificationService != null) {
+			productSpecificationNotificationService.publishProductSpecificationDeleteNotification(s);
+		}
 
 		this.prodsOfferingRepo.delete(s);
+		
 		return null;
 	}
 	

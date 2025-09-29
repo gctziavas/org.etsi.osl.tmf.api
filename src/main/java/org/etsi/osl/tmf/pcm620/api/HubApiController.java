@@ -19,6 +19,7 @@
  */
 package org.etsi.osl.tmf.pcm620.api;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,8 +72,11 @@ public class HubApiController implements HubApi {
         return Optional.ofNullable(request);
     }
 
+    /* 
+     * to register another OSL for example use   "callback": "http://localhost:13082/tmf-api/productCatalogManagement/v4/"
+     */
     @Override
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<EventSubscription> registerListener(@Parameter(description = "Data containing the callback endpoint to deliver the information", required = true) @Valid @RequestBody EventSubscriptionInput data) {
         try {
             EventSubscription eventSubscription = eventSubscriptionRepoService.addEventSubscription(data);
@@ -86,7 +91,8 @@ public class HubApiController implements HubApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    @RequestMapping(value = "/hub/{id}", method = RequestMethod.DELETE, produces = { "application/json;charset=utf-8" })
     public ResponseEntity<Void> unregisterListener(@Parameter(description = "The id of the registered listener", required = true) @PathVariable("id") String id) {
         try {
             EventSubscription existing = eventSubscriptionRepoService.findById(id);
@@ -98,6 +104,18 @@ public class HubApiController implements HubApi {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             log.error("Error unregistering listener with id: " + id, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<List<EventSubscription>> getListeners() {
+        try {
+            List<EventSubscription> eventSubscriptions = eventSubscriptionRepoService.findAll();
+            return new ResponseEntity<>(eventSubscriptions, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error retrieving listeners", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
