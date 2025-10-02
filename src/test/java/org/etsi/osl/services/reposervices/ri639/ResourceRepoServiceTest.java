@@ -2,25 +2,22 @@ package org.etsi.osl.services.reposervices.ri639;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.ram702.api.ResourceNotFoundException;
 import org.etsi.osl.tmf.ri639.model.Resource;
 import org.etsi.osl.tmf.ri639.model.ResourceCreate;
 import org.etsi.osl.tmf.ri639.model.ResourceStatusType;
@@ -28,17 +25,12 @@ import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
 import org.etsi.osl.tmf.ri639.model.ResourceUsageStateType;
 import org.etsi.osl.tmf.ri639.repo.ResourceRepository;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,10 +40,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * This class uses Mockito and Spring's testing framework to mock dependencies
  * and verify the behavior of the resourceRepoService.
  */
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-@SpringBootTest(classes = OpenAPISpringBoot.class)
-public class ResourceRepoServiceTest {
+
+public class ResourceRepoServiceTest  extends BaseIT {
     /**
      * The service being tested, with a spy to allow partial mocking of certain methods.
      */
@@ -74,7 +64,7 @@ public class ResourceRepoServiceTest {
      * 
      * @throws Exception if there is an error loading the test data.
      */
-    @BeforeClass
+    @BeforeAll
     public static void setupBeforeClass() {
         // Load resourceCreate and resourceUpdare from the 
         // JSON files into the respective classes
@@ -113,7 +103,7 @@ public class ResourceRepoServiceTest {
      * Sets up common mock behavior for the repository before each test.
      * @throws ResourceNotFoundException 
      */
-    @Before
+    @BeforeEach
     public void setupBefore() {
         when(resourceRepo.findByUuid(anyString())).thenReturn(Optional.of(resource));
         when(resourceRepo.save(any(Resource.class))).thenReturn(resource);

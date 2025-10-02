@@ -1,22 +1,4 @@
-/*-
- * ========================LICENSE_START=================================
- * org.etsi.osl.tmf.api
- * %%
- * Copyright (C) 2019 - 2020 openslice.io
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
+
 package org.etsi.osl.services.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,18 +6,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.Any;
-
 import org.etsi.osl.tmf.pm632.model.Characteristic;
 import org.etsi.osl.tmf.pm632.model.ContactMedium;
 import org.etsi.osl.tmf.pm632.model.Individual;
@@ -45,32 +21,21 @@ import org.etsi.osl.tmf.pm632.model.Organization;
 import org.etsi.osl.tmf.pm632.model.OrganizationCreate;
 import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.pm632.reposervices.OrganizationRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc 
-@ActiveProfiles("testing")
-public class PartyManagementIntegrationTest {
+public class PartyManagementIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( PartyManagementIntegrationTest.class.getName());
@@ -91,7 +56,7 @@ public class PartyManagementIntegrationTest {
 //    @Autowired
 //    private WebApplicationContext wac;
 //
-//     @Before
+//     @BeforeEach
 //     public void setUp() {
 //         MockitoAnnotations.initMocks(this);
 //         this.mvc = MockMvcBuilders.webAppContextSetup(wac).dispatchOptions(true).addFilters(filterChainProxy).build();
@@ -101,7 +66,7 @@ public class PartyManagementIntegrationTest {
     private WebApplicationContext context;
     
  
-    @Before
+    @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
           .webAppContextSetup(context).dispatchOptions(true)

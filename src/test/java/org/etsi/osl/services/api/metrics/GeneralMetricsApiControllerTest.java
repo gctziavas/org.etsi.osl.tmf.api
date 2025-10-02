@@ -1,7 +1,12 @@
 package org.etsi.osl.services.api.metrics;
 
-import com.jayway.jsonpath.JsonPath;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pm632.model.IndividualCreate;
 import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
@@ -10,43 +15,18 @@ import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import com.jayway.jsonpath.JsonPath;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = OpenAPISpringBoot.class
-)
-//@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-
-public class GeneralMetricsApiControllerTest {
+public class GeneralMetricsApiControllerTest extends BaseIT {
 
     @Autowired
     private MockMvc mvc;
@@ -70,7 +50,7 @@ public class GeneralMetricsApiControllerTest {
     CategoryRepoService categoryRepoService;
 
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)

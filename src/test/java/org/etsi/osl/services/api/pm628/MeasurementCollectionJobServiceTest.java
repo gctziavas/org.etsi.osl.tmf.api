@@ -1,23 +1,6 @@
 package org.etsi.osl.services.api.pm628;
 
-import org.apache.commons.io.IOUtils;
-import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.pm628.model.*;
-import org.etsi.osl.tmf.pm628.reposervices.MeasurementCollectionJobService;
-import org.etsi.osl.tmf.ri639.model.ResourceAdministrativeStateType;
-import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
-import org.etsi.osl.tmf.ri639.model.ResourceUsageStateType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -25,19 +8,32 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.io.IOUtils;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.pm628.model.AdministrativeState;
+import org.etsi.osl.tmf.pm628.model.DataAccessEndpoint;
+import org.etsi.osl.tmf.pm628.model.DataAccessEndpointMVO;
+import org.etsi.osl.tmf.pm628.model.DataFilterAttributeStringArray;
+import org.etsi.osl.tmf.pm628.model.DataFilterMapItemMVO;
+import org.etsi.osl.tmf.pm628.model.DataFilterMapMVO;
+import org.etsi.osl.tmf.pm628.model.DataFilterTemplateMVO;
+import org.etsi.osl.tmf.pm628.model.ExecutionStateType;
+import org.etsi.osl.tmf.pm628.model.Granularity;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJob;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobFVO;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobMVO;
+import org.etsi.osl.tmf.pm628.model.ReportingPeriod;
+import org.etsi.osl.tmf.pm628.model.ResourceStatusType;
+import org.etsi.osl.tmf.pm628.reposervices.MeasurementCollectionJobService;
+import org.etsi.osl.tmf.ri639.model.ResourceAdministrativeStateType;
+import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
+import org.etsi.osl.tmf.ri639.model.ResourceUsageStateType;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = OpenAPISpringBoot.class
-)
-//@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class MeasurementCollectionJobServiceTest {
+public class MeasurementCollectionJobServiceTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_JOBS = 0;
 

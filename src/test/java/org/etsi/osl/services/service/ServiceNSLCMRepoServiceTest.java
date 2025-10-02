@@ -6,12 +6,20 @@
  */
 package org.etsi.osl.services.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.common.model.service.Characteristic;
 import org.etsi.osl.tmf.common.model.service.Note;
 import org.etsi.osl.tmf.common.model.service.Place;
@@ -23,39 +31,17 @@ import org.etsi.osl.tmf.sim638.model.ServiceOrderRef;
 import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
 import org.etsi.osl.tmf.sim638.repo.ServiceRepository;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.runner.RunWith;
-import static org.mockito.ArgumentMatchers.anyString;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ServiceNSLCMRepoServiceTest {
+
+public class ServiceNSLCMRepoServiceTest  extends BaseIT {
 
     @Mock
     private ServiceRepository serviceRepository;
@@ -69,11 +55,11 @@ public class ServiceNSLCMRepoServiceTest {
 
     private static ObjectMapper objectMapper;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupBeforeClass() {
     }
 
-    @Before
+    @BeforeEach
     public void setupBefore() {
         try {
             objectMapper = new ObjectMapper();

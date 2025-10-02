@@ -1,16 +1,14 @@
 package org.etsi.osl.services.api.pm628;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.ArrayList;
+import java.util.List;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJob;
+import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJob;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SerializationTest {
 

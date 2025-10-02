@@ -838,6 +838,7 @@ public class ServiceOrderRepoService {
 		return null;
 	}
 
+	@Transactional
 	public String getImageServiceOrderItemRelationshipGraph(String id, String itemid) {
 
 		ServiceOrder so = this.findByUuid(id);

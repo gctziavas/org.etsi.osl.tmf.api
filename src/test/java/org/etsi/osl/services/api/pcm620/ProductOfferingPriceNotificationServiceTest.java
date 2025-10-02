@@ -4,27 +4,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pcm620.api.ProductCatalogApiRouteBuilderEvents;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPrice;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceAttributeValueChangeNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceDeleteNotification;
-import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceAttributeValueChangeNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeNotification;
-import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceNotificationService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceCallbackService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceNotificationService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ProductOfferingPriceNotificationServiceTest {
+public class ProductOfferingPriceNotificationServiceTest  extends BaseIT{
 
     @Mock
     private ProductCatalogApiRouteBuilderEvents eventPublisher;
@@ -35,7 +29,7 @@ public class ProductOfferingPriceNotificationServiceTest {
     @InjectMocks
     private ProductOfferingPriceNotificationService productOfferingPriceNotificationService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
     }

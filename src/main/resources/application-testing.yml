@@ -9,7 +9,7 @@ spring:
   application:
     name: openslice-service-catalog-management-api-testing
   datasource:
-    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
     password: sa
     username: sa
   jpa:

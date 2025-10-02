@@ -1,13 +1,26 @@
 package org.etsi.osl.services.api.rcm634;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
 import org.apache.commons.io.IOUtils;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.rcm634.api.ResourceSpecificationApiController;
-import org.etsi.osl.tmf.rcm634.model.*;
+import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
+import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecificationCreate;
+import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecificationCreate;
+import org.etsi.osl.tmf.rcm634.model.ResourceFunctionSpecification;
+import org.etsi.osl.tmf.rcm634.model.ResourceFunctionSpecificationCreate;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,35 +28,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Optional;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 
 
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ResourceSpecificationApiControllerTest {
+
+public class ResourceSpecificationApiControllerTest extends BaseIT {
 
     @Autowired
     private MockMvc mvc;

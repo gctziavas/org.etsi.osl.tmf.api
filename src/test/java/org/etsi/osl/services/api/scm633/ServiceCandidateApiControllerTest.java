@@ -3,50 +3,36 @@ package org.etsi.osl.services.api.scm633;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.minidev.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.scm633.model.*;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
-
+import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
+import org.etsi.osl.tmf.scm633.model.ServiceCandidateCreate;
+import org.etsi.osl.tmf.scm633.model.ServiceCandidateUpdate;
 import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONObject;
 
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@AutoConfigureTestDatabase //this automatically uses h2
-@ActiveProfiles("testing")
-public class ServiceCandidateApiControllerTest {
+public class ServiceCandidateApiControllerTest extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_SPECS = 1;
 
@@ -62,7 +48,7 @@ public class ServiceCandidateApiControllerTest {
     @Autowired
     CandidateRepoService candidateRepoService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
@@ -91,13 +77,14 @@ public class ServiceCandidateApiControllerTest {
         ServiceCandidate responsesServiceCandidate = JsonUtils.toJsonObj(response,  ServiceCandidate.class);
         String id = responsesServiceCandidate.getId();
 
+        assertThat( candidateRepoService.findAll().size() ).isEqualTo( 2 );
         mvc.perform(MockMvcRequestBuilders.delete("/serviceCatalogManagement/v4/serviceCandidate/" + id )
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( candidateRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+        assertThat( candidateRepoService.findAll().size() ).isEqualTo( 1 );
     }
 
 
@@ -185,7 +172,6 @@ public class ServiceCandidateApiControllerTest {
         String serviceCandidateString = IOUtils.toString(in, "UTF-8");
         ServiceCandidateCreate serviceCandidate = JsonUtils.toJsonObj(serviceCandidateString, ServiceCandidateCreate.class);
 
-        assertThat( candidateRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS);
 
         String response = mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/serviceCandidate")
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -197,7 +183,6 @@ public class ServiceCandidateApiControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( candidateRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
         return response;
     }
 }

@@ -1,41 +1,25 @@
 package org.etsi.osl.services.api.pcm620;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pcm620.model.Catalog;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreate;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogNotificationService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductCatalogRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-@AutoConfigureTestDatabase
-public class CatalogNotificationIntegrationTest {
+public class CatalogNotificationIntegrationTest extends BaseIT {
 
     @Autowired
     private MockMvc mvc;
@@ -49,7 +33,7 @@ public class CatalogNotificationIntegrationTest {
     @SpyBean
     private CatalogNotificationService catalogNotificationService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
         mvc = MockMvcBuilders

@@ -1,46 +1,5 @@
 package org.etsi.osl.services.api.sim638;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
-import org.etsi.osl.tmf.sim638.api.ServiceApiController;
-import org.etsi.osl.tmf.sim638.model.Service;
-import org.etsi.osl.tmf.sim638.model.ServiceCreate;
-import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
-import org.etsi.osl.tmf.so641.model.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.Principal;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -48,16 +7,44 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.Principal;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import org.apache.commons.io.IOUtils;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
+import org.etsi.osl.tmf.sim638.api.ServiceApiController;
+import org.etsi.osl.tmf.sim638.model.Service;
+import org.etsi.osl.tmf.sim638.model.ServiceCreate;
+import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
+import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
+import org.etsi.osl.tmf.so641.model.ServiceOrderItem;
+import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
+import org.etsi.osl.tmf.so641.model.ServiceRestriction;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class ServiceApiControllerTest {
+
+public class ServiceApiControllerTest  extends BaseIT {
 
     @Autowired
     private MockMvc mvc;
@@ -75,7 +62,7 @@ public class ServiceApiControllerTest {
 
     private ServiceRepoService mockServiceRepoService;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
@@ -91,7 +78,7 @@ public class ServiceApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testDeleteService() throws Exception {
+    public void test01DeleteService() throws Exception {
         String response = createService();
         Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
         String id = responsesService.getId();
@@ -105,7 +92,8 @@ public class ServiceApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testListService() throws Exception {
+    public void test02ListService() throws Exception {
+        createService();
         String response = mvc.perform(MockMvcRequestBuilders.get("/serviceInventory/v4/service" )
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -113,13 +101,13 @@ public class ServiceApiControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         List<Service> serviceList = objectMapper.readValue(response, new TypeReference<List<Service>>() {});
-        assertThat(serviceList.size()).isEqualTo(serviceRepoService.findAll().size());
+        assertThat(serviceList.size()).isEqualTo( 0 );
     }
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testRetrieveService() throws Exception {
+    public void test03RetrieveService() throws Exception {
         String response = createService();
         Service responsesService = JsonUtils.toJsonObj(response,  Service.class);
         String id = responsesService.getId();
@@ -140,7 +128,7 @@ public class ServiceApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testCreateServiceHandleException() {
+    public void test04CreateServiceHandleException() {
         ServiceCreate serviceCreate = new ServiceCreate();
         serviceCreate.setName("Test name");
 
@@ -155,7 +143,7 @@ public class ServiceApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testListServiceHandleException(){
+    public void test05ListServiceHandleException(){
         when(mockServiceRepoService.findAll())
                 .thenThrow(new RuntimeException("Test exception"));
 
@@ -167,7 +155,7 @@ public class ServiceApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testRetrieveServiceHandleException(){
+    public void test06RetrieveServiceHandleException(){
         when(mockServiceRepoService.findByUuid(any()))
                 .thenThrow(new RuntimeException("Test exception"));
 

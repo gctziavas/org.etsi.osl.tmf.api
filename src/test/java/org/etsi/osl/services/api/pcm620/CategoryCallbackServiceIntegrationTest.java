@@ -5,19 +5,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.List;
-
-import org.etsi.osl.tmf.pcm620.model.ProductSpecification;
-import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreateEvent;
-import org.etsi.osl.tmf.pcm620.model.ProductSpecificationDeleteEvent;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.pcm620.model.CategoryCreateEvent;
+import org.etsi.osl.tmf.pcm620.model.CategoryDeleteEvent;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
-import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationCallbackService;
+import org.etsi.osl.tmf.pcm620.reposervices.CategoryCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -25,13 +22,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ProductSpecificationCallbackServiceTest {
+
+public class CategoryCallbackServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private EventSubscriptionRepoService eventSubscriptionRepoService;
@@ -40,34 +34,34 @@ public class ProductSpecificationCallbackServiceTest {
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private ProductSpecificationCallbackService productSpecificationCallbackService;
+    private CategoryCallbackService categoryCallbackService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testSendProductSpecificationCreateCallback() {
+    public void testSendCategoryCreateCallback() {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback");
-        subscription.setQuery("productspecification");
+        subscription.setQuery("category");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductSpecificationCreateEvent event = new ProductSpecificationCreateEvent();
+        CategoryCreateEvent event = new CategoryCreateEvent();
         event.setEventId("test-event-123");
 
         // Act
-        productSpecificationCallbackService.sendProductSpecificationCreateCallback(event);
+        categoryCallbackService.sendCategoryCreateCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productSpecificationCreateEvent"), 
+            eq("http://localhost:8080/callback/listener/categoryCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -75,26 +69,26 @@ public class ProductSpecificationCallbackServiceTest {
     }
 
     @Test
-    public void testSendProductSpecificationDeleteCallback() {
+    public void testSendCategoryDeleteCallback() {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback");
-        subscription.setQuery("productspecification");
+        subscription.setQuery("category");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductSpecificationDeleteEvent event = new ProductSpecificationDeleteEvent();
+        CategoryDeleteEvent event = new CategoryDeleteEvent();
         event.setEventId("test-event-456");
 
         // Act
-        productSpecificationCallbackService.sendProductSpecificationDeleteCallback(event);
+        categoryCallbackService.sendCategoryDeleteCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productSpecificationDeleteEvent"), 
+            eq("http://localhost:8080/callback/listener/categoryDeleteEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -106,22 +100,22 @@ public class ProductSpecificationCallbackServiceTest {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback/");
-        subscription.setQuery("productspecification");
+        subscription.setQuery("category");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductSpecificationCreateEvent event = new ProductSpecificationCreateEvent();
+        CategoryCreateEvent event = new CategoryCreateEvent();
         event.setEventId("test-event-789");
 
         // Act
-        productSpecificationCallbackService.sendProductSpecificationCreateCallback(event);
+        categoryCallbackService.sendCategoryCreateCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productSpecificationCreateEvent"), 
+            eq("http://localhost:8080/callback/listener/categoryCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -131,55 +125,28 @@ public class ProductSpecificationCallbackServiceTest {
     @Test
     public void testFilterSubscriptionsByQuery() {
         // Arrange
-        EventSubscription productSpecSubscription = new EventSubscription();
-        productSpecSubscription.setCallback("http://localhost:8080/productspec-callback");
-        productSpecSubscription.setQuery("productspecification");
+        EventSubscription categorySubscription = new EventSubscription();
+        categorySubscription.setCallback("http://localhost:8080/category-callback");
+        categorySubscription.setQuery("category");
 
         EventSubscription otherSubscription = new EventSubscription();
         otherSubscription.setCallback("http://localhost:8080/other-callback");
         otherSubscription.setQuery("catalog");
 
-        List<EventSubscription> subscriptions = Arrays.asList(productSpecSubscription, otherSubscription);
+        List<EventSubscription> subscriptions = Arrays.asList(categorySubscription, otherSubscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductSpecificationCreateEvent event = new ProductSpecificationCreateEvent();
+        CategoryCreateEvent event = new CategoryCreateEvent();
         event.setEventId("test-event-filter");
 
         // Act
-        productSpecificationCallbackService.sendProductSpecificationCreateCallback(event);
+        categoryCallbackService.sendCategoryCreateCallback(event);
 
-        // Assert - only product specification subscription should receive callback
+        // Assert - only category subscription should receive callback
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/productspec-callback/listener/productSpecificationCreateEvent"), 
-            eq(HttpMethod.POST), 
-            any(HttpEntity.class), 
-            eq(String.class)
-        );
-    }
-
-    @Test
-    public void testProductSpecificationSpecificQueries() {
-        // Arrange
-        EventSubscription createOnlySubscription = new EventSubscription();
-        createOnlySubscription.setCallback("http://localhost:9090/create-only");
-        createOnlySubscription.setQuery("productspecification.create");
-
-        List<EventSubscription> subscriptions = Arrays.asList(createOnlySubscription);
-        when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-            .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
-
-        ProductSpecificationCreateEvent event = new ProductSpecificationCreateEvent();
-        event.setEventId("test-event-specific-query");
-
-        // Act
-        productSpecificationCallbackService.sendProductSpecificationCreateCallback(event);
-
-        // Assert
-        verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:9090/create-only/listener/productSpecificationCreateEvent"), 
+            eq("http://localhost:8080/category-callback/listener/categoryCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)

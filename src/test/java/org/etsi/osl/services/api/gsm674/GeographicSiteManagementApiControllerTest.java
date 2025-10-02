@@ -1,10 +1,13 @@
 package org.etsi.osl.services.api.gsm674;
 
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.gsm674.api.GeographicSiteManagementApiController;
 import org.etsi.osl.tmf.gsm674.model.GeographicSite;
 import org.etsi.osl.tmf.gsm674.reposervices.GeographicSiteManagementService;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import org.junit.jupiter.api.Test;
@@ -26,14 +29,12 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-class GeographicSiteManagementApiControllerTest {
+class GeographicSiteManagementApiControllerTest  extends BaseIT {
 
-    @InjectMocks
+    @Autowired
     private GeographicSiteManagementApiController controller;
 
-    @Mock
+    @MockBean
     private GeographicSiteManagementService service;
 
     @BeforeEach

@@ -97,6 +97,8 @@ public class CatalogRepoService {
 	   
 	   
 	public List<ServiceCatalog> findAll() {
+      this.catalogRepo.findByOrderByName().stream().forEach(s->s.getCategoryObj().size());
+      this.catalogRepo.findByOrderByName().stream().forEach(s->s.getCategoryObj().stream().forEach( c -> c.getServiceCandidateObj().size()) );
 		return (List<ServiceCatalog>) this.catalogRepo.findByOrderByName();
 	}
 
@@ -152,6 +154,10 @@ public class CatalogRepoService {
 
 	public ServiceCatalog findByName(String aName) {
 		Optional<ServiceCatalog> optionalCat = this.catalogRepo.findByName( aName );
+		if ( optionalCat.isPresent() ) {
+          optionalCat.get().getCategoryObj().size();
+          optionalCat.get().getCategoryRefs().size();
+		}
 		return optionalCat.orElse(null);
 	}
 

@@ -1,22 +1,4 @@
-/*-
- * ========================LICENSE_START=================================
- * org.etsi.osl.tmf.api
- * %%
- * Copyright (C) 2019 openslice.io
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
+
 package org.etsi.osl.services.api;
 
 
@@ -27,7 +9,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,13 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.etsi.osl.tmf.BootstrapRepository;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.Attachment;
 import org.etsi.osl.tmf.common.model.AttachmentRef;
@@ -77,39 +56,23 @@ import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import jakarta.validation.Valid;
 import net.minidev.json.JSONObject;
 
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc 
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class ServiceCatalogIntegrationTest {
+
+public class ServiceCatalogIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( ServiceCatalogIntegrationTest.class.getName());
@@ -142,7 +105,7 @@ public class ServiceCatalogIntegrationTest {
 	@Autowired
 	OrganizationRepoService organizationRepoService;
 	
-	@Before
+	@BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
           .webAppContextSetup(context)
@@ -186,7 +149,7 @@ public class ServiceCatalogIntegrationTest {
 	}
 	
 	@Test
-    public void givenRequestOnPrivateService_shouldFailWith401() throws Exception {
+    public void t01_givenRequestOnPrivateService_shouldFailWith401() throws Exception {
 //        mvc.perform(post("/serviceCatalogManagement/v4/serviceCatalog")
 //                        .contentType(MediaType.APPLICATION_JSON))
 //                    .andExpect(status().isUnauthorized());
@@ -302,14 +265,12 @@ public class ServiceCatalogIntegrationTest {
 		assertThat( responsesSpec.getServiceSpecCharacteristic().toArray( new ServiceSpecCharacteristic[0] )[0].getServiceSpecCharacteristicValue().size()  ).isEqualTo(1);
 		
 		
-		
-		
 	}
 	
 	
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void manageCategoriesSubCategories() throws Exception {
+	public void t02_manageCategoriesSubCategories() throws Exception {
 		/**
 		 * add category
 		 */
@@ -749,7 +710,7 @@ public class ServiceCatalogIntegrationTest {
 		assertThat( idspec1Exists ).isFalse();
 		assertThat( idspec2Exists ).isTrue();
 		assertThat( idspec4Exists ).isTrue();
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 5 );
 		
 		
 		
@@ -758,7 +719,7 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testCloneSpec() throws Exception {
+	public void t05_testCloneSpec() throws Exception {
 
 
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
@@ -887,7 +848,7 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testSpecAttachment() throws Exception {
+	public void t06_testSpecAttachment() throws Exception {
 		File sspec = new File( "src/test/resources/testServiceSpec.json" );
 		InputStream in = new FileInputStream( sspec );
 		String sspectext = IOUtils.toString(in, "UTF-8");
@@ -930,7 +891,7 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testGST() throws Exception {
+	public void t07_testGST() throws Exception {
 		logger.info("Test: testGST " );
 
 		/**
@@ -985,9 +946,9 @@ public class ServiceCatalogIntegrationTest {
 		List<ServiceSpecification> specs = JsonUtils.toJsonObj( responseSpecs,  ArrayList.class );
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll(null , new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong it should be 2..anyway to investigate in future
-		assertThat(specs.size()  ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ) ;
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
+		assertThat( specRepoService.findAll(null , new HashMap<>()).size() ).isEqualTo( 1 ); //this is somehow wrong it should be 2..anyway to investigate in future
+		assertThat(specs.size()  ).isEqualTo( 1 ) ;
 		
 		
 
@@ -1010,7 +971,7 @@ public class ServiceCatalogIntegrationTest {
 	
 	@WithMockUser(username="osadmin", roles = {"USER"})
 	@Test
-	public void testGSTUpdate() throws Exception {
+	public void t08_testGSTUpdate() throws Exception {
 		logger.info("Test: testGSTUpdate " );
 		
 		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
@@ -1035,7 +996,7 @@ public class ServiceCatalogIntegrationTest {
 	
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testVINNISBT() throws Exception {
+	public void t09_testVINNISBT() throws Exception {
 		logger.info("Test: testVINNISBT " );
 
 		/**
@@ -1089,9 +1050,9 @@ public class ServiceCatalogIntegrationTest {
 		List<ServiceSpecification> specs = JsonUtils.toJsonObj( responseSpecs,  ArrayList.class );
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong it should be 2..anyway to investigate in future
-		assertThat(specs.size()  ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ) ;
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 1 ); //this is somehow wrong it should be 2..anyway to investigate in future
+		assertThat(specs.size()  ).isEqualTo( 1 ) ;
 		
 		
 
@@ -1114,7 +1075,7 @@ public class ServiceCatalogIntegrationTest {
 	
 	@WithMockUser(username="osadmin", roles = {"USER"})
 	@Test
-	public void testVINNISBTUpdate() throws Exception {
+	public void t10_testVINNISBTUpdate() throws Exception {
 //		logger.info("Test: testVINNISBTUpdate " );
 //		
 //		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
@@ -1141,7 +1102,7 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN", "USER"})
 	@Test
-	public void testSpecDelete() throws Exception {
+	public void t11_testSpecDelete() throws Exception {
 
 
 		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
@@ -1159,19 +1120,19 @@ public class ServiceCatalogIntegrationTest {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
 
 				
 		this.specRepoService.deleteByUuid( responsesSpec1.getId() );
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS  );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 1  );
 		
 	}
 	
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN", "USER"})
 	@Test
-	public void testExternhalSpecUpdate() throws Exception {
+	public void t12_testExternhalSpecUpdate() throws Exception {
 		
 		/**
 		 * first add 1 specs

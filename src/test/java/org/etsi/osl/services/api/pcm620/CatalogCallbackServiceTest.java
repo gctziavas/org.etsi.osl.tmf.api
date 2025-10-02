@@ -5,10 +5,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.List;
-
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pcm620.model.Catalog;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreateEvent;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreateEventPayload;
@@ -17,9 +16,8 @@ import org.etsi.osl.tmf.pcm620.model.CatalogDeleteEventPayload;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -27,13 +25,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class CatalogCallbackServiceTest {
+public class CatalogCallbackServiceTest extends BaseIT {
 
     @Mock
     private EventSubscriptionRepoService eventSubscriptionRepoService;
@@ -44,7 +38,7 @@ public class CatalogCallbackServiceTest {
     @InjectMocks
     private CatalogCallbackService catalogCallbackService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
     }
