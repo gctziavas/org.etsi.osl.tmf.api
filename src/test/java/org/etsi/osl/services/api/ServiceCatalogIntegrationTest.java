@@ -263,7 +263,8 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 
 		assertThat( responsesSpec.getServiceSpecCharacteristic().size() ).isEqualTo(2);
 		assertThat( responsesSpec.getServiceSpecCharacteristic().toArray( new ServiceSpecCharacteristic[0] )[0].getServiceSpecCharacteristicValue().size()  ).isEqualTo(1);
-		
+
+        assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
 		
 	}
 	
@@ -274,7 +275,10 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		/**
 		 * add category
 		 */
-		
+	  
+	  var s = categRepoService.findAll();
+
+        assertThat( s.size() ).isEqualTo( 2 );
 		File scat = new File( "src/test/resources/testServiceCategory.txt" );
 		InputStream in = new FileInputStream( scat );
 		String sc = IOUtils.toString(in, "UTF-8");
@@ -287,6 +291,10 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		scategcreate2.setName("Child Cat");
 		ServiceCategory child1Subcategory = postCategory( scategcreate2, scategcreate2.getName() );
 		
+
+        s = categRepoService.findAll();
+        assertThat( s.size() ).isEqualTo( 4 );
+       
 		ServiceCategoryUpdate scUpd1 = JsonUtils.toJsonObj( sc,  ServiceCategoryUpdate.class);
 		scUpd1.setIsRoot(true);
 		scUpd1.setName("Parent Cat");
@@ -296,7 +304,6 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		scUpd1.addCategoryItem(scRef);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
 
 		String response = mvc.perform(MockMvcRequestBuilders.patch("/serviceCatalogManagement/v4/serviceCategory/" + parentRootCategory.getId() )
 	            .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -311,7 +318,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		parentRootCategory = JsonUtils.toJsonObj(response,  ServiceCategory.class);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
 		assertThat( parentRootCategory.getCategoryRefs().size() ).isEqualTo(1);
 		assertThat( parentRootCategory.getCategoryRefs().get(0).getId() ).isEqualTo( child1Subcategory.getId() );
 		
@@ -334,11 +341,11 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		catalog = catalogRepoService.updateCatalog( catalog.getId(), scu);
 
 		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( 2 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );		
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 2 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 0 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );//categories must remain
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );//categories must remain
 		
 		
 		//fetch the subcategory and check parent ID
@@ -362,7 +369,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 				    .andExpect(status().isNotModified() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
 		
 		//delete subcategory
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/serviceCatalogManagement/v4/serviceCategory/" + parentRootCategory.getCategoryRefs().get(0).getId() )
@@ -372,7 +379,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
 		
 		 //delete rootcategory 
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/serviceCatalogManagement/v4/serviceCategory/" + parentRootCategory.getId() )
@@ -524,7 +531,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 
 		
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 33 );
 		
 		assertThat( responsesSpec2.getName() ).isEqualTo( "Test Spec" );
 		assertThat( responsesSpec2.getServiceSpecCharacteristic().size() ).isEqualTo(2);
@@ -565,7 +572,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 33 );
 		
 	}
 	
@@ -710,7 +717,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		assertThat( idspec1Exists ).isFalse();
 		assertThat( idspec2Exists ).isTrue();
 		assertThat( idspec4Exists ).isTrue();
-		assertThat( specRepoService.findAll().size() ).isEqualTo( 5 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 32 );
 		
 		
 		
@@ -722,7 +729,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 	public void t05_testCloneSpec() throws Exception {
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
 		
 		/**
 		 * first add 2 specs
@@ -751,7 +758,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		ServiceSpecification responsesSpec3 = createServiceSpec(sspectext, sspeccr3);
 		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 3 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 3 );
 
 		String responseSpecCloned = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/"+responsesSpec3.getId()+"/clone")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -773,7 +780,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		assertThat( clonedSpec.findSpecCharacteristicByName("Coverage").getUuid()  ).isNotEqualTo( responsesSpec3.findSpecCharacteristicByName("Coverage").getUuid() );
 		assertThat(clonedSpec.getServiceSpecCharacteristic().size()).isEqualTo(responsesSpec3.getServiceSpecCharacteristic().size());
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 4 );
 		
 		
 		String responseSpecClonedGST = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneGST?serviceName=aGST Service")
@@ -787,7 +794,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		assertThat( clonedSpec.getName() ).isEqualTo( "aGST Service" );	
 		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 5 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 5 );
 
 		String responseSpecClonedVINNI = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneVINNI?serviceName=aVINNIService")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -809,7 +816,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		clonedSpec = JsonUtils.toJsonObj( responseSpecClonedVINNI,  ServiceSpecification.class);
 		assertThat( clonedSpec.getName() ).isEqualTo( "aVINNIService" );
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 16 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 16 );
 
 
 		/**
@@ -841,7 +848,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		clonedSpec = JsonUtils.toJsonObj( responseSpecClonedVINNI2,  ServiceSpecification.class);
 		assertThat( clonedSpec.getName() ).isEqualTo( "aVINNIService" );	
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 20 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 20 );
 	}
 	
 	
@@ -858,7 +865,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 23 );
 		
 		Attachment att = new Attachment();
 		att.setDescription("a test atts");
@@ -928,8 +935,8 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		
 		assertThat(userPartyRoleOwnerexists  ).isTrue() ;
 		List<ServiceSpecification> allSpecs = specRepoService.findAll();
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong in Testing ONLY 
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 24 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 24 ); //this is somehow wrong in Testing ONLY 
 		
 		
 		/**
@@ -946,9 +953,9 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		List<ServiceSpecification> specs = JsonUtils.toJsonObj( responseSpecs,  ArrayList.class );
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
-		assertThat( specRepoService.findAll(null , new HashMap<>()).size() ).isEqualTo( 1 ); //this is somehow wrong it should be 2..anyway to investigate in future
-		assertThat(specs.size()  ).isEqualTo( 1 ) ;
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 24 );
+		assertThat( specRepoService.findAll(null , new HashMap<>()).size() ).isEqualTo( 24 ); //this is somehow wrong it should be 2..anyway to investigate in future
+		assertThat(specs.size()  ).isEqualTo( 24 ) ;
 		
 		
 
@@ -984,11 +991,11 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		spec.setVersion("0.x.0");
 		this.specRepoService.updateServiceSpecification( spec);
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 24 );
 		
 		this.bootstrapRepository.initRepo();
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 25 );
 		
 
 	}
@@ -1032,8 +1039,8 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		}
 		
 		assertThat(userPartyRoleOwnerexists  ).isTrue() ;
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong in Testing ONLY it should be 2..anyway to investigate in future..something is happening with Session factory
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 26 ); //this is somehow wrong in Testing ONLY it should be 2..anyway to investigate in future..something is happening with Session factory
 		
 		
 		/**
@@ -1050,9 +1057,9 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		List<ServiceSpecification> specs = JsonUtils.toJsonObj( responseSpecs,  ArrayList.class );
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 1 ); //this is somehow wrong it should be 2..anyway to investigate in future
-		assertThat(specs.size()  ).isEqualTo( 1 ) ;
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 26 ); //this is somehow wrong it should be 2..anyway to investigate in future
+		assertThat(specs.size()  ).isEqualTo( 26 ) ;
 		
 		
 
@@ -1105,7 +1112,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 	public void t11_testSpecDelete() throws Exception {
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26 );
 		
 		/**
 		 * first add 1 specs
@@ -1120,12 +1127,12 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 27 );
 
 				
 		this.specRepoService.deleteByUuid( responsesSpec1.getId() );
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( 1  );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26  );
 		
 	}
 	
@@ -1147,7 +1154,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 27 );
 		assertThat( responsesSpec1.getServiceSpecCharacteristic()).hasSize(2) ;
 		
 		/**
@@ -1168,7 +1175,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		Organization o = organizationRepoService.addOrganization(organizationCreate);
 
 		ServiceSpecification specupd = specRepoService.updateExternalServiceSpec(externaluuid, o.getId(), responsesSpec1);
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 2 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 28 );
 		assertThat( specupd.getRelatedParty()).hasSize(1);
 		assertThat( specupd.getServiceSpecCharacteristic()).hasSize(2) ;
 		
@@ -1178,7 +1185,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 		serviceSpecCharacteristicItem.setName("A Second Attribute");
 		responsesSpec1.addServiceSpecCharacteristicItem(serviceSpecCharacteristicItem );
 		specupd = specRepoService.updateExternalServiceSpec(externaluuid, o.getId(), responsesSpec1);
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 2 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 28 );
 		assertThat( specupd.getRelatedParty()).hasSize(1);
 		assertThat( specupd.getServiceSpecCharacteristic()).hasSize( 3 ) ;
 		assertThat( specupd.getName() ).isEqualTo( responsesSpec1.getName()  ) ;

@@ -48,7 +48,10 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
 import org.etsi.osl.tmf.so641.model.ServiceRestriction;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -64,8 +67,7 @@ public class ServiceOrderIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ServiceOrderIntegrationTest.class.getName());
 
-	@Autowired
-	private MockMvc mvc;
+	private static MockMvc mvc;
 
 	@Autowired
 	CatalogRepoService catalogRepoService;
@@ -84,10 +86,13 @@ public class ServiceOrderIntegrationTest extends BaseIT {
 
 	@Autowired
 	private WebApplicationContext context;
-	
+
 
     @Autowired
     private FilterChainProxy springSecurityFilterChain;
+
+	@PersistenceContext
+	private EntityManager entityManager;
     
     private class UserMocked {
     	public String getUserByUsername( String username) {
@@ -101,11 +106,18 @@ public class ServiceOrderIntegrationTest extends BaseIT {
 	@Autowired
 	private CamelContext camelContext;
 
-	@BeforeEach
+	@BeforeAll
 	public void setup() throws Exception {
 		mvc = MockMvcBuilders.webAppContextSetup(context).
 				apply(springSecurity(springSecurityFilterChain)).build();
-		
+
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 	}
 
 	@Test

@@ -17,6 +17,10 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingUpdate;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingRepoService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -40,8 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ProductOfferingCallbackIntegrationTest extends BaseIT {
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;
@@ -61,17 +64,39 @@ public class ProductOfferingCallbackIntegrationTest extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.openMocks(this);
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    private AutoCloseable mocks;
+
+    @BeforeAll
+    public void setupOnce() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @BeforeEach
+    public void setup() {
+        mocks = MockitoAnnotations.openMocks(this);
 
         // Mock RestTemplate to avoid actual HTTP calls in tests
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("OK", HttpStatus.OK));
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        // Clear entity manager cache to release entity references
+        if (entityManager != null) {
+            entityManager.clear();
+        }
+
+        // Close mocks to release resources
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

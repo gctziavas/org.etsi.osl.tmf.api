@@ -11,6 +11,7 @@ import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationDeleteNotification;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationNotificationService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -27,9 +28,21 @@ public class ProductSpecificationNotificationServiceTest  extends BaseIT{
     @InjectMocks
     private ProductSpecificationNotificationService productSpecificationNotificationService;
 
+    private AutoCloseable mocks; //
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+    
+//    The problem is that MockitoAnnotations.openMocks(this) is called in @BeforeEach but
+//    the mocks are never closed, leading to accumulation of mock resources and memory leak, with huge heap size
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

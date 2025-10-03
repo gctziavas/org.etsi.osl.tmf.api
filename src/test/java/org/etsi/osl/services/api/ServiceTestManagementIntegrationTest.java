@@ -21,9 +21,12 @@ import org.etsi.osl.tmf.stm653.model.ServiceTestCreate;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecificationCreate;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestRepoService;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestSpecificationRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -36,11 +39,10 @@ public class ServiceTestManagementIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ServiceTestManagementIntegrationTest.class.getName());
 
-	@Autowired
-	private MockMvc mvc;
+	private static MockMvc mvc;
 
 	@Autowired
-	ServiceTestSpecificationRepoService aServiceTestSpecRpoService;	
+	ServiceTestSpecificationRepoService aServiceTestSpecRpoService;
 
 	@Autowired
 	ServiceTestRepoService aServiceTestRpoService;
@@ -51,9 +53,19 @@ public class ServiceTestManagementIntegrationTest extends BaseIT {
 	@Autowired
 	private WebApplicationContext context;
 
-	@BeforeEach
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
 	public void setup() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 	}
 
 	@WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })

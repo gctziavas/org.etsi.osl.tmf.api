@@ -10,6 +10,7 @@ import org.etsi.osl.tmf.pcm620.model.Catalog;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.CatalogDeleteNotification;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogNotificationService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -23,9 +24,18 @@ public class CatalogNotificationServiceIntegrationTest  extends BaseIT{
     @InjectMocks
     private CatalogNotificationService catalogNotificationService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

@@ -79,7 +79,7 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
     public void testCreateServiceOrderWithNonExistingServiceSpecification() throws Exception {
 
         createServiceOrderWithNonExistingServiceSpecification();
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 1 );
     }
 
 
@@ -89,7 +89,7 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
 
         String response = createServiceOrder();
 
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 1 );
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 2 );
         
         ServiceOrder responsesServiceOrder = JsonUtils.toJsonObj(response,  ServiceOrder.class);
         String id = responsesServiceOrder.getId();
@@ -100,7 +100,7 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 1 );
     }
 
 

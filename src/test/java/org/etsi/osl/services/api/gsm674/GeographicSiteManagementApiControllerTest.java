@@ -4,6 +4,7 @@ import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.gsm674.api.GeographicSiteManagementApiController;
 import org.etsi.osl.tmf.gsm674.model.GeographicSite;
 import org.etsi.osl.tmf.gsm674.reposervices.GeographicSiteManagementService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.security.test.context.support.WithMockUser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+@WithMockUser(username = "tester", roles = {"USER"})
 class GeographicSiteManagementApiControllerTest  extends BaseIT {
 
     @Autowired
@@ -37,9 +39,18 @@ class GeographicSiteManagementApiControllerTest  extends BaseIT {
     @MockBean
     private GeographicSiteManagementService service;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

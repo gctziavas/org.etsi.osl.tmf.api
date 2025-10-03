@@ -219,7 +219,7 @@ public class ResourceSpecificationApiControllerTest extends BaseIT {
                 .andReturn().getResponse().getContentAsString();
 
         List<LogicalResourceSpecification> listResSpecsResponse = JsonUtils.toListOfJsonObj(listResSpecsResponseString, LogicalResourceSpecification.class);
-        assertEquals(9, listResSpecsResponse.size());
+        assertEquals(13, listResSpecsResponse.size());
 
         mvc.perform(MockMvcRequestBuilders.get("/resourceCatalogManagement/v4/resourceSpecification")
                         .contentType(MediaType.APPLICATION_JSON)

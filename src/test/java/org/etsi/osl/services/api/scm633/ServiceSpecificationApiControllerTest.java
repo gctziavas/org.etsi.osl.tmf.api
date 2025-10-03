@@ -297,7 +297,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
         assertThat(sts.getName()).isEqualTo("A test name");
         String stsId = sts.getId();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( 1 );
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 5 );
 
         // Create a Service Spec from the Test Spec
         String response2 = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/specFromTestSpec/" + stsId)
@@ -307,7 +307,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 6 );
 
         ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response2,  ServiceSpecification.class);
         assertThat( responsesSpec.getName() ).isEqualTo( "A test name" );
@@ -356,7 +356,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
         ResourceSpecification responsesSpec1 = JsonUtils.toJsonObj(responseSpec,  PhysicalResourceSpecification.class);
         assertThat(responsesSpec1.getName()).isEqualTo("Test Resource Spec");
         String rSpecId = responsesSpec1.getId();
-        assertThat( specRepoService.findAll().size() ).isEqualTo( 1);
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 7);
 
         String response2 = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/specFromResourceSpec/" + rSpecId)
                         .with( SecurityMockMvcRequestPostProcessors.csrf()))
@@ -365,7 +365,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 8 );
 
         ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response2,  ServiceSpecification.class);
         assertThat( responsesSpec.getName() ).isEqualTo( "Test Resource Spec" );

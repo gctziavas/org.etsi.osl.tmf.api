@@ -8,7 +8,10 @@ import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.scm633.api.ServiceCategoryApiController;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,8 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ServiceCategoryApiControllerTest  extends BaseIT {
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     CategoryRepoService categoryRepoService;
@@ -37,12 +39,22 @@ public class ServiceCategoryApiControllerTest  extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
 

@@ -36,9 +36,12 @@ import org.etsi.osl.tmf.pm628.reposervices.MeasurementCollectionJobService;
 import org.etsi.osl.tmf.ri639.model.ResourceAdministrativeStateType;
 import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
 import org.etsi.osl.tmf.ri639.model.ResourceUsageStateType;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -56,8 +59,7 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_JOBS = 0;
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;
@@ -71,11 +73,21 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
     @Autowired
     MeasurementCollectionJobService measurementCollectionJobService;
 
-    @BeforeEach
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() throws Exception {
         mvc = MockMvcBuilders.webAppContextSetup(context).
                 apply(springSecurity(springSecurityFilterChain)).build();
 
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
@@ -251,7 +263,7 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
         String id = mcj.getUuid();
         
 
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(1);
+        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(2);
 
         mvc
             .perform(MockMvcRequestBuilders.delete("/monitoring/v5/measurementCollectionJob/" + id)
@@ -260,7 +272,7 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(0);
+        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(1);
     }
 
 

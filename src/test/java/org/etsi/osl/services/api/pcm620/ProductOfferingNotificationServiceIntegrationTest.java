@@ -13,6 +13,7 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingDeleteNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingStateChangeNotification;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingNotificationService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,9 +30,18 @@ public class ProductOfferingNotificationServiceIntegrationTest  extends BaseIT{
     @InjectMocks
     private ProductOfferingNotificationService productOfferingNotificationService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

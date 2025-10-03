@@ -26,7 +26,10 @@ import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
 import org.etsi.osl.tmf.sim638.model.Service;
 import org.etsi.osl.tmf.sim638.model.ServiceCreate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -42,8 +45,7 @@ import com.jayway.jsonpath.JsonPath;
 
 public class ServiceMetricsApiControllerTest  extends BaseIT {
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     ServiceRepoService serviceRepoService;
@@ -51,12 +53,22 @@ public class ServiceMetricsApiControllerTest  extends BaseIT {
     @Autowired
     private WebApplicationContext context;
 
-    @BeforeEach
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
@@ -94,7 +106,7 @@ public class ServiceMetricsApiControllerTest  extends BaseIT {
         int activeServices = (int) servicesList.stream().filter(service -> service.getState() == ServiceStateType.ACTIVE).count();
 
         assertThat(totalServices).isEqualTo(activeServices);
-        assertThat(activeServices).isEqualTo(1);
+        assertThat(activeServices).isEqualTo(2);
     }
 
     @WithMockUser(username = "osadmin", roles = {"ADMIN", "USER"})

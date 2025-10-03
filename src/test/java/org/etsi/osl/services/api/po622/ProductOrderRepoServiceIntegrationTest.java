@@ -39,9 +39,12 @@ import org.etsi.osl.tmf.po622.reposervices.ProductOrderRepoService;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -53,9 +56,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import jakarta.validation.Valid;
 
-public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT { 
-  @Autowired
-  private MockMvc mvc;
+public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
+  private static MockMvc mvc;
 
   @Autowired
   ProductOrderRepoService productOrderRepoService;
@@ -81,15 +83,24 @@ public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
 
   @Autowired
   private WebApplicationContext context;
-  
 
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Autowired
   TransactionTemplate txTemplate;
 
-  @BeforeEach
+  @BeforeAll
   public void setup() throws Exception {
     mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    if (entityManager != null) {
+      entityManager.clear();
+    }
   }
 
 
@@ -163,7 +174,7 @@ public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
   public void testUpdateProductOrder() throws Exception {
 
 
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(0);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(5);
     
     String response = txTemplate.execute(status -> {
       try {
@@ -177,7 +188,7 @@ public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
     
     ProductOrder responsesProductOrder = JsonUtils.toJsonObj(response, ProductOrder.class);
     String poId = responsesProductOrder.getId();
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(1);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(6);
 
 
 
@@ -237,7 +248,7 @@ public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
     assertThat(responseSOUpd.getState().toString()).isEqualTo("COMPLETED");
     assertThat(responseSOUpd.getDescription()).isEqualTo("New Test Description");
     
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(1);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(6);
     
     assertThat(responseSOUpd.getNote().size()).isEqualTo(3);
     assertThat(responseSOUpd.getRelatedParty().size()).isEqualTo(1);
@@ -249,7 +260,7 @@ public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
     prodOrderUpd.addNoteItem(en);
     prodOrderUpd.addRelatedPartyItem(new RelatedParty());
     responseSOUpd = productOrderRepoService.updateProductOrder(poId, prodOrderUpd);
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(1);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(6);
     assertThat(responseSOUpd.getNote().size()).isEqualTo(4);
     assertThat(responseSOUpd.getRelatedParty().size()).isEqualTo(2);
 

@@ -41,7 +41,10 @@ import org.etsi.osl.tmf.pcm620.reposervices.ProductCategoryRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -56,8 +59,7 @@ public class ProductCatalogIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ProductCatalogIntegrationTest.class.getName());
 
-	@Autowired
-	private MockMvc mvc;
+	private static MockMvc mvc;
 
 	@Autowired
 	ProductCatalogRepoService catalogRepoService;
@@ -67,7 +69,7 @@ public class ProductCatalogIntegrationTest extends BaseIT {
 
 	@Autowired
 	ProductOfferingRepoService productOfferingRepoService;
-	
+
 
 	@Autowired
 	ProductOfferingPriceRepoService productOfferingPriceRepoService;
@@ -75,13 +77,23 @@ public class ProductCatalogIntegrationTest extends BaseIT {
 
 	@Autowired
 	ProductSpecificationRepoService productSpecificationRepoService;
-	
+
 	@Autowired
 	private WebApplicationContext context;
 
-	@BeforeEach
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
 	public void setup() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 	}
 
 	@WithMockUser(username = "osadmin", roles = { "ADMIN", "USER" })

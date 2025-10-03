@@ -15,7 +15,10 @@ import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -28,8 +31,7 @@ import com.jayway.jsonpath.JsonPath;
 
 public class GeneralMetricsApiControllerTest extends BaseIT {
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;
@@ -49,13 +51,22 @@ public class GeneralMetricsApiControllerTest extends BaseIT {
     @Autowired
     CategoryRepoService categoryRepoService;
 
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    @BeforeEach
+    @BeforeAll
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})

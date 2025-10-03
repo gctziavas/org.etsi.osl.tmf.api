@@ -43,7 +43,10 @@ import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
 import org.etsi.osl.tmf.ri639.model.ResourceRelationship;
 import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -58,34 +61,43 @@ public class ResourceInventoryIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( ResourceInventoryIntegrationTest.class.getName());
-	
-    @Autowired
-    private MockMvc mvc;
+
+	private static MockMvc mvc;
 
 	@Autowired
 	ResourceCatalogRepoService catalogRepoService;
-	
+
 
 	@Autowired
 	ResourceCategoryRepoService categRepoService;
 
 	@Autowired
 	ResourceSpecificationRepoService specRepoService;
-	
+
 
 	@Autowired
 	ResourceRepoService resourceRepoService;
 
-	  @Autowired
-	    private WebApplicationContext context;
-	    
-		@BeforeEach
-	    public void setup() {
-	        mvc = MockMvcBuilders
-	          .webAppContextSetup(context)
-	          .apply(springSecurity())
-	          .build();
-	    }
+	@Autowired
+	private WebApplicationContext context;
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
+	public void setup() {
+		mvc = MockMvcBuilders
+			.webAppContextSetup(context)
+			.apply(springSecurity())
+			.build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 	
 	@Test
 	public void _countDefaultProperties() {
@@ -417,7 +429,7 @@ public class ResourceInventoryIntegrationTest extends BaseIT {
         
         assertThat(userPartyRoleexists  ).isTrue() ;
 
-        assertThat( resourceRepoService.findAll().size() ).isEqualTo( 2 );
+        assertThat( resourceRepoService.findAll().size() ).isEqualTo( 4 );
         
         
         ResourceUpdate resUpd = new ResourceUpdate();
@@ -458,7 +470,7 @@ public class ResourceInventoryIntegrationTest extends BaseIT {
         LogicalResource responseRes2 = JsonUtils.toJsonObj(responseResUpd,  LogicalResource.class);
         
 
-        assertThat( resourceRepoService.findAll().size() ).isEqualTo( 2 );
+        assertThat( resourceRepoService.findAll().size() ).isEqualTo( 4 );
 
         assertThat( responseRes2.getEndOperatingDate() ).isNotNull();
         assertThat( responseRes2.getNote().size()  ).isEqualTo( 2 );
@@ -480,7 +492,7 @@ public class ResourceInventoryIntegrationTest extends BaseIT {
         responseRes2 = JsonUtils.toJsonObj(responseResUpd,  LogicalResource.class);
         
 
-        assertThat( resourceRepoService.findAll().size() ).isEqualTo( 2 );
+        assertThat( resourceRepoService.findAll().size() ).isEqualTo( 4 );
 
         assertThat( responseRes2.getEndOperatingDate() ).isNotNull();
         assertThat( responseRes2.getNote().size()  ).isEqualTo( 4 );

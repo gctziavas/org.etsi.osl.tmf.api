@@ -320,7 +320,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		scUpd1.addCategoryItem(scRef);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 
 		String response = mvc.perform(MockMvcRequestBuilders.patch("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getId() )
 	            .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -335,7 +335,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		parentRootCategory = JsonUtils.toJsonObj(response,  ResourceCategory.class);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 		assertThat( parentRootCategory.getCategoryRefs().size() ).isEqualTo(1);
 		assertThat( parentRootCategory.getCategoryRefs().get(0).getId() ).isEqualTo( child1Subcategory.getId() );
 		
@@ -356,7 +356,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		catalog = catalogRepoService.updateCatalog( catalog.getId(), scu);
 
 		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 1 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 0 );
@@ -534,7 +534,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 
 		
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 20 );
 		
 		assertThat( responsesSpec2.getName() ).isEqualTo( "Test Resource Spec" );
 		assertThat( responsesSpec2.getResourceSpecCharacteristic().size() ).isEqualTo(1);
@@ -575,7 +575,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1  );
+		assertThat( specRepoService.findAll().size() ).isEqualTo(20  );
 		
 	}
 	
@@ -726,7 +726,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 15 );
 		
 	}
 	
@@ -746,7 +746,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		sspeccr1.setName("Spec1");
 		LogicalResourceSpecification responsesSpec1 = (LogicalResourceSpecification) createResourceSpec( sspeccr1);
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 19 );
 		
 		Attachment att = new Attachment();
 		att.setDescription("a test atts");
@@ -806,8 +806,8 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		phyresponsesSpec1 = (PhysicalResourceSpecification) createResourceSpec( physspeccr2);
 
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 3 );
-		assertThat( specRepoService.findAllPhysical().size() ).isEqualTo( FIXED_BOOTSTRAPS_PHYSICAL_SPECS + 2 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 18 );
+		assertThat( specRepoService.findAllPhysical().size() ).isEqualTo( 4 );
 		assertThat( specRepoService.findAllLogical().size() ).isEqualTo( FIXED_BOOTSTRAPS_LOGICAL_SPECS + 1);
 		
 	}

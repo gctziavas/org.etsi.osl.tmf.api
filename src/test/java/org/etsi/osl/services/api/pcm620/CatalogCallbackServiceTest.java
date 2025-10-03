@@ -16,6 +16,7 @@ import org.etsi.osl.tmf.pcm620.model.CatalogDeleteEventPayload;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -38,9 +39,18 @@ public class CatalogCallbackServiceTest extends BaseIT {
     @InjectMocks
     private CatalogCallbackService catalogCallbackService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

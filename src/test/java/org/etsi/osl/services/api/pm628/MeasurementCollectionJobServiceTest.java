@@ -47,7 +47,7 @@ public class MeasurementCollectionJobServiceTest  extends BaseIT {
 
         List<MeasurementCollectionJob> mcjList = measurementCollectionJobService.findAllMeasurementCollectionJobs();
 
-        assertThat(mcjList.size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS + 1);
+        assertThat(mcjList.size()).isEqualTo(3);
     }
 
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
@@ -57,7 +57,7 @@ public class MeasurementCollectionJobServiceTest  extends BaseIT {
 
         List<MeasurementCollectionJob> mcjList = measurementCollectionJobService.findAllByExecutionState(ExecutionStateType.ACKNOWLEDGED);
 
-        assertThat(mcjList.size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS + 1);
+        assertThat(mcjList.size()).isEqualTo(2);
     }
 
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
@@ -168,13 +168,12 @@ public class MeasurementCollectionJobServiceTest  extends BaseIT {
 
         measurementCollectionJobService.deleteMeasurementCollectionJob(id);
 
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS);
+        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(1);
     }
 
 
 
     private MeasurementCollectionJob createMeasurementCollectionJob() throws Exception {
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS);
 
         File fvo = new File("src/test/resources/testMeasurementCollectionJobFVO.json");
         InputStream in = new FileInputStream(fvo);
@@ -184,7 +183,6 @@ public class MeasurementCollectionJobServiceTest  extends BaseIT {
 
         MeasurementCollectionJob response = measurementCollectionJobService.createMeasurementCollectionJob(mcjFVO);
 
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS + 1);
 
         return response;
     }

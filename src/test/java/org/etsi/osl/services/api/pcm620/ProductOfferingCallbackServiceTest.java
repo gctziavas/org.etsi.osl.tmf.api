@@ -15,6 +15,7 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingDeleteEvent;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingStateChangeEvent;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingCallbackService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -38,9 +39,18 @@ public class ProductOfferingCallbackServiceTest extends BaseIT{
     @InjectMocks
     private ProductOfferingCallbackService productOfferingCallbackService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

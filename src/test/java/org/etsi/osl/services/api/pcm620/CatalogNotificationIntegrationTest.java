@@ -9,6 +9,7 @@ import org.etsi.osl.tmf.pcm620.model.Catalog;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreate;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogNotificationService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductCatalogRepoService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -33,13 +34,22 @@ public class CatalogNotificationIntegrationTest extends BaseIT {
     @SpyBean
     private CatalogNotificationService catalogNotificationService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

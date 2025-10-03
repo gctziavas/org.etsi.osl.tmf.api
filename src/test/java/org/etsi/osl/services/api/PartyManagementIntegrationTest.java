@@ -21,9 +21,12 @@ import org.etsi.osl.tmf.pm632.model.Organization;
 import org.etsi.osl.tmf.pm632.model.OrganizationCreate;
 import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.pm632.reposervices.OrganizationRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -41,8 +44,7 @@ public class PartyManagementIntegrationTest extends BaseIT {
 	private static final transient Log logger = LogFactory.getLog( PartyManagementIntegrationTest.class.getName());
 	
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     IndividualRepoService individualRepoService;
@@ -52,7 +54,7 @@ public class PartyManagementIntegrationTest extends BaseIT {
 //
 //    @Autowired
 //    private FilterChainProxy filterChainProxy;
-//    
+//
 //    @Autowired
 //    private WebApplicationContext wac;
 //
@@ -64,14 +66,23 @@ public class PartyManagementIntegrationTest extends BaseIT {
 
     @Autowired
     private WebApplicationContext context;
-    
- 
-    @BeforeEach
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() {
         mvc = MockMvcBuilders
           .webAppContextSetup(context).dispatchOptions(true)
           .apply( SecurityMockMvcConfigurers.springSecurity())
           .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
     
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})

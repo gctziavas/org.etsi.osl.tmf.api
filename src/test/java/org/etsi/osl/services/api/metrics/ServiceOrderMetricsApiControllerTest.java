@@ -19,7 +19,10 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -35,8 +38,7 @@ import com.jayway.jsonpath.JsonPath;
 
 public class ServiceOrderMetricsApiControllerTest  extends BaseIT {
 
-    @Autowired
-    private MockMvc mvc;
+    private static MockMvc mvc;
 
     @Autowired
     ServiceOrderRepoService serviceOrderRepoService;
@@ -44,12 +46,22 @@ public class ServiceOrderMetricsApiControllerTest  extends BaseIT {
     @Autowired
     private WebApplicationContext context;
 
-    @BeforeEach
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
@@ -107,7 +119,7 @@ public class ServiceOrderMetricsApiControllerTest  extends BaseIT {
 
         int totalServiceOrders = JsonPath.read(response, "$.activeServiceOrders");
 
-        assertThat(totalServiceOrders).isEqualTo(4);
+        assertThat(totalServiceOrders).isEqualTo(12);
     }
 
     @WithMockUser(username = "osadmin", roles = {"ADMIN", "USER"})

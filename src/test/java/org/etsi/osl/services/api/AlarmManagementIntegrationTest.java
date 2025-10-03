@@ -26,9 +26,12 @@ import org.etsi.osl.tmf.am642.model.Comment;
 import org.etsi.osl.tmf.am642.model.PerceivedSeverityType;
 import org.etsi.osl.tmf.am642.model.ProbableCauseType;
 import org.etsi.osl.tmf.am642.reposervices.AlarmRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -42,8 +45,7 @@ public class AlarmManagementIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(AlarmManagementIntegrationTest.class.getName());
 
-	@Autowired
-	private MockMvc mvc;
+	private static MockMvc mvc;
 
 	@Autowired
 	AlarmRepoService alarmRepoService;
@@ -57,16 +59,26 @@ public class AlarmManagementIntegrationTest extends BaseIT {
 
 	@Value("${ALARMS_ADD_ALARM}")
 	private String ALARMS_ADD_ALARM ="";
-	
+
 	@Value("${ALARMS_UPDATE_ALARM}")
 	private String ALARMS_UPDATE_ALARM ="";
-	
+
 	@Value("${ALARMS_GET_ALARM}")
 	private String ALARMS_GET_ALARM ="";
-	
-	@BeforeEach
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
 	public void setup() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 	}
 
 	@WithMockUser(username = "osadmin", roles = { "ADMIN", "USER" })

@@ -15,6 +15,7 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceDeleteEvent;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeEvent;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceCallbackService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -37,9 +38,18 @@ public class ProductOfferingPriceCallbackServiceTest  extends BaseIT{
     @InjectMocks
     private ProductOfferingPriceCallbackService productOfferingPriceCallbackService;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

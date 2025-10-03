@@ -16,6 +16,7 @@ import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreate;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationRepoService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -60,9 +61,11 @@ public class ProductSpecificationCallbackIntegrationTest extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private AutoCloseable mocks;
+
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
@@ -71,6 +74,13 @@ public class ProductSpecificationCallbackIntegrationTest extends BaseIT {
         // Mock RestTemplate to avoid actual HTTP calls in tests
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("OK", HttpStatus.OK));
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
     }
 
     @Test

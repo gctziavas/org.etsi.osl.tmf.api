@@ -45,9 +45,12 @@ import org.etsi.osl.tmf.rpm685.model.ResourcePoolCreate;
 import org.etsi.osl.tmf.rpm685.model.ResourcePoolRef;
 import org.etsi.osl.tmf.rpm685.model.ResourcePoolUpdate;
 import org.etsi.osl.tmf.rpm685.reposervices.ResourcePoolRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -60,8 +63,7 @@ public class ResourcePoolIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ResourcePoolIntegrationTest.class.getName());
 
-	@Autowired
-	private MockMvc mvc;
+	private static MockMvc mvc;
 
 	@Autowired
 	ResourceRepoService resourceRepoService;
@@ -72,9 +74,19 @@ public class ResourcePoolIntegrationTest extends BaseIT {
 	@Autowired
 	private WebApplicationContext context;
 
-	@BeforeEach
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
 	public void setup() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 	}
 
 	@WithMockUser(username = "osadmin", roles = { "USER", "ADMIN" })
@@ -166,7 +178,7 @@ public class ResourcePoolIntegrationTest extends BaseIT {
 				.andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
 		List<ResourcePool> pools = JsonUtils.toJsonObj(responseResourcePool, ArrayList.class);
-		assertThat(pools.size()).isEqualTo(1);
+		assertThat(pools.size()).isEqualTo(3);
 
 		responseResourcePool = mvc
 				.perform(MockMvcRequestBuilders.get("/resourcePoolManagement/v1/resourcePool/" + responseRPool.getId())
