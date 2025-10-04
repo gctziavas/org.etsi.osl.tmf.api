@@ -14,12 +14,15 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeNotification
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceNotificationService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-public class ProductOfferingPriceNotificationServiceTest  extends BaseIT{
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+public class ProductOfferingPriceNotificationServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private ProductCatalogApiRouteBuilderEvents eventPublisher;
@@ -32,15 +35,22 @@ public class ProductOfferingPriceNotificationServiceTest  extends BaseIT{
 
     private AutoCloseable mocks;
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
     }
 
+    @PersistenceContext
+    private EntityManager entityManager;
+    
     @AfterEach
     public void tearDown() throws Exception {
         if (mocks != null) {
             mocks.close();
+        }
+        // Clear entity manager cache to release entity references
+        if (entityManager != null) {
+            entityManager.clear();
         }
     }
 

@@ -5,6 +5,7 @@ import org.etsi.osl.tmf.gsm674.api.GeographicSiteManagementApiController;
 import org.etsi.osl.tmf.gsm674.model.GeographicSite;
 import org.etsi.osl.tmf.gsm674.reposervices.GeographicSiteManagementService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,7 +42,7 @@ class GeographicSiteManagementApiControllerTest  extends BaseIT {
 
     private AutoCloseable mocks;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() {
         mocks = MockitoAnnotations.openMocks(this);
     }

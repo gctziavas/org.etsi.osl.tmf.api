@@ -20,9 +20,12 @@ import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogUpdate;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -37,8 +40,10 @@ public class ServiceCatalogApiControllerTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_CATALOGS = 1;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     private WebApplicationContext context;
@@ -46,13 +51,20 @@ public class ServiceCatalogApiControllerTest  extends BaseIT {
     @Autowired
     CatalogRepoService catalogRepoService;
 
-    @BeforeEach
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})

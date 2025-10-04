@@ -44,7 +44,7 @@ public class PartyManagementIntegrationTest extends BaseIT {
 	private static final transient Log logger = LogFactory.getLog( PartyManagementIntegrationTest.class.getName());
 	
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     IndividualRepoService individualRepoService;

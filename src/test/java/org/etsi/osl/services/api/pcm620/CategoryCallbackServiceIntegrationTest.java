@@ -14,6 +14,7 @@ import org.etsi.osl.tmf.pcm620.model.EventSubscription;
 import org.etsi.osl.tmf.pcm620.reposervices.CategoryCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -24,6 +25,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 
 public class CategoryCallbackServiceIntegrationTest  extends BaseIT{
@@ -39,7 +42,7 @@ public class CategoryCallbackServiceIntegrationTest  extends BaseIT{
 
     private AutoCloseable mocks;
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
     }
@@ -49,7 +52,14 @@ public class CategoryCallbackServiceIntegrationTest  extends BaseIT{
         if (mocks != null) {
             mocks.close();
         }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
+    
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Test
     public void testSendCategoryCreateCallback() {

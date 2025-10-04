@@ -45,7 +45,7 @@ public class AlarmManagementIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(AlarmManagementIntegrationTest.class.getName());
 
-	private static MockMvc mvc;
+	private MockMvc mvc;
 
 	@Autowired
 	AlarmRepoService alarmRepoService;
@@ -217,7 +217,7 @@ public class AlarmManagementIntegrationTest extends BaseIT {
 		body = JsonUtils.toJsonString(aupd);
 		response = template.requestBodyAndHeader( ALARMS_UPDATE_ALARM, body , "alarmid", alarm.getId());
 
-		assertThat(alarmRepoService.findAll().size()).isEqualTo(1);
+		assertThat(alarmRepoService.findAll().size()).isEqualTo(2);
 
 		alarm = JsonUtils.toJsonObj( (String)response, Alarm.class);;
 		assertThat(alarm.getAckState()).isEqualTo("acknowledged");

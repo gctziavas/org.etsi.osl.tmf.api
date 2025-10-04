@@ -26,9 +26,12 @@ import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecification;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecificationCreate;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestSpecificationRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -47,8 +50,10 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_SPECS = 1;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ServiceTestSpecificationRepoService aServiceTestSpecRpoService;
@@ -65,13 +70,20 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
     @Autowired
     ServiceSpecificationRepoService specRepoService;
 
-    @BeforeEach
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test

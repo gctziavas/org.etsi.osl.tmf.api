@@ -39,12 +39,16 @@ import org.etsi.osl.tmf.sim638.model.ServiceActionQueueAction;
 import org.etsi.osl.tmf.sim638.model.ServiceCreate;
 import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -55,9 +59,11 @@ public class ServiceInventoryIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( ServiceInventoryIntegrationTest.class.getName());
-	
-    @Autowired
+
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Autowired
 	CatalogRepoService catalogRepoService;
@@ -73,16 +79,24 @@ public class ServiceInventoryIntegrationTest extends BaseIT {
 	@Autowired
 	ServiceRepoService serviceRepoService;
 
-	  @Autowired
-	    private WebApplicationContext context;
-	    
-		@BeforeEach
-	    public void setup() {
-	        mvc = MockMvcBuilders
-	          .webAppContextSetup(context)
-	          .apply(springSecurity())
-	          .build();
-	    }
+    @Autowired
+    private WebApplicationContext context;
+    
+
+    @Autowired
+    private FilterChainProxy springSecurityFilterChain;
+
+    @BeforeAll
+    public void setup() {
+      mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity(springSecurityFilterChain)).build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+      if (entityManager != null) {
+        entityManager.clear();
+      }
+    }
 	
 	@Test
 	public void _countDefaultProperties() {

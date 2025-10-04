@@ -21,9 +21,12 @@ import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteNotification;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -35,19 +38,28 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class ListenerApiControllerTest   extends BaseIT {
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     private WebApplicationContext context;
 
-    @BeforeEach
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})

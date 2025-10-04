@@ -59,7 +59,7 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_JOBS = 0;
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;

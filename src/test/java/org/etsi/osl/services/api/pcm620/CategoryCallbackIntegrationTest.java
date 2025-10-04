@@ -16,7 +16,10 @@ import org.etsi.osl.tmf.pcm620.model.EventSubscriptionInput;
 import org.etsi.osl.tmf.pcm620.reposervices.CategoryCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductCategoryRepoService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -42,7 +45,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class CategoryCallbackIntegrationTest extends BaseIT {
 
-    @Autowired
     private MockMvc mvc;
 
     @Autowired
@@ -63,15 +65,22 @@ public class CategoryCallbackIntegrationTest extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private AutoCloseable mocks;
 
-    @BeforeEach
-    public void setup() {
-        mocks = MockitoAnnotations.openMocks(this);
+    @BeforeAll
+    public void setupOnce() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @BeforeAll
+    public void setup() {
+        mocks = MockitoAnnotations.openMocks(this);
 
         // Mock RestTemplate to avoid actual HTTP calls in tests
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
@@ -80,6 +89,9 @@ public class CategoryCallbackIntegrationTest extends BaseIT {
 
     @AfterEach
     public void tearDown() throws Exception {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
         if (mocks != null) {
             mocks.close();
         }

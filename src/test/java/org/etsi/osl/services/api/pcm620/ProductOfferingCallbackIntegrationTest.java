@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ProductOfferingCallbackIntegrationTest extends BaseIT {
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;
@@ -77,7 +77,7 @@ public class ProductOfferingCallbackIntegrationTest extends BaseIT {
                 .build();
     }
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
 

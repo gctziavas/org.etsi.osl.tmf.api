@@ -38,7 +38,7 @@ import com.jayway.jsonpath.JsonPath;
 
 public class ServiceOrderMetricsApiControllerTest  extends BaseIT {
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     ServiceOrderRepoService serviceOrderRepoService;

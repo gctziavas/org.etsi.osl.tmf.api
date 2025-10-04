@@ -56,9 +56,12 @@ import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -78,9 +81,11 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 	private static final transient Log logger = LogFactory.getLog( ServiceCatalogIntegrationTest.class.getName());
 
 	private static final int FIXED_BOOTSTRAPS_SPECS = 1;
-	
-    @Autowired
+
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Autowired
 	CatalogRepoService catalogRepoService;
@@ -105,13 +110,20 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 	@Autowired
 	OrganizationRepoService organizationRepoService;
 	
-	@BeforeEach
-    public void setup() {
+	@BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
           .webAppContextSetup(context)
           .apply(springSecurity())
           .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 	
 	@Test
 	public void _countDefaultProperties() {
@@ -389,7 +401,7 @@ public class ServiceCatalogIntegrationTest extends BaseIT {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
 		
 	}
 

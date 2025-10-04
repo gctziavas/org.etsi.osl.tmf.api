@@ -9,7 +9,10 @@ import org.etsi.osl.tmf.pcm620.model.Catalog;
 import org.etsi.osl.tmf.pcm620.model.CatalogCreate;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogNotificationService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductCatalogRepoService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
@@ -22,7 +25,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 public class CatalogNotificationIntegrationTest extends BaseIT {
 
-    @Autowired
     private MockMvc mvc;
 
     @Autowired
@@ -34,19 +36,29 @@ public class CatalogNotificationIntegrationTest extends BaseIT {
     @SpyBean
     private CatalogNotificationService catalogNotificationService;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private AutoCloseable mocks;
 
-    @BeforeEach
-    public void setup() {
-        mocks = MockitoAnnotations.openMocks(this);
+    @BeforeAll
+    public void setupOnce() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
 
+    @BeforeAll
+    public void setup() {
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
     @AfterEach
     public void tearDown() throws Exception {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
         if (mocks != null) {
             mocks.close();
         }

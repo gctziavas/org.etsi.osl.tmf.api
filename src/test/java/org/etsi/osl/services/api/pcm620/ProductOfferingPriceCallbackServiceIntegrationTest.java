@@ -16,6 +16,7 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeEvent;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceCallbackService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -26,8 +27,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-public class ProductOfferingPriceCallbackServiceTest  extends BaseIT{
+public class ProductOfferingPriceCallbackServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private EventSubscriptionRepoService eventSubscriptionRepoService;
@@ -40,15 +43,22 @@ public class ProductOfferingPriceCallbackServiceTest  extends BaseIT{
 
     private AutoCloseable mocks;
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
     }
 
+    @PersistenceContext
+    private EntityManager entityManager;
+    
     @AfterEach
     public void tearDown() throws Exception {
         if (mocks != null) {
             mocks.close();
+        }
+        // Clear entity manager cache to release entity references
+        if (entityManager != null) {
+            entityManager.clear();
         }
     }
 

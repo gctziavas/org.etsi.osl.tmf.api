@@ -59,7 +59,7 @@ public class ProductCatalogIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ProductCatalogIntegrationTest.class.getName());
 
-	private static MockMvc mvc;
+	private MockMvc mvc;
 
 	@Autowired
 	ProductCatalogRepoService catalogRepoService;

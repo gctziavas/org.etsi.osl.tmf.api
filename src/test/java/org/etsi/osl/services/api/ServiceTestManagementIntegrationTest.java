@@ -39,7 +39,7 @@ public class ServiceTestManagementIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ServiceTestManagementIntegrationTest.class.getName());
 
-	private static MockMvc mvc;
+	private MockMvc mvc;
 
 	@Autowired
 	ServiceTestSpecificationRepoService aServiceTestSpecRpoService;

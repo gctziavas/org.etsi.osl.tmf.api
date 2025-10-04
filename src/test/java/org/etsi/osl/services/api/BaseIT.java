@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 )
 @AutoConfigureMockMvc
 @ActiveProfiles("testing")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS )
 @ExtendWith(SpringExtension.class)   // <-- JUnit 5
 @TestInstance(Lifecycle.PER_CLASS)   // <-- allows non-static @AfterAll
@@ -54,6 +54,13 @@ public abstract class BaseIT {
 
             // Force garbage collection
             System.gc();
+            System.out.println("==============================================================================================");;
+            System.out.println("==============================================================================================");;
+            System.out.println("=========================================="+  this.getClass().getCanonicalName() +"===============================================");;
+            System.out.println("==============================================================================================");;
+            System.out.println("==============================================================================================");;
+            System.out.println("==============================================================================================");;
+            Thread.sleep(5000);
         }
     }
 }

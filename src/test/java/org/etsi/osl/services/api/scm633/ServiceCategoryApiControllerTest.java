@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ServiceCategoryApiControllerTest  extends BaseIT {
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     CategoryRepoService categoryRepoService;

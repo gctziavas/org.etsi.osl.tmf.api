@@ -28,9 +28,12 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
 import org.etsi.osl.tmf.so641.model.ServiceOrderItem;
 import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.etsi.osl.tmf.so641.model.ServiceRestriction;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,8 +49,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ServiceApiControllerTest  extends BaseIT {
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ServiceRepoService serviceRepoService;
@@ -62,12 +67,19 @@ public class ServiceApiControllerTest  extends BaseIT {
 
     private ServiceRepoService mockServiceRepoService;
 
-    @BeforeEach
-    public void setup() throws Exception {
+    @BeforeAll
+    public void setup(WebApplicationContext context) throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 
         // Mocks
         mockServiceRepoService = mock(ServiceRepoService.class);

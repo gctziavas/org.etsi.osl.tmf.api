@@ -17,7 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-public class CategoryNotificationServiceTest  extends BaseIT{
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+public class CategoryNotificationServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private ProductCatalogApiRouteBuilderEvents eventPublisher;
@@ -35,11 +37,17 @@ public class CategoryNotificationServiceTest  extends BaseIT{
         mocks = MockitoAnnotations.openMocks(this);
     }
 
+    @PersistenceContext
+    private EntityManager entityManager;
+    
     @AfterEach
     public void tearDown() throws Exception {
         if (mocks != null) {
             mocks.close();
         }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
 
     @Test

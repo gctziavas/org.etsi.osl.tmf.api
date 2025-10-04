@@ -57,7 +57,7 @@ import org.springframework.web.context.WebApplicationContext;
 import jakarta.validation.Valid;
 
 public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
-  private static MockMvc mvc;
+  private MockMvc mvc;
 
   @Autowired
   ProductOrderRepoService productOrderRepoService;

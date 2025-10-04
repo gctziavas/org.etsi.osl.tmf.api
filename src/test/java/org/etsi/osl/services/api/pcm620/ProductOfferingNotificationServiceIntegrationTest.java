@@ -14,11 +14,14 @@ import org.etsi.osl.tmf.pcm620.model.ProductOfferingStateChangeNotification;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingNotificationService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 public class ProductOfferingNotificationServiceIntegrationTest  extends BaseIT{
 
     @Mock
@@ -32,15 +35,22 @@ public class ProductOfferingNotificationServiceIntegrationTest  extends BaseIT{
 
     private AutoCloseable mocks;
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
     }
 
+    @PersistenceContext
+    private EntityManager entityManager;
+    
     @AfterEach
     public void tearDown() throws Exception {
         if (mocks != null) {
             mocks.close();
+        }
+        // Clear entity manager cache to release entity references
+        if (entityManager != null) {
+            entityManager.clear();
         }
     }
 

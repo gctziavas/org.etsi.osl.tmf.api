@@ -16,11 +16,8 @@ import org.etsi.osl.tmf.pcm620.model.EventSubscriptionInput;
 import org.etsi.osl.tmf.pcm620.reposervices.CatalogCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductCatalogRepoService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +37,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 public class CatalogCallbackIntegrationTest extends BaseIT {
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;
@@ -76,7 +75,7 @@ public class CatalogCallbackIntegrationTest extends BaseIT {
                 .build();
     }
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
 

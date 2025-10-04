@@ -25,9 +25,12 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
 import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
 import org.etsi.osl.tmf.so641.model.ServiceRestriction;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
@@ -42,8 +45,10 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_SPECS = 0;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ServiceOrderRepoService serviceOrderRepoService;
@@ -54,13 +59,20 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    public void setup() throws Exception {
+    @BeforeAll
+    public void setup(WebApplicationContext context) throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})

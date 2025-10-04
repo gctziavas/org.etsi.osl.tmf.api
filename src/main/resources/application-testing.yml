@@ -33,6 +33,9 @@ spring:
         jdbc.fetch_size: 50
         # Reduce connection pool overhead
         connection.provider_disables_autocommit: true
+        query.plan_cache_max_size: 256
+        query.plan_parameter_metadata_max_size: 128
+        query.in_clause_parameter_padding: true
     show-sql: false
     generate-ddl: true
     

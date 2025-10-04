@@ -4,6 +4,7 @@ import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.gsm674.model.GeographicSite;
 import org.etsi.osl.tmf.gsm674.repo.GeographicSiteManagementRepository;
 import org.etsi.osl.tmf.gsm674.reposervices.GeographicSiteManagementService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class GeographicSiteManagementServiceTest extends BaseIT {
     @MockBean
     private GeographicSiteManagementRepository repository;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }

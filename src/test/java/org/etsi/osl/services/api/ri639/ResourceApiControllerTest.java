@@ -19,9 +19,12 @@ import org.etsi.osl.tmf.ri639.model.LogicalResource;
 import org.etsi.osl.tmf.ri639.model.Resource;
 import org.etsi.osl.tmf.ri639.model.ResourceCreate;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,8 +43,10 @@ public class ResourceApiControllerTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_RESOURCES = 0;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ResourceRepoService resourceRepoService;
@@ -56,12 +61,19 @@ public class ResourceApiControllerTest  extends BaseIT {
 
     private ResourceRepoService mockResourceRepoService;
 
-    @BeforeEach
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 
         // Mocks
         mockResourceRepoService = mock(ResourceRepoService.class);

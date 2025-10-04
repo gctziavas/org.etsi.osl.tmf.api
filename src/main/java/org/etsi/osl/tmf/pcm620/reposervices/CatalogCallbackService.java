@@ -90,9 +90,14 @@ public class CatalogCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
-            logger.info("Successfully sent catalog create event to callback URL: {} - Response: {}", 
-                url, response.getStatusCode());
+
+            if (response!=null) {
+              logger.info("Successfully sent catalog create event to callback URL: {} - Response: {}", 
+                url, response.getStatusCode());   
+            } else {
+              logger.error("category delete event to callback URL: {} - Response: IS NULL", 
+                  url);
+            }
             
         } catch (Exception e) {
             logger.error("Failed to send catalog create event to callback URL: {}", url, e);
@@ -115,8 +120,15 @@ public class CatalogCallbackService {
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent catalog delete event to callback URL: {} - Response: {}", 
-                url, response.getStatusCode());
+
+            if (response!=null) {
+              logger.info("Successfully sent catalog delete event to callback URL: {} - Response: {}", 
+                url, response.getStatusCode());        
+            } else {
+              logger.error("catalog delete event to callback URL: {} - Response: IS NULL", 
+                  url);
+            }
+            
             
         } catch (Exception e) {
             logger.error("Failed to send catalog delete event to callback URL: {}", url, e);

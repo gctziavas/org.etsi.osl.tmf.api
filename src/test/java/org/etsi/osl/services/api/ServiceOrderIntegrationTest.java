@@ -67,7 +67,7 @@ public class ServiceOrderIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ServiceOrderIntegrationTest.class.getName());
 
-	private static MockMvc mvc;
+	private MockMvc mvc;
 
 	@Autowired
 	CatalogRepoService catalogRepoService;

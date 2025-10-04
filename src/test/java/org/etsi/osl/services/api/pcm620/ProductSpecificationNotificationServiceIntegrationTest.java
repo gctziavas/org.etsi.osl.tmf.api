@@ -12,12 +12,15 @@ import org.etsi.osl.tmf.pcm620.model.ProductSpecificationDeleteNotification;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationNotificationService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-public class ProductSpecificationNotificationServiceTest  extends BaseIT{
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+public class ProductSpecificationNotificationServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private ProductCatalogApiRouteBuilderEvents eventPublisher;
@@ -30,10 +33,14 @@ public class ProductSpecificationNotificationServiceTest  extends BaseIT{
 
     private AutoCloseable mocks; //
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         mocks = MockitoAnnotations.openMocks(this);
     }
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
     
 //    The problem is that MockitoAnnotations.openMocks(this) is called in @BeforeEach but
 //    the mocks are never closed, leading to accumulation of mock resources and memory leak, with huge heap size
@@ -43,6 +50,9 @@ public class ProductSpecificationNotificationServiceTest  extends BaseIT{
         if (mocks != null) {
             mocks.close();
         }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
 
     @Test

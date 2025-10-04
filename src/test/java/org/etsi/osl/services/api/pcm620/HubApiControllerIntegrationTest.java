@@ -13,7 +13,10 @@ import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
 import org.etsi.osl.tmf.pcm620.model.EventSubscriptionInput;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -27,9 +30,8 @@ import org.springframework.web.context.WebApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class HubApiControllerTest extends BaseIT {
+public class HubApiControllerIntegrationTest extends BaseIT {
 
-    @Autowired
     private MockMvc mvc;
 
     @Autowired
@@ -41,12 +43,22 @@ public class HubApiControllerTest extends BaseIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @WithMockUser(username = "osadmin", roles = {"ADMIN"})

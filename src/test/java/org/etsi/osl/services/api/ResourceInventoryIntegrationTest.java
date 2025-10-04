@@ -62,7 +62,7 @@ public class ResourceInventoryIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog( ResourceInventoryIntegrationTest.class.getName());
 
-	private static MockMvc mvc;
+	private MockMvc mvc;
 
 	@Autowired
 	ResourceCatalogRepoService catalogRepoService;
@@ -84,7 +84,7 @@ public class ResourceInventoryIntegrationTest extends BaseIT {
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	@BeforeAll
+    @BeforeAll
 	public void setup() {
 		mvc = MockMvcBuilders
 			.webAppContextSetup(context)

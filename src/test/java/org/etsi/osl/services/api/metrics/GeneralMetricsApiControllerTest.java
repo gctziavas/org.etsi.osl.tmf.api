@@ -31,7 +31,7 @@ import com.jayway.jsonpath.JsonPath;
 
 public class GeneralMetricsApiControllerTest extends BaseIT {
 
-    private static MockMvc mvc;
+    private MockMvc mvc;
 
     @Autowired
     private WebApplicationContext context;

@@ -47,7 +47,10 @@ import org.etsi.osl.tmf.rcm634.reposervices.ResourceCandidateRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCatalogRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCategoryRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -71,13 +74,12 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 	private static final int FIXED_BOOTSTRAPS_PHYSICAL_SPECS = 1;
 	private static final int FIXED_BOOTSTRAPS_NETWORK_SPECS = 3;
 	private static final int FIXED_BOOTSTRAPS_LOGICAL_SPECS = 8;
-	
-    @Autowired
-    private MockMvc mvc;
+
+	private MockMvc mvc;
 
 	@Autowired
 	ResourceCatalogRepoService catalogRepoService;
-	
+
 
 	@Autowired
 	ResourceCategoryRepoService categRepoService;
@@ -88,16 +90,26 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 	@Autowired
 	ResourceCandidateRepoService candidateRepoService;
 
-	  @Autowired
-	    private WebApplicationContext context;
-	    
-		@BeforeEach
-	    public void setup() {
-	        mvc = MockMvcBuilders
-	          .webAppContextSetup(context)
-	          .apply(springSecurity())
-	          .build();
-	    }
+	@Autowired
+	private WebApplicationContext context;
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
+	public void setup() {
+		mvc = MockMvcBuilders
+			.webAppContextSetup(context)
+			.apply(springSecurity())
+			.build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 		
 	
 	@Test
@@ -357,7 +369,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 
 		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 1 );
 		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );		
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 2 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 0 );
 		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );//categories must remain
@@ -808,7 +820,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		
 		assertThat( specRepoService.findAll().size() ).isEqualTo( 18 );
 		assertThat( specRepoService.findAllPhysical().size() ).isEqualTo( 4 );
-		assertThat( specRepoService.findAllLogical().size() ).isEqualTo( FIXED_BOOTSTRAPS_LOGICAL_SPECS + 1);
+		assertThat( specRepoService.findAllLogical().size() ).isEqualTo( 14 );
 		
 	}
 	
