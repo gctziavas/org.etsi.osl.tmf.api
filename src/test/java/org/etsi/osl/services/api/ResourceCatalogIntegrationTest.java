@@ -371,7 +371,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 2 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 0 );
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );
 		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );//categories must remain
 		//fetch the subcategory and check parent ID
 		

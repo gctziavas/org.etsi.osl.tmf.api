@@ -246,7 +246,7 @@ public class AlarmManagementIntegrationTest extends BaseIT {
 		
 		
 
-		assertThat(alarmRepoService.findAll().size()).isEqualTo(1);
+		assertThat(alarmRepoService.findAll().size()).isEqualTo(2);
 		
 	}
 

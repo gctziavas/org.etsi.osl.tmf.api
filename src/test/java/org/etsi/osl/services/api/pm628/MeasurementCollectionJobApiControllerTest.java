@@ -93,7 +93,7 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
     @Test
     public void testFindAllMeasurementCollectionJobs() throws Exception {
-        String response = mvc
+        var response = mvc
                 .perform(MockMvcRequestBuilders.get("/monitoring/v5/measurementCollectionJob")
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON))

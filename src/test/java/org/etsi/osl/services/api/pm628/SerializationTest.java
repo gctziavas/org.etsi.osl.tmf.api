@@ -36,14 +36,14 @@ public class SerializationTest {
         System.out.println(jsonArray);
 
         // Deserialize the JSON back to a list
-        List<MeasurementCollectionJob> deserializedJobs = objectMapper.readValue(
+        var deserializedJobs = objectMapper.readValue(
                 jsonArray,
                 objectMapper.getTypeFactory().constructCollectionType(List.class, MeasurementCollectionJob.class)
         );
 
         // Assert the deserialized list matches the original
-        assertEquals(jobs.size(), deserializedJobs.size());
-        assertEquals(jobs.get(0).getOutputFormat(), deserializedJobs.get(0).getOutputFormat());
-        assertEquals(jobs.get(1).getOutputFormat(), deserializedJobs.get(1).getOutputFormat());
+        assertEquals(jobs.size(), ((List<MeasurementCollectionJob>) deserializedJobs).size());
+        assertEquals(jobs.get(0).getOutputFormat(), ((List<MeasurementCollectionJob>) deserializedJobs).get(0).getOutputFormat());
+        assertEquals(jobs.get(1).getOutputFormat(), ((List<MeasurementCollectionJob>) deserializedJobs).get(1).getOutputFormat());
     }
 }

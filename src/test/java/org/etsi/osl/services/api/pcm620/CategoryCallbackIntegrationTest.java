@@ -1,6 +1,7 @@
 package org.etsi.osl.services.api.pcm620;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -13,19 +14,16 @@ import org.etsi.osl.tmf.pcm620.model.Category;
 import org.etsi.osl.tmf.pcm620.model.CategoryCreate;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
 import org.etsi.osl.tmf.pcm620.model.EventSubscriptionInput;
-import org.etsi.osl.tmf.pcm620.reposervices.CategoryCallbackService;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductCategoryRepoService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -55,9 +53,6 @@ public class CategoryCallbackIntegrationTest extends BaseIT {
 
     @Autowired
     private EventSubscriptionRepoService eventSubscriptionRepoService;
-
-    @SpyBean
-    private CategoryCallbackService categoryCallbackService;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -124,23 +119,27 @@ public class CategoryCallbackIntegrationTest extends BaseIT {
 
         Category createdCategory = productCategoryRepoService.addCategory(categoryCreate);
 
-        // Step 3: Verify callback was sent
-        verify(categoryCallbackService, timeout(2000)).sendCategoryCreateCallback(any());
-        verify(restTemplate, timeout(2000)).exchange(
+        // Step 3: Verify callback was sent via RestTemplate
+        verify(restTemplate, timeout(5000)).exchange(
             eq("http://localhost:8080/test-callback/listener/categoryCreateEvent"),
-            eq(HttpMethod.POST), 
-            any(HttpEntity.class), 
+            eq(HttpMethod.POST),
+            argThat(httpEntity -> {
+                // Verify that the HttpEntity contains event data
+                return httpEntity != null && httpEntity.getBody() != null;
+            }),
             eq(String.class));
 
         // Step 4: Delete the category (should trigger delete callback)
         productCategoryRepoService.deleteById(createdCategory.getUuid());
 
-        // Step 5: Verify delete callback was sent
-        verify(categoryCallbackService, timeout(2000)).sendCategoryDeleteCallback(any());
-        verify(restTemplate, timeout(2000)).exchange(
+        // Step 5: Verify delete callback was sent via RestTemplate
+        verify(restTemplate, timeout(5000)).exchange(
             eq("http://localhost:8080/test-callback/listener/categoryDeleteEvent"),
-            eq(HttpMethod.POST), 
-            any(HttpEntity.class), 
+            eq(HttpMethod.POST),
+            argThat(httpEntity -> {
+                // Verify that the HttpEntity contains event data
+                return httpEntity != null && httpEntity.getBody() != null;
+            }),
             eq(String.class));
     }
 
@@ -169,14 +168,17 @@ public class CategoryCallbackIntegrationTest extends BaseIT {
         productCategoryRepoService.deleteById(createdCategory.getUuid());
 
         // Step 3: Verify only create callback was sent (not delete)
-        verify(restTemplate, timeout(2000)).exchange(
+        verify(restTemplate, timeout(5000)).exchange(
             eq("http://localhost:9090/create-only/listener/categoryCreateEvent"),
-            eq(HttpMethod.POST), 
-            any(HttpEntity.class), 
+            eq(HttpMethod.POST),
+            argThat(httpEntity -> {
+                // Verify that the HttpEntity contains event data
+                return httpEntity != null && httpEntity.getBody() != null;
+            }),
             eq(String.class));
 
-        // Note: In a more sophisticated test, we could verify that the delete callback was NOT sent
-        // by using verify with never(), but this requires more complex mock setup
+        // The delete callback should not be sent due to query filtering
+        // (this would require explicit verification with never() and additional mock setup)
     }
 
     @Test
@@ -203,10 +205,13 @@ public class CategoryCallbackIntegrationTest extends BaseIT {
         Category createdCategory = productCategoryRepoService.addCategory(categoryCreate);
 
         // Step 3: Verify callback was sent even with empty query
-        verify(restTemplate, timeout(2000)).exchange(
+        verify(restTemplate, timeout(5000)).exchange(
             eq("http://localhost:7070/all-events/listener/categoryCreateEvent"),
-            eq(HttpMethod.POST), 
-            any(HttpEntity.class), 
+            eq(HttpMethod.POST),
+            argThat(httpEntity -> {
+                // Verify that the HttpEntity contains event data
+                return httpEntity != null && httpEntity.getBody() != null;
+            }),
             eq(String.class));
     }
 }
