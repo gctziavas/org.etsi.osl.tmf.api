@@ -7,6 +7,7 @@ import java.io.File;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
 import org.etsi.osl.tmf.ri639.model.Resource;
 import org.etsi.osl.tmf.ri639.model.ResourceCreate;
 import org.etsi.osl.tmf.ri639.model.ResourceStatusType;
@@ -108,7 +109,7 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * Test for {@link ResourceRepoService#findByUuid(String)} when a resource is found.
      */
     @Test
-    public void testFindByUuidWhenResourceIsFound() {
+    public void test01FindByUuidWhenResourceIsFound() {
         // When
         Resource result = resourceRepoService.findByUuid(createdTestResource.getId());
 
@@ -122,7 +123,7 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * Test for {@link ResourceRepoService#findAll()} to verify it retrieves all resources.
      */
     @Test
-    public void testFindAllResources() {
+    public void test02FindAllResources() {
         // When
         List<Resource> result = resourceRepoService.findAll();
 
@@ -137,13 +138,16 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * Test for {@link ResourceRepoService#addResource(ResourceCreate)} to verify resource creation.
      */
     @Test
-    public void testAddResource() {
+    public void test03AddResource() {
         // Given - create a new resource different from the one in @BeforeEach
         ResourceCreate newResourceCreate = new ResourceCreate();
         newResourceCreate.setName("another_test_resource");
         newResourceCreate.setCategory("Category 2");
         newResourceCreate.setResourceVersion("2.0");
-
+        ResourceSpecificationRef specref = new ResourceSpecificationRef();
+        specref.setId("test");
+        specref.setName("A psec name");
+        newResourceCreate.setResourceSpecification(specref );
         // When
         Resource result = resourceRepoService.addResource(newResourceCreate);
 
@@ -161,7 +165,7 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * to verify resource update when the resource is found.
      */
     @Test
-    public void testUpdateResourceWhenResourceIsFound(){
+    public void test04UpdateResourceWhenResourceIsFound(){
         ResourceUpdate update = new ResourceUpdate();
         update.setName("updated_name");
         update.setCategory("updated_category");
@@ -191,12 +195,18 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * Test for {@link ResourceRepoService#deleteByUuid(String)} to verify successful resource deletion.
      */
     @Test
-    public void testDeleteByUuidWhenResourceIsFound() {
+    public void test05DeleteByUuidWhenResourceIsFound() {
         // Given - create a resource to delete
         ResourceCreate toDelete = new ResourceCreate();
         toDelete.setName("resource_to_delete");
         toDelete.setCategory("Category 3");
         toDelete.setResourceVersion("1.0");
+
+        ResourceSpecificationRef specref = new ResourceSpecificationRef();
+        specref.setId("test");
+        specref.setName("A psec name");
+        toDelete.setResourceSpecification(specref);
+        
         Resource resourceToDelete = resourceRepoService.addResource(toDelete);
 
         // When
@@ -213,7 +223,7 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * when an existing resource is found and updated.
      */
     @Test
-    public void testAddOrUpdateResourceByNameCategoryVersionWhenResourceExists() {
+    public void test06AddOrUpdateResourceByNameCategoryVersionWhenResourceExists() {
         // Given - use the existing test resource
         String name = createdTestResource.getName();
         String category = createdTestResource.getCategory();
@@ -239,7 +249,7 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * when no existing resource is found, and a new one is created.
      */
     @Test
-    public void testAddOrUpdateResourceByNameCategoryVersionWhenResourceDoesNotExist(){
+    public void test07AddOrUpdateResourceByNameCategoryVersionWhenResourceDoesNotExist(){
         // Given - use name/category/version that don't exist
         String name = "non_existing_resource";
         String category = "Non-existing Category";
@@ -251,6 +261,11 @@ public class ResourceRepoServiceTest  extends BaseIT {
         newResource.setResourceVersion(version);
         newResource.setDescription("Newly created resource");
 
+        ResourceSpecificationRef specref = new ResourceSpecificationRef();
+        specref.setId("test");
+        specref.setName("A psec name");
+        newResource.setResourceSpecification(specref);
+        
         // When
         Resource result = resourceRepoService.addOrUpdateResourceByNameCategoryVersion(name, category, version, newResource);
 
@@ -270,7 +285,7 @@ public class ResourceRepoServiceTest  extends BaseIT {
      * to verify it retrieves resources that should be terminated.
      */
     @Test
-    public void testFindAllActiveResourcesToTerminate() {
+    public void test08FindAllActiveResourcesToTerminate() {
         // When
         List<String> result = resourceRepoService.findAllActiveResourcesToTerminate();
 

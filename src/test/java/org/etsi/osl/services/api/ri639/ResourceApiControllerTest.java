@@ -67,6 +67,11 @@ public class ResourceApiControllerTest  extends BaseIT {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+
+        // Mocks
+        mockResourceRepoService = mock(ResourceRepoService.class);
+        ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
+        mockResourceApiController = new ResourceApiController(mockObjectMapper, null);
     }
 
 	@AfterEach
@@ -75,10 +80,6 @@ public class ResourceApiControllerTest  extends BaseIT {
 			entityManager.clear();
 		}
 
-        // Mocks
-        mockResourceRepoService = mock(ResourceRepoService.class);
-        ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
-        mockResourceApiController = new ResourceApiController(mockObjectMapper, null);
     }
 
 

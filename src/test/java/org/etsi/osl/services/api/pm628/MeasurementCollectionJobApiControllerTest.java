@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.etsi.osl.services.api.BaseIT;
@@ -100,8 +101,8 @@ public class MeasurementCollectionJobApiControllerTest extends BaseIT {
                 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        List<MeasurementCollectionJob> mcjList = objectMapper.readValue(response, new TypeReference<List<MeasurementCollectionJob>>() {});
-        assertThat(mcjList.size()).isEqualTo(0);
+        List<LinkedHashMap> mcjList = objectMapper.readValue(response, new TypeReference<List<LinkedHashMap>>() {});
+        assertThat(mcjList.size()).isEqualTo(1);
     }
 
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})

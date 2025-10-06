@@ -372,7 +372,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 2 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
 		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );//categories must remain
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );//categories must remain
 		//fetch the subcategory and check parent ID
 		
 		 response = mvc.perform(MockMvcRequestBuilders.get("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getCategoryRefs().get(0).getId() )
@@ -394,7 +394,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 				    .andExpect(status().isNotModified() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 		
 		//delete subcategory
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getCategoryRefs().get(0).getId() )
@@ -404,7 +404,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 5 );
 		
 		 //delete rootcategory 
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getId() )
@@ -414,7 +414,7 @@ public class ResourceCatalogIntegrationTest extends BaseIT {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
 		
 	}
 
