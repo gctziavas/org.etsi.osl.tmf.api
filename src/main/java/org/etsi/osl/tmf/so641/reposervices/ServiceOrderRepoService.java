@@ -39,6 +39,8 @@ import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.EValueType;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
 import org.etsi.osl.tmf.common.model.service.*;
+import org.etsi.osl.tmf.pm632.model.Individual;
+import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
@@ -86,6 +88,11 @@ public class ServiceOrderRepoService {
 	@Autowired
 	ServiceRepoService serviceRepoService;
 
+
+    @Autowired
+    IndividualRepoService individualRepoService;
+
+    
 	private SessionFactory  sessionFactory;
 
 
@@ -350,8 +357,26 @@ public class ServiceOrderRepoService {
 		}
 
 		if (serviceOrderCreate.getRelatedParty() != null) {
-			so.getRelatedParty().addAll(serviceOrderCreate.getRelatedParty());
+
+		  for (RelatedParty rp : serviceOrderCreate.getRelatedParty()) {
+
+		    if ( rp.getId() == null ) {
+		      Individual ind = individualRepoService.findByUsername(  rp.getName() );
+		      if ( ind != null ) {
+		        rp.setId(ind.getId());
+		      }
+		      else {
+		        rp.setId( rp.getName());
+		      }
+		    }	          
+
+	          so.getRelatedParty().add(rp);
+          }
+          
+			
 		}
+		
+		
 		if (serviceOrderCreate.getOrderRelationship() != null) {
 			so.getOrderRelationship().addAll(serviceOrderCreate.getOrderRelationship());
 
@@ -620,8 +645,17 @@ public class ServiceOrderRepoService {
 
 		if (serviceOrderUpd.getRelatedParty() != null) {
 			for (RelatedParty n : serviceOrderUpd.getRelatedParty()) {
-				if (n.getUuid() == null) {
-					so.addRelatedPartyItem(n);
+								
+				var partyFound = false;
+				for (RelatedParty rp : so.getRelatedParty()) {
+				  if (rp.getId().equals(n.getId())) {
+				    partyFound = true;
+				  }
+                }
+				
+				if (!partyFound) {
+	                n.setRole("MODIFIER");
+	                so.addRelatedPartyItem(n);				  
 				}
 			}
 		}
