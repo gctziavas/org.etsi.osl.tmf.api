@@ -1528,7 +1528,8 @@ public class ServiceSpecificationRepoService {
         Transaction tx = session.beginTransaction();
         
         try {
-          String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription";
+          String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription,"
+              + " s.type, s.isBundle, scateg.name as categoryName";
                        
             
 
