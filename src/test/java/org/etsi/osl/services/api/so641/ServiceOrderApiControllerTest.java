@@ -1,14 +1,17 @@
 package org.etsi.osl.services.api.so641;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +19,12 @@ import org.apache.commons.io.IOUtils;
 import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
+import org.etsi.osl.tmf.pm632.model.ContactMedium;
+import org.etsi.osl.tmf.pm632.model.Individual;
+import org.etsi.osl.tmf.pm632.model.IndividualCreate;
+import org.etsi.osl.tmf.pm632.model.MediumCharacteristic;
+import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
+import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
 import org.etsi.osl.tmf.so641.model.ServiceOrder;
@@ -58,6 +67,10 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+    
+
+    @Autowired
+    IndividualRepoService individualRepoService;
 
     @BeforeAll
     public void setup(WebApplicationContext context) throws Exception {
@@ -78,11 +91,35 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
     public void testCreateServiceOrder() throws Exception {
+      
 
-        String response = createServiceOrder();
+      assertThat( individualRepoService.findAll().size() ).isEqualTo( 0 );
+      
+      
+      String response = mvc.perform(MockMvcRequestBuilders.get("/party/v4/individual/myuser")
+          .with( SecurityMockMvcRequestPostProcessors.csrf())
+          .contentType(MediaType.APPLICATION_JSON))             
+          .andExpect(status().isOk())
+          .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))      
+          .andExpect(status().isOk())
+          .andReturn().getResponse().getContentAsString();
+  
+
+        assertThat( individualRepoService.findAll().size() ).isEqualTo( 1 );
+  
+
+        Individual responseIndv = JsonUtils.toJsonObj(response,  Individual.class);
+
+        assertThat( responseIndv.getId() ).isNotNull() ;
+  
+        response = createServiceOrder();
 
         ServiceOrder responsesServiceOrder = JsonUtils.toJsonObj(response,  ServiceOrder.class);
         assertThat( responsesServiceOrder.getDescription() ).isEqualTo( "A Test Service Order" );
+        assertThat( responsesServiceOrder.getRelatedParty().size() ) .isEqualTo( 1 );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getName() ) .isEqualTo( "osadmin" );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getId() ) .isEqualTo( responseIndv.getId() );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getRole() ) .isEqualTo( "REQUESTER" );
     }
 
 
@@ -156,7 +193,47 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
         assertThat(responsesServiceOrder2.getState().toString()).isEqualTo("COMPLETED");
         assertThat(responsesServiceOrder2.getDescription()).isEqualTo("New Test Description");
         assertThat(responsesServiceOrder2.getCategory()).isEqualTo("New Test Category");
+        assertThat( responsesServiceOrder.getRelatedParty().size() ) .isEqualTo( 1 );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getName() ) .isEqualTo( "osadmin" );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getId() ) .isEqualTo( individualRepoService.findByUsername("osadmin").getId() );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getRole() ) .isEqualTo( "REQUESTER" );
     }
+    
+    
+
+    @WithMockUser(username="osadminmodifier", roles = {"ADMIN","USER"})
+    @Test
+    public void testPatchServiceOrderModifier() throws Exception {
+
+        String response = createServiceOrder();
+        ServiceOrder responsesServiceOrder = JsonUtils.toJsonObj(response,  ServiceOrder.class);
+        String soId = responsesServiceOrder.getId();
+
+        ServiceOrderUpdate servOrderUpd = new ServiceOrderUpdate();
+        servOrderUpd.setState(ServiceOrderStateType.COMPLETED);
+        servOrderUpd.setCategory("New Test Category1");
+        servOrderUpd.setDescription("New Test Description1");
+        List<RelatedParty> rpl = new ArrayList<>();
+        RelatedParty rp = new RelatedParty();
+        rp.setId("12345");
+        rpl.add( rp);
+        servOrderUpd.setRelatedParty(rpl);
+
+        String response2 = mvc.perform(MockMvcRequestBuilders.patch("/serviceOrdering/v4/serviceOrder/" + soId)
+                        .with( SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content( JsonUtils.toJson( servOrderUpd ) ))
+                .andExpect(status().isOk() )
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        ServiceOrder responsesServiceOrder2 = JsonUtils.toJsonObj(response2,  ServiceOrder.class);
+        assertThat(responsesServiceOrder2.getState().toString()).isEqualTo("COMPLETED");
+        assertThat(responsesServiceOrder2.getDescription()).isEqualTo("New Test Description1");
+        assertThat(responsesServiceOrder2.getCategory()).isEqualTo("New Test Category1");
+        assertThat( responsesServiceOrder2.getRelatedParty().size() ) .isEqualTo( 2 );
+    }
+
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})

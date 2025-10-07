@@ -113,7 +113,7 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 						serviceOrder.setRelatedParty(AddUserAsOwnerToRelatedParties.addUser(
 								principal.getName(), 
 								//user.getId()+"", 
-								principal.getName(), 
+								null, 
 								UserPartRoleType.REQUESTER,
 								extInfo,
 								serviceOrder.getRelatedParty()));
@@ -122,7 +122,7 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 						serviceOrder.setRelatedParty(AddUserAsOwnerToRelatedParties.addUser(
 								principal.getName(), 
 								//user.getId()+"", 
-								principal.getName(), 
+								null, 
 								UserPartRoleType.REQUESTER,
 								extInfo,
 								serviceOrder.getRelatedParty()));
