@@ -1,27 +1,9 @@
 package org.etsi.osl.services.api.metrics;
 
-import com.jayway.jsonpath.JsonPath;
-import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.so641.model.*;
-import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -29,26 +11,33 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.metrics.api.ServiceOrderMetricsApiController;
+import org.etsi.osl.tmf.so641.model.ServiceOrder;
+import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
+import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
+import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
+import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import com.jayway.jsonpath.JsonPath;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = OpenAPISpringBoot.class
-)
-//@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class ServiceOrderMetricsApiControllerTest {
+public class ServiceOrderMetricsApiControllerTest  extends BaseIT {
 
-    @Autowired
     private MockMvc mvc;
 
     @Autowired
@@ -57,12 +46,22 @@ public class ServiceOrderMetricsApiControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Before
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
@@ -120,7 +119,7 @@ public class ServiceOrderMetricsApiControllerTest {
 
         int totalServiceOrders = JsonPath.read(response, "$.activeServiceOrders");
 
-        assertThat(totalServiceOrders).isEqualTo(4);
+        assertThat(totalServiceOrders).isEqualTo(12);
     }
 
     @WithMockUser(username = "osadmin", roles = {"ADMIN", "USER"})

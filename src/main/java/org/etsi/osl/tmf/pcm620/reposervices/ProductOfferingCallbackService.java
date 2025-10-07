@@ -120,7 +120,8 @@ public class ProductOfferingCallbackService {
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent product offering create event to callback URL: {} - Response: {}", 
+            if ( response!= null)
+              logger.info("Successfully sent product offering create event to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
@@ -143,8 +144,9 @@ public class ProductOfferingCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
-            logger.info("Successfully sent product offering delete event to callback URL: {} - Response: {}", 
+
+            if ( response!= null)
+              logger.info("Successfully sent product offering delete event to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
@@ -168,7 +170,9 @@ public class ProductOfferingCallbackService {
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
             
-            logger.info("Successfully sent product offering attribute value change event to callback URL: {} - Response: {}", 
+
+            if ( response!= null)
+              logger.info("Successfully sent product offering attribute value change event to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {
@@ -191,8 +195,9 @@ public class ProductOfferingCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
-            logger.info("Successfully sent product offering state change event to callback URL: {} - Response: {}", 
+
+            if ( response!= null)
+              logger.info("Successfully sent product offering state change event to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
             
         } catch (Exception e) {

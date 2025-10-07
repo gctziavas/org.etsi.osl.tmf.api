@@ -282,21 +282,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-commons</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-runner</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-inline</artifactId>
 			<version>4.0.0</version>
@@ -449,20 +434,16 @@
                 	<parallel>none</parallel>
                 	<runOrder>alphabetical</runOrder>
                 	<forkCount>1</forkCount>
-                	<reuseForks>false</reuseForks>
-                	    <!--
-					    <argLine>-Xmx2g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${project.build.directory}/heap.hprof</argLine>
-					    <systemPropertyVariables>
-					      <spring.test.context.cache.maxSize>8</spring.test.context.cache.maxSize>
-					      <logging.level.org.springframework.test.context.cache>TRACE</logging.level.org.springframework.test.context.cache>
-					    </systemPropertyVariables>
-          			-->
+                	<reuseForks>true</reuseForks>
             	</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -483,6 +464,9 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>

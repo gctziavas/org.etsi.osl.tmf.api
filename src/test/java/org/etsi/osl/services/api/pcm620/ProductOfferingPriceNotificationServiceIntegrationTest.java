@@ -4,27 +4,25 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pcm620.api.ProductCatalogApiRouteBuilderEvents;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPrice;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceAttributeValueChangeNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceDeleteNotification;
-import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceAttributeValueChangeNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeNotification;
-import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceNotificationService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceCallbackService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceNotificationService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ProductOfferingPriceNotificationServiceTest {
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+public class ProductOfferingPriceNotificationServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private ProductCatalogApiRouteBuilderEvents eventPublisher;
@@ -35,9 +33,25 @@ public class ProductOfferingPriceNotificationServiceTest {
     @InjectMocks
     private ProductOfferingPriceNotificationService productOfferingPriceNotificationService;
 
-    @Before
+    private AutoCloseable mocks;
+
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @PersistenceContext
+    private EntityManager entityManager;
+    
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        // Clear entity manager cache to release entity references
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @Test

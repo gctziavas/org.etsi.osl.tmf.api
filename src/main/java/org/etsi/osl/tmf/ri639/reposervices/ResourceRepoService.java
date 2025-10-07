@@ -284,6 +284,9 @@ public class ResourceRepoService {
   @Transactional
   public Resource findByUuid(String id) {
     Optional<Resource> optionalCat = this.resourceRepo.findByUuid(id);
+    if (optionalCat.isPresent()) {
+      optionalCat.get().getResourceCharacteristic().size();
+    }
     return optionalCat.orElse(null);
   }
 

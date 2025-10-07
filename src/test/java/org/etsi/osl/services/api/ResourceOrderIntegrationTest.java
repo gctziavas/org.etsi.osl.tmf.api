@@ -3,7 +3,6 @@ package org.etsi.osl.services.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,12 +13,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
 import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecification;
@@ -37,30 +34,16 @@ import org.etsi.osl.tmf.ro652.model.ExternalId;
 import org.etsi.osl.tmf.ro652.model.ResourceOrder;
 import org.etsi.osl.tmf.ro652.model.ResourceOrderCreate;
 import org.etsi.osl.tmf.ro652.model.ResourceOrderItem;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.FilterChainProxy;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
-
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ResourceOrderIntegrationTest {
+public class ResourceOrderIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ResourceOrderIntegrationTest.class.getName());
 

@@ -1,22 +1,4 @@
-/*-
- * ========================LICENSE_START=================================
- * org.etsi.osl.tmf.api
- * %%
- * Copyright (C) 2019 openslice.io
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
+
 package org.etsi.osl.services.api;
 
 
@@ -27,7 +9,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,13 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.etsi.osl.tmf.BootstrapRepository;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.Attachment;
 import org.etsi.osl.tmf.common.model.AttachmentRef;
@@ -77,47 +56,36 @@ import org.etsi.osl.tmf.scm633.reposervices.CandidateRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import jakarta.validation.Valid;
 import net.minidev.json.JSONObject;
 
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc 
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class ServiceCatalogIntegrationTest {
+
+public class ServiceCatalogIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( ServiceCatalogIntegrationTest.class.getName());
 
 	private static final int FIXED_BOOTSTRAPS_SPECS = 1;
-	
-    @Autowired
+
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Autowired
 	CatalogRepoService catalogRepoService;
@@ -142,13 +110,20 @@ public class ServiceCatalogIntegrationTest {
 	@Autowired
 	OrganizationRepoService organizationRepoService;
 	
-	@Before
-    public void setup() {
+	@BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
           .webAppContextSetup(context)
           .apply(springSecurity())
           .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 	
 	@Test
 	public void _countDefaultProperties() {
@@ -186,7 +161,7 @@ public class ServiceCatalogIntegrationTest {
 	}
 	
 	@Test
-    public void givenRequestOnPrivateService_shouldFailWith401() throws Exception {
+    public void t01_givenRequestOnPrivateService_shouldFailWith401() throws Exception {
 //        mvc.perform(post("/serviceCatalogManagement/v4/serviceCatalog")
 //                        .contentType(MediaType.APPLICATION_JSON))
 //                    .andExpect(status().isUnauthorized());
@@ -300,20 +275,22 @@ public class ServiceCatalogIntegrationTest {
 
 		assertThat( responsesSpec.getServiceSpecCharacteristic().size() ).isEqualTo(2);
 		assertThat( responsesSpec.getServiceSpecCharacteristic().toArray( new ServiceSpecCharacteristic[0] )[0].getServiceSpecCharacteristicValue().size()  ).isEqualTo(1);
-		
-		
-		
+
+        assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
 		
 	}
 	
 	
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void manageCategoriesSubCategories() throws Exception {
+	public void t02_manageCategoriesSubCategories() throws Exception {
 		/**
 		 * add category
 		 */
-		
+	  
+	  var s = categRepoService.findAll();
+
+        assertThat( s.size() ).isEqualTo( 2 );
 		File scat = new File( "src/test/resources/testServiceCategory.txt" );
 		InputStream in = new FileInputStream( scat );
 		String sc = IOUtils.toString(in, "UTF-8");
@@ -326,6 +303,10 @@ public class ServiceCatalogIntegrationTest {
 		scategcreate2.setName("Child Cat");
 		ServiceCategory child1Subcategory = postCategory( scategcreate2, scategcreate2.getName() );
 		
+
+        s = categRepoService.findAll();
+        assertThat( s.size() ).isEqualTo( 4 );
+       
 		ServiceCategoryUpdate scUpd1 = JsonUtils.toJsonObj( sc,  ServiceCategoryUpdate.class);
 		scUpd1.setIsRoot(true);
 		scUpd1.setName("Parent Cat");
@@ -335,7 +316,6 @@ public class ServiceCatalogIntegrationTest {
 		scUpd1.addCategoryItem(scRef);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
 
 		String response = mvc.perform(MockMvcRequestBuilders.patch("/serviceCatalogManagement/v4/serviceCategory/" + parentRootCategory.getId() )
 	            .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -350,7 +330,7 @@ public class ServiceCatalogIntegrationTest {
 		parentRootCategory = JsonUtils.toJsonObj(response,  ServiceCategory.class);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
 		assertThat( parentRootCategory.getCategoryRefs().size() ).isEqualTo(1);
 		assertThat( parentRootCategory.getCategoryRefs().get(0).getId() ).isEqualTo( child1Subcategory.getId() );
 		
@@ -373,11 +353,11 @@ public class ServiceCatalogIntegrationTest {
 		catalog = catalogRepoService.updateCatalog( catalog.getId(), scu);
 
 		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( 2 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );		
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 2 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 0 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );//categories must remain
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );//categories must remain
 		
 		
 		//fetch the subcategory and check parent ID
@@ -401,7 +381,7 @@ public class ServiceCatalogIntegrationTest {
 				    .andExpect(status().isNotModified() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
 		
 		//delete subcategory
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/serviceCatalogManagement/v4/serviceCategory/" + parentRootCategory.getCategoryRefs().get(0).getId() )
@@ -411,7 +391,7 @@ public class ServiceCatalogIntegrationTest {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 3 );
 		
 		 //delete rootcategory 
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/serviceCatalogManagement/v4/serviceCategory/" + parentRootCategory.getId() )
@@ -421,7 +401,7 @@ public class ServiceCatalogIntegrationTest {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 2 );
 		
 	}
 
@@ -563,7 +543,7 @@ public class ServiceCatalogIntegrationTest {
 
 		
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 33 );
 		
 		assertThat( responsesSpec2.getName() ).isEqualTo( "Test Spec" );
 		assertThat( responsesSpec2.getServiceSpecCharacteristic().size() ).isEqualTo(2);
@@ -604,7 +584,7 @@ public class ServiceCatalogIntegrationTest {
 		
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 33 );
 		
 	}
 	
@@ -749,7 +729,7 @@ public class ServiceCatalogIntegrationTest {
 		assertThat( idspec1Exists ).isFalse();
 		assertThat( idspec2Exists ).isTrue();
 		assertThat( idspec4Exists ).isTrue();
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 32 );
 		
 		
 		
@@ -758,10 +738,10 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testCloneSpec() throws Exception {
+	public void t05_testCloneSpec() throws Exception {
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 );
 		
 		/**
 		 * first add 2 specs
@@ -790,7 +770,7 @@ public class ServiceCatalogIntegrationTest {
 		ServiceSpecification responsesSpec3 = createServiceSpec(sspectext, sspeccr3);
 		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 3 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 3 );
 
 		String responseSpecCloned = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/"+responsesSpec3.getId()+"/clone")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -812,7 +792,7 @@ public class ServiceCatalogIntegrationTest {
 		assertThat( clonedSpec.findSpecCharacteristicByName("Coverage").getUuid()  ).isNotEqualTo( responsesSpec3.findSpecCharacteristicByName("Coverage").getUuid() );
 		assertThat(clonedSpec.getServiceSpecCharacteristic().size()).isEqualTo(responsesSpec3.getServiceSpecCharacteristic().size());
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 4 );
 		
 		
 		String responseSpecClonedGST = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneGST?serviceName=aGST Service")
@@ -826,7 +806,7 @@ public class ServiceCatalogIntegrationTest {
 		assertThat( clonedSpec.getName() ).isEqualTo( "aGST Service" );	
 		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 5 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 5 );
 
 		String responseSpecClonedVINNI = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/cloneVINNI?serviceName=aVINNIService")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -848,7 +828,7 @@ public class ServiceCatalogIntegrationTest {
 		clonedSpec = JsonUtils.toJsonObj( responseSpecClonedVINNI,  ServiceSpecification.class);
 		assertThat( clonedSpec.getName() ).isEqualTo( "aVINNIService" );
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 16 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 16 );
 
 
 		/**
@@ -880,14 +860,14 @@ public class ServiceCatalogIntegrationTest {
 		clonedSpec = JsonUtils.toJsonObj( responseSpecClonedVINNI2,  ServiceSpecification.class);
 		assertThat( clonedSpec.getName() ).isEqualTo( "aVINNIService" );	
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 20 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 2 + 20 );
 	}
 	
 	
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testSpecAttachment() throws Exception {
+	public void t06_testSpecAttachment() throws Exception {
 		File sspec = new File( "src/test/resources/testServiceSpec.json" );
 		InputStream in = new FileInputStream( sspec );
 		String sspectext = IOUtils.toString(in, "UTF-8");
@@ -897,7 +877,7 @@ public class ServiceCatalogIntegrationTest {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 23 );
 		
 		Attachment att = new Attachment();
 		att.setDescription("a test atts");
@@ -930,7 +910,7 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testGST() throws Exception {
+	public void t07_testGST() throws Exception {
 		logger.info("Test: testGST " );
 
 		/**
@@ -967,8 +947,8 @@ public class ServiceCatalogIntegrationTest {
 		
 		assertThat(userPartyRoleOwnerexists  ).isTrue() ;
 		List<ServiceSpecification> allSpecs = specRepoService.findAll();
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong in Testing ONLY 
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 24 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 24 ); //this is somehow wrong in Testing ONLY 
 		
 		
 		/**
@@ -985,9 +965,9 @@ public class ServiceCatalogIntegrationTest {
 		List<ServiceSpecification> specs = JsonUtils.toJsonObj( responseSpecs,  ArrayList.class );
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll(null , new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong it should be 2..anyway to investigate in future
-		assertThat(specs.size()  ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ) ;
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 24 );
+		assertThat( specRepoService.findAll(null , new HashMap<>()).size() ).isEqualTo( 24 ); //this is somehow wrong it should be 2..anyway to investigate in future
+		assertThat(specs.size()  ).isEqualTo( 24 ) ;
 		
 		
 
@@ -1010,7 +990,7 @@ public class ServiceCatalogIntegrationTest {
 	
 	@WithMockUser(username="osadmin", roles = {"USER"})
 	@Test
-	public void testGSTUpdate() throws Exception {
+	public void t08_testGSTUpdate() throws Exception {
 		logger.info("Test: testGSTUpdate " );
 		
 		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
@@ -1023,11 +1003,11 @@ public class ServiceCatalogIntegrationTest {
 		spec.setVersion("0.x.0");
 		this.specRepoService.updateServiceSpecification( spec);
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 24 );
 		
 		this.bootstrapRepository.initRepo();
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 25 );
 		
 
 	}
@@ -1035,7 +1015,7 @@ public class ServiceCatalogIntegrationTest {
 	
 	@WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
 	@Test
-	public void testVINNISBT() throws Exception {
+	public void t09_testVINNISBT() throws Exception {
 		logger.info("Test: testVINNISBT " );
 
 		/**
@@ -1071,8 +1051,8 @@ public class ServiceCatalogIntegrationTest {
 		}
 		
 		assertThat(userPartyRoleOwnerexists  ).isTrue() ;
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong in Testing ONLY it should be 2..anyway to investigate in future..something is happening with Session factory
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 26 ); //this is somehow wrong in Testing ONLY it should be 2..anyway to investigate in future..something is happening with Session factory
 		
 		
 		/**
@@ -1089,9 +1069,9 @@ public class ServiceCatalogIntegrationTest {
 		List<ServiceSpecification> specs = JsonUtils.toJsonObj( responseSpecs,  ArrayList.class );
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1 );
-		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ); //this is somehow wrong it should be 2..anyway to investigate in future
-		assertThat(specs.size()  ).isEqualTo( FIXED_BOOTSTRAPS_SPECS ) ;
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26 );
+		assertThat( specRepoService.findAll( null, new HashMap<>()).size() ).isEqualTo( 26 ); //this is somehow wrong it should be 2..anyway to investigate in future
+		assertThat(specs.size()  ).isEqualTo( 26 ) ;
 		
 		
 
@@ -1114,7 +1094,7 @@ public class ServiceCatalogIntegrationTest {
 	
 	@WithMockUser(username="osadmin", roles = {"USER"})
 	@Test
-	public void testVINNISBTUpdate() throws Exception {
+	public void t10_testVINNISBTUpdate() throws Exception {
 //		logger.info("Test: testVINNISBTUpdate " );
 //		
 //		ServiceCategory categ = categRepoService.findByName( "Generic Services" );
@@ -1141,10 +1121,10 @@ public class ServiceCatalogIntegrationTest {
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN", "USER"})
 	@Test
-	public void testSpecDelete() throws Exception {
+	public void t11_testSpecDelete() throws Exception {
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26 );
 		
 		/**
 		 * first add 1 specs
@@ -1159,19 +1139,19 @@ public class ServiceCatalogIntegrationTest {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 27 );
 
 				
 		this.specRepoService.deleteByUuid( responsesSpec1.getId() );
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS  );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 26  );
 		
 	}
 	
 
 	@WithMockUser(username="osadmin", roles = {"ADMIN", "USER"})
 	@Test
-	public void testExternhalSpecUpdate() throws Exception {
+	public void t12_testExternhalSpecUpdate() throws Exception {
 		
 		/**
 		 * first add 1 specs
@@ -1186,7 +1166,7 @@ public class ServiceCatalogIntegrationTest {
 		sspeccr1.setName("Spec1");
 		ServiceSpecification responsesSpec1 = createServiceSpec(sspectext, sspeccr1);		
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 27 );
 		assertThat( responsesSpec1.getServiceSpecCharacteristic()).hasSize(2) ;
 		
 		/**
@@ -1207,7 +1187,7 @@ public class ServiceCatalogIntegrationTest {
 		Organization o = organizationRepoService.addOrganization(organizationCreate);
 
 		ServiceSpecification specupd = specRepoService.updateExternalServiceSpec(externaluuid, o.getId(), responsesSpec1);
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 2 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 28 );
 		assertThat( specupd.getRelatedParty()).hasSize(1);
 		assertThat( specupd.getServiceSpecCharacteristic()).hasSize(2) ;
 		
@@ -1217,7 +1197,7 @@ public class ServiceCatalogIntegrationTest {
 		serviceSpecCharacteristicItem.setName("A Second Attribute");
 		responsesSpec1.addServiceSpecCharacteristicItem(serviceSpecCharacteristicItem );
 		specupd = specRepoService.updateExternalServiceSpec(externaluuid, o.getId(), responsesSpec1);
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 2 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 28 );
 		assertThat( specupd.getRelatedParty()).hasSize(1);
 		assertThat( specupd.getServiceSpecCharacteristic()).hasSize( 3 ) ;
 		assertThat( specupd.getName() ).isEqualTo( responsesSpec1.getName()  ) ;

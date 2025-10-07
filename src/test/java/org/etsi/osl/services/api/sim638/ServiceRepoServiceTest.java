@@ -1,46 +1,13 @@
 package org.etsi.osl.services.api.sim638;
 
-import org.apache.commons.io.IOUtils;
-import org.etsi.osl.model.nfv.DeploymentDescriptor;
-import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.common.model.Any;
-import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
-import org.etsi.osl.tmf.common.model.UserPartRoleType;
-import org.etsi.osl.tmf.common.model.service.*;
-import org.etsi.osl.tmf.common.model.service.Characteristic;
-import org.etsi.osl.tmf.common.model.service.Place;
-import org.etsi.osl.tmf.prm669.model.RelatedParty;
-import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
-import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecificationCreate;
-import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
-import org.etsi.osl.tmf.ri639.model.*;
-import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
-import org.etsi.osl.tmf.sim638.model.Service;
-import org.etsi.osl.tmf.sim638.model.ServiceActionQueueItem;
-import org.etsi.osl.tmf.sim638.model.ServiceCreate;
-import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
-import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-import jakarta.validation.Valid;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -49,26 +16,48 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.io.IOUtils;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.common.model.Any;
+import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
+import org.etsi.osl.tmf.common.model.UserPartRoleType;
+import org.etsi.osl.tmf.common.model.service.Characteristic;
+import org.etsi.osl.tmf.common.model.service.Note;
+import org.etsi.osl.tmf.common.model.service.ResourceRef;
+import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
+import org.etsi.osl.tmf.common.model.service.ServiceStateType;
+import org.etsi.osl.tmf.prm669.model.RelatedParty;
+import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
+import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecificationCreate;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
+import org.etsi.osl.tmf.ri639.model.Resource;
+import org.etsi.osl.tmf.ri639.model.ResourceCreate;
+import org.etsi.osl.tmf.ri639.model.ResourceStateChangeEvent;
+import org.etsi.osl.tmf.ri639.model.ResourceStateChangeNotification;
+import org.etsi.osl.tmf.ri639.model.ResourceStatusType;
+import org.etsi.osl.tmf.ri639.model.ResourceUpdate;
+import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
+import org.etsi.osl.tmf.sim638.model.Service;
+import org.etsi.osl.tmf.sim638.model.ServiceActionQueueItem;
+import org.etsi.osl.tmf.sim638.model.ServiceCreate;
+import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class ServiceRepoServiceTest {
+public class ServiceRepoServiceTest  extends BaseIT {
     @Autowired
     private MockMvc mvc;
 
@@ -82,7 +71,7 @@ public class ServiceRepoServiceTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Before
+    @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
