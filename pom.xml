@@ -433,7 +433,7 @@
                 <!-- Disable parallel execution -->
                 	<parallel>none</parallel>
                 	<runOrder>alphabetical</runOrder>
-                	<forkCount>1</forkCount>
+                	<forkCount>3</forkCount>
                 	<reuseForks>true</reuseForks>
             	</configuration>
 			</plugin>
