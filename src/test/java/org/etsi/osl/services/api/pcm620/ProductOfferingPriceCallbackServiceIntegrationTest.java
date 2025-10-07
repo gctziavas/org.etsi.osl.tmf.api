@@ -5,21 +5,20 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.List;
-
-import org.etsi.osl.tmf.pcm620.model.ProductOffering;
-import org.etsi.osl.tmf.pcm620.model.ProductOfferingCreateEvent;
-import org.etsi.osl.tmf.pcm620.model.ProductOfferingDeleteEvent;
-import org.etsi.osl.tmf.pcm620.model.ProductOfferingAttributeValueChangeEvent;
-import org.etsi.osl.tmf.pcm620.model.ProductOfferingStateChangeEvent;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pcm620.model.EventSubscription;
-import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingCallbackService;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceAttributeValueChangeEvent;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceCreateEvent;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceDeleteEvent;
+import org.etsi.osl.tmf.pcm620.model.ProductOfferingPriceStateChangeEvent;
 import org.etsi.osl.tmf.pcm620.reposervices.EventSubscriptionRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductOfferingPriceCallbackService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -27,13 +26,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ProductOfferingCallbackServiceTest {
+public class ProductOfferingPriceCallbackServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private EventSubscriptionRepoService eventSubscriptionRepoService;
@@ -42,34 +39,50 @@ public class ProductOfferingCallbackServiceTest {
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private ProductOfferingCallbackService productOfferingCallbackService;
+    private ProductOfferingPriceCallbackService productOfferingPriceCallbackService;
 
-    @Before
+    private AutoCloseable mocks;
+
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @PersistenceContext
+    private EntityManager entityManager;
+    
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        // Clear entity manager cache to release entity references
+        if (entityManager != null) {
+            entityManager.clear();
+        }
     }
 
     @Test
-    public void testSendProductOfferingCreateCallback() {
+    public void testSendProductOfferingPriceCreateCallback() {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback");
-        subscription.setQuery("productoffering");
+        subscription.setQuery("productofferingprice");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingCreateEvent event = new ProductOfferingCreateEvent();
+        ProductOfferingPriceCreateEvent event = new ProductOfferingPriceCreateEvent();
         event.setEventId("test-event-123");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingCreateCallback(event);
+        productOfferingPriceCallbackService.sendProductOfferingPriceCreateCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productOfferingCreateEvent"), 
+            eq("http://localhost:8080/callback/listener/productOfferingPriceCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -77,26 +90,26 @@ public class ProductOfferingCallbackServiceTest {
     }
 
     @Test
-    public void testSendProductOfferingDeleteCallback() {
+    public void testSendProductOfferingPriceDeleteCallback() {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback");
-        subscription.setQuery("productoffering");
+        subscription.setQuery("productofferingprice");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingDeleteEvent event = new ProductOfferingDeleteEvent();
+        ProductOfferingPriceDeleteEvent event = new ProductOfferingPriceDeleteEvent();
         event.setEventId("test-event-456");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingDeleteCallback(event);
+        productOfferingPriceCallbackService.sendProductOfferingPriceDeleteCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productOfferingDeleteEvent"), 
+            eq("http://localhost:8080/callback/listener/productOfferingPriceDeleteEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -104,26 +117,26 @@ public class ProductOfferingCallbackServiceTest {
     }
 
     @Test
-    public void testSendProductOfferingAttributeValueChangeCallback() {
+    public void testSendProductOfferingPriceAttributeValueChangeCallback() {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback");
-        subscription.setQuery("productoffering.attributevaluechange");
+        subscription.setQuery("productofferingprice.attributevaluechange");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingAttributeValueChangeEvent event = new ProductOfferingAttributeValueChangeEvent();
+        ProductOfferingPriceAttributeValueChangeEvent event = new ProductOfferingPriceAttributeValueChangeEvent();
         event.setEventId("test-event-789");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingAttributeValueChangeCallback(event);
+        productOfferingPriceCallbackService.sendProductOfferingPriceAttributeValueChangeCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productOfferingAttributeValueChangeEvent"), 
+            eq("http://localhost:8080/callback/listener/productOfferingPriceAttributeValueChangeEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -131,26 +144,26 @@ public class ProductOfferingCallbackServiceTest {
     }
 
     @Test
-    public void testSendProductOfferingStateChangeCallback() {
+    public void testSendProductOfferingPriceStateChangeCallback() {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback");
-        subscription.setQuery("productoffering.statechange");
+        subscription.setQuery("productofferingprice.statechange");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingStateChangeEvent event = new ProductOfferingStateChangeEvent();
+        ProductOfferingPriceStateChangeEvent event = new ProductOfferingPriceStateChangeEvent();
         event.setEventId("test-event-101");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingStateChangeCallback(event);
+        productOfferingPriceCallbackService.sendProductOfferingPriceStateChangeCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productOfferingStateChangeEvent"), 
+            eq("http://localhost:8080/callback/listener/productOfferingPriceStateChangeEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -162,22 +175,22 @@ public class ProductOfferingCallbackServiceTest {
         // Arrange
         EventSubscription subscription = new EventSubscription();
         subscription.setCallback("http://localhost:8080/callback/");
-        subscription.setQuery("productoffering");
+        subscription.setQuery("productofferingprice");
 
         List<EventSubscription> subscriptions = Arrays.asList(subscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingCreateEvent event = new ProductOfferingCreateEvent();
+        ProductOfferingPriceCreateEvent event = new ProductOfferingPriceCreateEvent();
         event.setEventId("test-event-trailing-slash");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingCreateCallback(event);
+        productOfferingPriceCallbackService.sendProductOfferingPriceCreateCallback(event);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/callback/listener/productOfferingCreateEvent"), 
+            eq("http://localhost:8080/callback/listener/productOfferingPriceCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -187,28 +200,28 @@ public class ProductOfferingCallbackServiceTest {
     @Test
     public void testFilterSubscriptionsByQuery() {
         // Arrange
-        EventSubscription productOfferingSubscription = new EventSubscription();
-        productOfferingSubscription.setCallback("http://localhost:8080/productoffering-callback");
-        productOfferingSubscription.setQuery("productoffering");
+        EventSubscription productOfferingPriceSubscription = new EventSubscription();
+        productOfferingPriceSubscription.setCallback("http://localhost:8080/productofferingprice-callback");
+        productOfferingPriceSubscription.setQuery("productofferingprice");
 
         EventSubscription otherSubscription = new EventSubscription();
         otherSubscription.setCallback("http://localhost:8080/other-callback");
         otherSubscription.setQuery("catalog");
 
-        List<EventSubscription> subscriptions = Arrays.asList(productOfferingSubscription, otherSubscription);
+        List<EventSubscription> subscriptions = Arrays.asList(productOfferingPriceSubscription, otherSubscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingCreateEvent event = new ProductOfferingCreateEvent();
+        ProductOfferingPriceCreateEvent event = new ProductOfferingPriceCreateEvent();
         event.setEventId("test-event-filter");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingCreateCallback(event);
+        productOfferingPriceCallbackService.sendProductOfferingPriceCreateCallback(event);
 
-        // Assert - only product offering subscription should receive callback
+        // Assert - only product offering price subscription should receive callback
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:8080/productoffering-callback/listener/productOfferingCreateEvent"), 
+            eq("http://localhost:8080/productofferingprice-callback/listener/productOfferingPriceCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
@@ -220,36 +233,36 @@ public class ProductOfferingCallbackServiceTest {
         // Arrange
         EventSubscription createOnlySubscription = new EventSubscription();
         createOnlySubscription.setCallback("http://localhost:9090/create-only");
-        createOnlySubscription.setQuery("productoffering.create");
+        createOnlySubscription.setQuery("productofferingprice.create");
 
         EventSubscription stateChangeOnlySubscription = new EventSubscription();
         stateChangeOnlySubscription.setCallback("http://localhost:9091/state-change-only");
-        stateChangeOnlySubscription.setQuery("productoffering.statechange");
+        stateChangeOnlySubscription.setQuery("productofferingprice.statechange");
 
         List<EventSubscription> subscriptions = Arrays.asList(createOnlySubscription, stateChangeOnlySubscription);
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
         when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
-        ProductOfferingCreateEvent createEvent = new ProductOfferingCreateEvent();
+        ProductOfferingPriceCreateEvent createEvent = new ProductOfferingPriceCreateEvent();
         createEvent.setEventId("test-create-event");
 
-        ProductOfferingStateChangeEvent stateChangeEvent = new ProductOfferingStateChangeEvent();
+        ProductOfferingPriceStateChangeEvent stateChangeEvent = new ProductOfferingPriceStateChangeEvent();
         stateChangeEvent.setEventId("test-state-change-event");
 
         // Act
-        productOfferingCallbackService.sendProductOfferingCreateCallback(createEvent);
-        productOfferingCallbackService.sendProductOfferingStateChangeCallback(stateChangeEvent);
+        productOfferingPriceCallbackService.sendProductOfferingPriceCreateCallback(createEvent);
+        productOfferingPriceCallbackService.sendProductOfferingPriceStateChangeCallback(stateChangeEvent);
 
         // Assert
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:9090/create-only/listener/productOfferingCreateEvent"), 
+            eq("http://localhost:9090/create-only/listener/productOfferingPriceCreateEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)
         );
         verify(restTemplate, times(1)).exchange(
-            eq("http://localhost:9091/state-change-only/listener/productOfferingStateChangeEvent"), 
+            eq("http://localhost:9091/state-change-only/listener/productOfferingPriceStateChangeEvent"), 
             eq(HttpMethod.POST), 
             any(HttpEntity.class), 
             eq(String.class)

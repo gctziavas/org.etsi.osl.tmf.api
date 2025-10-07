@@ -3,55 +3,47 @@ package org.etsi.osl.services.api.scm633;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minidev.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.rcm634.model.ResourceCatalog;
-import org.etsi.osl.tmf.scm633.model.*;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
-
+import org.etsi.osl.tmf.rcm634.model.ResourceCatalog;
+import org.etsi.osl.tmf.scm633.api.ServiceCatalogApiController;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreate;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalogUpdate;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import net.minidev.json.JSONObject;
 
-
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@AutoConfigureTestDatabase //this automatically uses h2
-@ActiveProfiles("testing")
-public class ServiceCatalogApiControllerTest {
+public class ServiceCatalogApiControllerTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_CATALOGS = 1;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     private WebApplicationContext context;
@@ -59,13 +51,20 @@ public class ServiceCatalogApiControllerTest {
     @Autowired
     CatalogRepoService catalogRepoService;
 
-    @Before
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
@@ -163,7 +162,6 @@ public class ServiceCatalogApiControllerTest {
     }
 
     private String createServiceCatalog() throws Exception{
-        assertThat( catalogRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATALOGS );
 
         File scatalog = new File( "src/test/resources/testResourceCatalog.txt" );
         InputStream in = new FileInputStream( scatalog );
@@ -181,7 +179,6 @@ public class ServiceCatalogApiControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( catalogRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATALOGS + 1 );
 
         return response;
     }

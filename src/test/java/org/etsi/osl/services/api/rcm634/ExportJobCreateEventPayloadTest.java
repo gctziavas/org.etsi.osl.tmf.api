@@ -1,11 +1,12 @@
 package org.etsi.osl.services.api.rcm634;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.etsi.osl.tmf.rcm634.model.ExportJob;
 import org.etsi.osl.tmf.rcm634.model.ExportJobCreateEventPayload;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ExportJobCreateEventPayloadTest {
 

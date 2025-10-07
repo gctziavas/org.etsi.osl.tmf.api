@@ -173,8 +173,12 @@ public class ServiceSpecificationRepoService {
 		return this.serviceSpecificationRepo.save(serviceSpec);
 	}
 
+
+    @Transactional
 	public List<ServiceSpecification> findAll() {
-		return (List<ServiceSpecification>) this.serviceSpecificationRepo.findByOrderByName();
+	  
+	    var alist = (List<ServiceSpecification>) this.serviceSpecificationRepo.findByOrderByName();
+		return alist;
 	}
 
 	/**
@@ -821,6 +825,14 @@ public class ServiceSpecificationRepoService {
 		List<ServiceSpecification> optionalCat = this.serviceSpecificationRepo.findByNameAndVersion(aname,
 				aversion);
 		if ( ( optionalCat !=null) && ( optionalCat.size()>0) ) {
+          optionalCat.get(0).getAttachment().size();
+          optionalCat.get(0).getServiceSpecRelationship().size();
+          optionalCat.get(0).getServiceSpecCharacteristic().size();
+          optionalCat.get(0).getServiceSpecCharacteristic().stream().forEach(s -> s.getServiceSpecCharacteristicValue().size());
+          optionalCat.get(0).getServiceSpecCharacteristic().stream().forEach(s -> s.getServiceSpecCharRelationship().size());
+          optionalCat.get(0).getResourceSpecification().size();
+          optionalCat.get(0).getServiceLevelSpecification().size();
+          optionalCat.get(0).getRelatedParty().size();
 			return optionalCat.get(0);
 		} else {
 			return null;

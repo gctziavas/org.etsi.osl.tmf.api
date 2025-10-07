@@ -1,12 +1,14 @@
 package org.etsi.osl.services.api.rcm634;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.lang.reflect.Method;
+import java.time.OffsetDateTime;
 import org.etsi.osl.tmf.rcm634.model.ExportJobCreate;
 import org.etsi.osl.tmf.rcm634.model.JobStateType;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
-import java.time.OffsetDateTime;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ExportJobCreateTest {
 

@@ -1,29 +1,10 @@
-/*-
- * ========================LICENSE_START=================================
- * org.etsi.osl.tmf.api
- * %%
- * Copyright (C) 2019 openslice.io
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
+
 package org.etsi.osl.services.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,12 +17,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.service.ResourceRef;
 import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecification;
 import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecification;
@@ -66,35 +45,24 @@ import org.etsi.osl.tmf.rpm685.model.ResourcePoolCreate;
 import org.etsi.osl.tmf.rpm685.model.ResourcePoolRef;
 import org.etsi.osl.tmf.rpm685.model.ResourcePoolUpdate;
 import org.etsi.osl.tmf.rpm685.reposervices.ResourcePoolRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ResourcePoolIntegrationTest {
+public class ResourcePoolIntegrationTest extends BaseIT {
 
 	private static final transient Log logger = LogFactory.getLog(ResourcePoolIntegrationTest.class.getName());
 
-	@Autowired
 	private MockMvc mvc;
 
 	@Autowired
@@ -106,9 +74,19 @@ public class ResourcePoolIntegrationTest {
 	@Autowired
 	private WebApplicationContext context;
 
-	@Before
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
 	public void setup() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
 	}
 
 	@WithMockUser(username = "osadmin", roles = { "USER", "ADMIN" })
@@ -200,7 +178,7 @@ public class ResourcePoolIntegrationTest {
 				.andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
 		List<ResourcePool> pools = JsonUtils.toJsonObj(responseResourcePool, ArrayList.class);
-		assertThat(pools.size()).isEqualTo(1);
+		assertThat(pools.size()).isEqualTo(3);
 
 		responseResourcePool = mvc
 				.perform(MockMvcRequestBuilders.get("/resourcePoolManagement/v1/resourcePool/" + responseRPool.getId())

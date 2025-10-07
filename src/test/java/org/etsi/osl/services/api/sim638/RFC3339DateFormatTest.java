@@ -1,12 +1,10 @@
 package org.etsi.osl.services.api.sim638;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.text.FieldPosition;
 import java.util.Date;
-
 import org.etsi.osl.tmf.sim638.api.RFC3339DateFormat;
-
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 
 public class RFC3339DateFormatTest {

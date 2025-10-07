@@ -89,9 +89,14 @@ public class CategoryCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
-            logger.info("Successfully sent category create event to callback URL: {} - Response: {}", 
-                url, response.getStatusCode());
+
+            if (response!=null) {
+              logger.info("Successfully sent category create event to callback URL: {} - Response: {}", 
+                url, response.getStatusCode());   
+            } else {
+              logger.error("category delete event to callback URL: {} - Response: IS NULL", 
+                  url);
+            }
             
         } catch (Exception e) {
             logger.error("Failed to send category create event to callback URL: {}", callbackUrl, e);
@@ -113,9 +118,13 @@ public class CategoryCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
-            logger.info("Successfully sent category delete event to callback URL: {} - Response: {}", 
-                url, response.getStatusCode());
+            if (response!=null) {
+              logger.info("Successfully sent category delete event to callback URL: {} - Response: {}", 
+                  url, response.getStatusCode());             
+            } else {
+              logger.error("category delete event to callback URL: {} - Response: IS NULL", 
+                  url);
+            }
             
         } catch (Exception e) {
             logger.error("Failed to send category delete event to callback URL: {}", callbackUrl, e);

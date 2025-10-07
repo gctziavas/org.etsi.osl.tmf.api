@@ -89,9 +89,14 @@ public class ProductSpecificationCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
+
+            if (response!=null) {
             logger.info("Successfully sent product specification create event to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
+            } else {
+              logger.error("product create event to callback URL: {} - Response: IS NULL", 
+                  url);
+            }
             
         } catch (Exception e) {
             logger.error("Failed to send product specification create event to callback URL: {}", callbackUrl, e);
@@ -113,9 +118,14 @@ public class ProductSpecificationCallbackService {
             
             ResponseEntity<String> response = restTemplate.exchange(
                 url, HttpMethod.POST, entity, String.class);
-            
+
+            if (response!=null) {
             logger.info("Successfully sent product specification delete event to callback URL: {} - Response: {}", 
                 url, response.getStatusCode());
+            } else {
+              logger.error("product delete event to callback URL: {} - Response: IS NULL", 
+                  url);
+            }
             
         } catch (Exception e) {
             logger.error("Failed to send product specification delete event to callback URL: {}", callbackUrl, e);

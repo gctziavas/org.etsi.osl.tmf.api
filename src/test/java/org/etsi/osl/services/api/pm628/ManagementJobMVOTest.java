@@ -1,11 +1,11 @@
 package org.etsi.osl.services.api.pm628;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.etsi.osl.tmf.pm628.model.ExecutionStateType;
 import org.etsi.osl.tmf.pm628.model.ManagementJobMVO;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class ManagementJobMVOTest {
 

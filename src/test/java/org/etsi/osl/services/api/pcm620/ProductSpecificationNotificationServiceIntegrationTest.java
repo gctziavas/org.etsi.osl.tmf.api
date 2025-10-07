@@ -4,25 +4,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.pcm620.api.ProductCatalogApiRouteBuilderEvents;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationCreateNotification;
 import org.etsi.osl.tmf.pcm620.model.ProductSpecificationDeleteNotification;
-import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationNotificationService;
 import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationCallbackService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.etsi.osl.tmf.pcm620.reposervices.ProductSpecificationNotificationService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ProductSpecificationNotificationServiceTest {
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+public class ProductSpecificationNotificationServiceIntegrationTest  extends BaseIT{
 
     @Mock
     private ProductCatalogApiRouteBuilderEvents eventPublisher;
@@ -33,9 +31,28 @@ public class ProductSpecificationNotificationServiceTest {
     @InjectMocks
     private ProductSpecificationNotificationService productSpecificationNotificationService;
 
-    @Before
+    private AutoCloseable mocks; //
+
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    
+//    The problem is that MockitoAnnotations.openMocks(this) is called in @BeforeEach but
+//    the mocks are never closed, leading to accumulation of mock resources and memory leak, with huge heap size
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
 
     @Test

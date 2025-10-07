@@ -175,6 +175,12 @@ public class ResourceCatalogRepoService {
 	
 	public ResourceCatalog findByName(String aName) {
 		Optional<ResourceCatalog> optionalCat = this.catalogRepo.findByName( aName );
+		if ( optionalCat.isPresent()) {
+		  if ( optionalCat.get().getRelatedParty()!=null) {
+	          optionalCat.get().getRelatedParty().size();		    
+		  }
+          optionalCat.get().getCategoryObj().size();
+		}
 		return optionalCat.orElse(null);
 	}
 

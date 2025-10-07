@@ -285,6 +285,10 @@ public class ResourceCategoryRepoService {
 
 	public ResourceCategory findByName(String aName) {
 		Optional<ResourceCategory> optionalCat = this.categsRepo.findByName( aName );
+		if (optionalCat.isPresent()) {
+          optionalCat.get().getResourceCandidateObj().size();
+          optionalCat.get().getResourceCandidateRefs().size();
+		}
 		return optionalCat
 				.orElse(null);
 	}

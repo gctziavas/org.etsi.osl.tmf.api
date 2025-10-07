@@ -2,54 +2,46 @@ package org.etsi.osl.services.api.so641;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.IOUtils;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.service.Note;
 import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
-import org.etsi.osl.tmf.so641.model.*;
+import org.etsi.osl.tmf.so641.model.ServiceOrder;
+import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
+import org.etsi.osl.tmf.so641.model.ServiceOrderItem;
+import org.etsi.osl.tmf.so641.model.ServiceOrderRelationship;
+import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
+import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
+import org.etsi.osl.tmf.so641.model.ServiceRestriction;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = OpenAPISpringBoot.class
-)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ServiceOrderRepoServiceTest {
+
+public class ServiceOrderRepoServiceTest  extends BaseIT {
 
     @Autowired
     private MockMvc mvc;
@@ -60,7 +52,7 @@ public class ServiceOrderRepoServiceTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)

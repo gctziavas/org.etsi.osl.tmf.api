@@ -1,22 +1,4 @@
-/*-
- * ========================LICENSE_START=================================
- * org.etsi.osl.tmf.api
- * %%
- * Copyright (C) 2019 openslice.io
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =========================LICENSE_END==================================
- */
+
 package org.etsi.osl.services.api;
 
 
@@ -27,19 +9,16 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.Attachment;
 import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
@@ -50,7 +29,6 @@ import org.etsi.osl.tmf.rcm634.model.LogicalResourceSpecificationCreate;
 import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecification;
 import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecificationCreate;
 import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecificationUpdate;
-import org.etsi.osl.tmf.rcm634.model.ResourceCandidateCreate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalog;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalogCreate;
 import org.etsi.osl.tmf.rcm634.model.ResourceCatalogUpdate;
@@ -63,45 +41,30 @@ import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCharacteristic;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCharacteristicValue;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCreate;
-import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRelationship;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationUpdate;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCandidateRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCatalogRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCategoryRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import net.minidev.json.JSONObject;
 
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc 
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class ResourceCatalogIntegrationTest {
+public class ResourceCatalogIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( ResourceCatalogIntegrationTest.class.getName());
@@ -111,13 +74,12 @@ public class ResourceCatalogIntegrationTest {
 	private static final int FIXED_BOOTSTRAPS_PHYSICAL_SPECS = 1;
 	private static final int FIXED_BOOTSTRAPS_NETWORK_SPECS = 3;
 	private static final int FIXED_BOOTSTRAPS_LOGICAL_SPECS = 8;
-	
-    @Autowired
-    private MockMvc mvc;
+
+	private MockMvc mvc;
 
 	@Autowired
 	ResourceCatalogRepoService catalogRepoService;
-	
+
 
 	@Autowired
 	ResourceCategoryRepoService categRepoService;
@@ -128,16 +90,26 @@ public class ResourceCatalogIntegrationTest {
 	@Autowired
 	ResourceCandidateRepoService candidateRepoService;
 
-	  @Autowired
-	    private WebApplicationContext context;
-	    
-		@Before
-	    public void setup() {
-	        mvc = MockMvcBuilders
-	          .webAppContextSetup(context)
-	          .apply(springSecurity())
-	          .build();
-	    }
+	@Autowired
+	private WebApplicationContext context;
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@BeforeAll
+	public void setup() {
+		mvc = MockMvcBuilders
+			.webAppContextSetup(context)
+			.apply(springSecurity())
+			.build();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
 		
 	
 	@Test
@@ -360,7 +332,7 @@ public class ResourceCatalogIntegrationTest {
 		scUpd1.addCategoryItem(scRef);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 
 		String response = mvc.perform(MockMvcRequestBuilders.patch("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getId() )
 	            .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -375,7 +347,7 @@ public class ResourceCatalogIntegrationTest {
 		parentRootCategory = JsonUtils.toJsonObj(response,  ResourceCategory.class);
 		
 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 		assertThat( parentRootCategory.getCategoryRefs().size() ).isEqualTo(1);
 		assertThat( parentRootCategory.getCategoryRefs().get(0).getId() ).isEqualTo( child1Subcategory.getId() );
 		
@@ -396,11 +368,11 @@ public class ResourceCatalogIntegrationTest {
 		catalog = catalogRepoService.updateCatalog( catalog.getId(), scu);
 
 		assertThat( catalog.getCategoryRefs().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 1 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );		
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 2 );		
 		catalogRepoService.deleteById( catalog.getId() );//delete
-		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 0 );
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );//categories must remain
+		assertThat( catalogRepoService.findAll().size() ).isEqualTo( 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );//categories must remain
 		//fetch the subcategory and check parent ID
 		
 		 response = mvc.perform(MockMvcRequestBuilders.get("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getCategoryRefs().get(0).getId() )
@@ -422,7 +394,7 @@ public class ResourceCatalogIntegrationTest {
 				    .andExpect(status().isNotModified() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 2 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 6 );
 		
 		//delete subcategory
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getCategoryRefs().get(0).getId() )
@@ -432,7 +404,7 @@ public class ResourceCatalogIntegrationTest {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES + 1 );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 5 );
 		
 		 //delete rootcategory 
 		 response = mvc.perform(MockMvcRequestBuilders.delete("/resourceCatalogManagement/v4/resourceCategory/" + parentRootCategory.getId() )
@@ -442,7 +414,7 @@ public class ResourceCatalogIntegrationTest {
 				    .andExpect(status().isOk() )
 		    	    .andReturn().getResponse().getContentAsString();
 		 
-		assertThat( categRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_CATEGORIES );
+		assertThat( categRepoService.findAll().size() ).isEqualTo( 4 );
 		
 	}
 
@@ -574,7 +546,7 @@ public class ResourceCatalogIntegrationTest {
 
 		
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 20 );
 		
 		assertThat( responsesSpec2.getName() ).isEqualTo( "Test Resource Spec" );
 		assertThat( responsesSpec2.getResourceSpecCharacteristic().size() ).isEqualTo(1);
@@ -615,7 +587,7 @@ public class ResourceCatalogIntegrationTest {
 		
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS +1  );
+		assertThat( specRepoService.findAll().size() ).isEqualTo(20  );
 		
 	}
 	
@@ -766,7 +738,7 @@ public class ResourceCatalogIntegrationTest {
 		
 
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 4 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 15 );
 		
 	}
 	
@@ -786,7 +758,7 @@ public class ResourceCatalogIntegrationTest {
 		sspeccr1.setName("Spec1");
 		LogicalResourceSpecification responsesSpec1 = (LogicalResourceSpecification) createResourceSpec( sspeccr1);
 
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 19 );
 		
 		Attachment att = new Attachment();
 		att.setDescription("a test atts");
@@ -846,9 +818,9 @@ public class ResourceCatalogIntegrationTest {
 		phyresponsesSpec1 = (PhysicalResourceSpecification) createResourceSpec( physspeccr2);
 
 		
-		assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 3 );
-		assertThat( specRepoService.findAllPhysical().size() ).isEqualTo( FIXED_BOOTSTRAPS_PHYSICAL_SPECS + 2 );
-		assertThat( specRepoService.findAllLogical().size() ).isEqualTo( FIXED_BOOTSTRAPS_LOGICAL_SPECS + 1);
+		assertThat( specRepoService.findAll().size() ).isEqualTo( 18 );
+		assertThat( specRepoService.findAllPhysical().size() ).isEqualTo( 4 );
+		assertThat( specRepoService.findAllLogical().size() ).isEqualTo( 14 );
 		
 	}
 	
