@@ -99,6 +99,7 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 			
 				log.info("authentication=  " + principal.toString());
 				String extInfo = null;
+				Boolean autoAcknowledge = false;
 				try {
 					
 
@@ -118,27 +119,24 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 								extInfo,
 								serviceOrder.getRelatedParty()));
 					} 
-					else if ( principal instanceof UsernamePasswordAuthenticationToken ) {
+					else if ( principal instanceof UsernamePasswordAuthenticationToken token) {
 						serviceOrder.setRelatedParty(AddUserAsOwnerToRelatedParties.addUser(
-								principal.getName(), 
+						      token.getName(), 
 								//user.getId()+"", 
 								null, 
 								UserPartRoleType.REQUESTER,
 								extInfo,
 								serviceOrder.getRelatedParty()));
+						
+						autoAcknowledge = token.getAuthorities().stream().anyMatch( s -> s.getAuthority().equals("ROLE_OSL_AUTOACK_ORDER"));
+						
 					}
 				
 					
 				}finally {
 					
 				}
-				
-
-				
-				
-				
-				
-				ServiceOrder c = serviceOrderRepoService.addServiceOrder(serviceOrder);
+				ServiceOrder c = serviceOrderRepoService.addServiceOrder(serviceOrder, autoAcknowledge);
 
 				return new ResponseEntity<ServiceOrder>(c, HttpStatus.OK);				
 			

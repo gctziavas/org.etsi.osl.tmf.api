@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.common.model.service.Place;
 import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.pm632.model.ContactMedium;
 import org.etsi.osl.tmf.pm632.model.Individual;
@@ -318,7 +319,7 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
         serviceOrder.setDescription("A Test Service Order");
         serviceOrder.setRequestedStartDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
         serviceOrder.setRequestedCompletionDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
-
+ 
         ServiceOrderItem soi = new ServiceOrderItem();
         serviceOrder.getOrderItem().add(soi);
         soi.setState(ServiceOrderStateType.ACKNOWLEDGED);
@@ -330,8 +331,17 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
 
         serviceRestriction.setServiceSpecification(aServiceSpecificationRef);
         serviceRestriction.setName("aServiceRestriction");
+        
+        Place pi = new Place();
+        pi.setName("palcename");
+        pi.setRole("local");
+        serviceRestriction.addPlaceItem( pi  );
+        Place pi2 = new Place();
+        pi2.setName("palcename2");
+        pi2.setRole("local");
+        serviceRestriction.addPlaceItem( pi2  );
         soi.setService(serviceRestriction);
-
+         
         String response = mvc
                 .perform(MockMvcRequestBuilders.post("/serviceOrdering/v4/serviceOrder")
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -343,6 +353,9 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
 
         assertThat(responseSO.getCategory()).isEqualTo("Test Category");
         assertThat(responseSO.getDescription()).isEqualTo("A Test Service Order");
+        assertThat(responseSO.getOrderItem().size() ).isEqualTo( 1 );
+        assertThat(responseSO.getOrderItem().stream().findFirst().get().getService() ).isNotNull();
+        assertThat(responseSO.getOrderItem().stream().findFirst().get().getService().getPlace().size() ).isEqualTo(2);
 
         return response;
 
