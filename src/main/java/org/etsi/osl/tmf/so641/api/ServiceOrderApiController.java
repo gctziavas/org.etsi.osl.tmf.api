@@ -128,7 +128,7 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 								extInfo,
 								serviceOrder.getRelatedParty()));
 						
-						autoAcknowledge = token.getAuthorities().stream().anyMatch( s -> s.getAuthority().equals("ROLE_AUTOACK_ORDER"));
+						autoAcknowledge = token.getAuthorities().stream().anyMatch( s -> s.getAuthority().equals("ROLE_OSL_AUTOACK_ORDER"));
 						
 					}
 				
