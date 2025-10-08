@@ -307,7 +307,7 @@ public class ServiceOrderRepoService {
 	}
 
     @Transactional
-	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate) throws NotFoundException {
+	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate, Boolean autoAcknowledge) throws NotFoundException {
 		// Ensure that all Services Specifications exist
 		List <ServiceOrderItem> serviceOrderItemList = serviceOrderCreate.getOrderItem();
 		for (ServiceOrderItem serviceOrderItem: serviceOrderItemList) {
@@ -391,9 +391,8 @@ public class ServiceOrderRepoService {
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		so.addNoteItem(noteItem);
 
-		so = this.serviceOrderRepo.saveAndFlush(so);
 		
-		if (allAcknowledged) { //in the case were order items are automatically acknowledged
+		if (allAcknowledged || autoAcknowledge ) { //in the case were order items are automatically acknowledged
 			so.setState( ServiceOrderStateType.ACKNOWLEDGED );
 			so.setStartDate(  OffsetDateTime.now(ZoneOffset.UTC) );
 			noteItem = new Note();
@@ -402,9 +401,9 @@ public class ServiceOrderRepoService {
 			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 			so.addNoteItem(noteItem);
 			
-			so = this.serviceOrderRepo.saveAndFlush(so);
 		}
-		
+
+        so = this.serviceOrderRepo.saveAndFlush(so);
 		raiseSOCreateNotification(so);
 
 		return so;
@@ -858,9 +857,9 @@ public class ServiceOrderRepoService {
 		return null;
 	}
 	
-	public String addServiceOrderReturnEager(@Valid ServiceOrderCreate serviceOrderCreate) {
+	public String addServiceOrderReturnEager(@Valid ServiceOrderCreate serviceOrderCreate, Boolean autoCreate) {
 		try {
-			ServiceOrder so = this.addServiceOrder(serviceOrderCreate);
+			ServiceOrder so = this.addServiceOrder(serviceOrderCreate, autoCreate);
 			return this.getServiceOrderEagerAsString( so.getUuid());
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
