@@ -25,6 +25,9 @@ public class ServiceSpecificationValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         ServiceSpecificationUpdate update = (ServiceSpecificationUpdate) target;
+        if (update.getServiceSpecCharacteristic() == null) {
+            return;
+        }
         boolean invalid = update.getServiceSpecCharacteristic().stream()
                 .flatMap(serviceSpecCharacteristic ->
                         serviceSpecCharacteristic.getServiceSpecCharacteristicValue().stream())
