@@ -1,12 +1,14 @@
 package org.etsi.osl.services.api.pm628;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.etsi.osl.tmf.pm628.model.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.etsi.osl.tmf.pm628.model.ExecutionStateType;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobMVO;
+import org.etsi.osl.tmf.pm628.model.ReportingPeriod;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 class MeasurementCollectionJobMVOTest {
 

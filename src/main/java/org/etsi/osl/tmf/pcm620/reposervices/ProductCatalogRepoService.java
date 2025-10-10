@@ -53,11 +53,18 @@ public class ProductCatalogRepoService {
 
 	@Autowired
 	ProductCategoryRepoService categRepoService;
+
+	@Autowired
+	CatalogNotificationService catalogNotificationService;
 	
 	
 	public Catalog addCatalog(Catalog c) {
-
-		return this.catalogRepo.save(c);
+		Catalog savedCatalog = this.catalogRepo.save(c);
+		
+		// Publish catalog create notification
+		catalogNotificationService.publishCatalogCreateNotification(savedCatalog);
+		
+		return savedCatalog;
 	}
 
 	public Catalog addCatalog(@Valid CatalogCreate serviceCat) {
@@ -65,7 +72,12 @@ public class ProductCatalogRepoService {
 		Catalog sc = new Catalog();
 
 		sc = updateCatalogDataFromAPICall(sc, serviceCat);
-		return this.catalogRepo.save(sc);
+		Catalog savedCatalog = this.catalogRepo.save(sc);
+		
+		// Publish catalog create notification
+		catalogNotificationService.publishCatalogCreateNotification(savedCatalog);
+		
+		return savedCatalog;
 	}
 	
 	public List<Catalog> findAll() {
@@ -85,9 +97,15 @@ public class ProductCatalogRepoService {
 
 	public Void deleteById(String id) {
 		Optional<Catalog> optionalCat = this.catalogRepo.findByUuid(id);
-		this.catalogRepo.delete(optionalCat.get());
+		if (optionalCat.isPresent()) {
+			Catalog catalogToDelete = optionalCat.get();
+			
+			// Publish catalog delete notification before deletion
+			catalogNotificationService.publishCatalogDeleteNotification(catalogToDelete);
+			
+			this.catalogRepo.delete(catalogToDelete);
+		}
 		return null;
-
 	}
 	
     public String findByUuidEager(String id) {

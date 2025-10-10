@@ -1,9 +1,11 @@
 package org.etsi.osl.services.api.so641;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -11,55 +13,52 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Optional;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Set;
 import org.apache.commons.io.IOUtils;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.common.model.service.Note;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.common.model.service.Place;
 import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
+import org.etsi.osl.tmf.pm632.model.ContactMedium;
+import org.etsi.osl.tmf.pm632.model.Individual;
+import org.etsi.osl.tmf.pm632.model.IndividualCreate;
+import org.etsi.osl.tmf.pm632.model.MediumCharacteristic;
+import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
+import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
-import org.etsi.osl.tmf.so641.model.*;
+import org.etsi.osl.tmf.so641.model.ServiceOrder;
+import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
+import org.etsi.osl.tmf.so641.model.ServiceOrderItem;
+import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
+import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
+import org.etsi.osl.tmf.so641.model.ServiceRestriction;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = OpenAPISpringBoot.class
-)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ServiceOrderApiControllerTest {
+public class ServiceOrderApiControllerTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_SPECS = 0;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ServiceOrderRepoService serviceOrderRepoService;
@@ -69,24 +68,59 @@ public class ServiceOrderApiControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+    
 
-    @Before
-    public void setup() throws Exception {
+    @Autowired
+    IndividualRepoService individualRepoService;
+
+    @BeforeAll
+    public void setup(WebApplicationContext context) throws Exception {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
 
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
+
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
     public void testCreateServiceOrder() throws Exception {
+      
 
-        String response = createServiceOrder();
+      assertThat( individualRepoService.findAll().size() ).isEqualTo( 0 );
+      
+      
+      String response = mvc.perform(MockMvcRequestBuilders.get("/party/v4/individual/myuser")
+          .with( SecurityMockMvcRequestPostProcessors.csrf())
+          .contentType(MediaType.APPLICATION_JSON))             
+          .andExpect(status().isOk())
+          .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))      
+          .andExpect(status().isOk())
+          .andReturn().getResponse().getContentAsString();
+  
+
+        assertThat( individualRepoService.findAll().size() ).isEqualTo( 1 );
+  
+
+        Individual responseIndv = JsonUtils.toJsonObj(response,  Individual.class);
+
+        assertThat( responseIndv.getId() ).isNotNull() ;
+  
+        response = createServiceOrder();
 
         ServiceOrder responsesServiceOrder = JsonUtils.toJsonObj(response,  ServiceOrder.class);
         assertThat( responsesServiceOrder.getDescription() ).isEqualTo( "A Test Service Order" );
+        assertThat( responsesServiceOrder.getRelatedParty().size() ) .isEqualTo( 1 );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getName() ) .isEqualTo( "osadmin" );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getId() ) .isEqualTo( responseIndv.getId() );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getRole() ) .isEqualTo( "REQUESTER" );
     }
 
 
@@ -95,7 +129,7 @@ public class ServiceOrderApiControllerTest {
     public void testCreateServiceOrderWithNonExistingServiceSpecification() throws Exception {
 
         createServiceOrderWithNonExistingServiceSpecification();
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 1 );
     }
 
 
@@ -105,6 +139,8 @@ public class ServiceOrderApiControllerTest {
 
         String response = createServiceOrder();
 
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 2 );
+        
         ServiceOrder responsesServiceOrder = JsonUtils.toJsonObj(response,  ServiceOrder.class);
         String id = responsesServiceOrder.getId();
 
@@ -114,7 +150,7 @@ public class ServiceOrderApiControllerTest {
                 .andExpect(status().isOk() )
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
+        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( 1 );
     }
 
 
@@ -158,7 +194,47 @@ public class ServiceOrderApiControllerTest {
         assertThat(responsesServiceOrder2.getState().toString()).isEqualTo("COMPLETED");
         assertThat(responsesServiceOrder2.getDescription()).isEqualTo("New Test Description");
         assertThat(responsesServiceOrder2.getCategory()).isEqualTo("New Test Category");
+        assertThat( responsesServiceOrder.getRelatedParty().size() ) .isEqualTo( 1 );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getName() ) .isEqualTo( "osadmin" );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getId() ) .isEqualTo( individualRepoService.findByUsername("osadmin").getId() );
+        assertThat( responsesServiceOrder.getRelatedParty().stream().findFirst().get().getRole() ) .isEqualTo( "REQUESTER" );
     }
+    
+    
+
+    @WithMockUser(username="osadminmodifier", roles = {"ADMIN","USER"})
+    @Test
+    public void testPatchServiceOrderModifier() throws Exception {
+
+        String response = createServiceOrder();
+        ServiceOrder responsesServiceOrder = JsonUtils.toJsonObj(response,  ServiceOrder.class);
+        String soId = responsesServiceOrder.getId();
+
+        ServiceOrderUpdate servOrderUpd = new ServiceOrderUpdate();
+        servOrderUpd.setState(ServiceOrderStateType.COMPLETED);
+        servOrderUpd.setCategory("New Test Category1");
+        servOrderUpd.setDescription("New Test Description1");
+        List<RelatedParty> rpl = new ArrayList<>();
+        RelatedParty rp = new RelatedParty();
+        rp.setId("12345");
+        rpl.add( rp);
+        servOrderUpd.setRelatedParty(rpl);
+
+        String response2 = mvc.perform(MockMvcRequestBuilders.patch("/serviceOrdering/v4/serviceOrder/" + soId)
+                        .with( SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content( JsonUtils.toJson( servOrderUpd ) ))
+                .andExpect(status().isOk() )
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        ServiceOrder responsesServiceOrder2 = JsonUtils.toJsonObj(response2,  ServiceOrder.class);
+        assertThat(responsesServiceOrder2.getState().toString()).isEqualTo("COMPLETED");
+        assertThat(responsesServiceOrder2.getDescription()).isEqualTo("New Test Description1");
+        assertThat(responsesServiceOrder2.getCategory()).isEqualTo("New Test Category1");
+        assertThat( responsesServiceOrder2.getRelatedParty().size() ) .isEqualTo( 2 );
+    }
+
 
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
@@ -229,7 +305,6 @@ public class ServiceOrderApiControllerTest {
 
     private String createServiceOrder() throws Exception {
 
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS);
 
         File sspec = new File("src/test/resources/testServiceSpec.json");
         InputStream in = new FileInputStream(sspec);
@@ -244,7 +319,7 @@ public class ServiceOrderApiControllerTest {
         serviceOrder.setDescription("A Test Service Order");
         serviceOrder.setRequestedStartDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
         serviceOrder.setRequestedCompletionDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
-
+ 
         ServiceOrderItem soi = new ServiceOrderItem();
         serviceOrder.getOrderItem().add(soi);
         soi.setState(ServiceOrderStateType.ACKNOWLEDGED);
@@ -256,8 +331,17 @@ public class ServiceOrderApiControllerTest {
 
         serviceRestriction.setServiceSpecification(aServiceSpecificationRef);
         serviceRestriction.setName("aServiceRestriction");
+        
+        Place pi = new Place();
+        pi.setName("palcename");
+        pi.setRole("local");
+        serviceRestriction.addPlaceItem( pi  );
+        Place pi2 = new Place();
+        pi2.setName("palcename2");
+        pi2.setRole("local");
+        serviceRestriction.addPlaceItem( pi2  );
         soi.setService(serviceRestriction);
-
+         
         String response = mvc
                 .perform(MockMvcRequestBuilders.post("/serviceOrdering/v4/serviceOrder")
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
@@ -267,9 +351,11 @@ public class ServiceOrderApiControllerTest {
 
         ServiceOrder responseSO = JsonUtils.toJsonObj(response, ServiceOrder.class);
 
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
         assertThat(responseSO.getCategory()).isEqualTo("Test Category");
         assertThat(responseSO.getDescription()).isEqualTo("A Test Service Order");
+        assertThat(responseSO.getOrderItem().size() ).isEqualTo( 1 );
+        assertThat(responseSO.getOrderItem().stream().findFirst().get().getService() ).isNotNull();
+        assertThat(responseSO.getOrderItem().stream().findFirst().get().getService().getPlace().size() ).isEqualTo(2);
 
         return response;
 
@@ -292,7 +378,6 @@ public class ServiceOrderApiControllerTest {
 
     private void createServiceOrderWithNonExistingServiceSpecification() throws Exception {
 
-        assertThat( serviceOrderRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS);
 
         ServiceOrderCreate serviceOrder = new ServiceOrderCreate();
         serviceOrder.setCategory("Test Category");

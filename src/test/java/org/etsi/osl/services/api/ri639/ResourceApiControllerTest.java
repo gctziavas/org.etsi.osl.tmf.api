@@ -5,59 +5,48 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.security.Principal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-
-import java.security.Principal;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
 import org.etsi.osl.tmf.ri639.api.ResourceApiController;
 import org.etsi.osl.tmf.ri639.model.LogicalResource;
 import org.etsi.osl.tmf.ri639.model.Resource;
-
 import org.etsi.osl.tmf.ri639.model.ResourceCreate;
 import org.etsi.osl.tmf.ri639.reposervices.ResourceRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.http.ResponseEntity;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@AutoConfigureTestDatabase
-@ActiveProfiles("testing")
-
-public class ResourceApiControllerTest {
+public class ResourceApiControllerTest  extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_RESOURCES = 0;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ResourceRepoService resourceRepoService;
@@ -72,8 +61,8 @@ public class ResourceApiControllerTest {
 
     private ResourceRepoService mockResourceRepoService;
 
-    @Before
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
@@ -83,6 +72,14 @@ public class ResourceApiControllerTest {
         mockResourceRepoService = mock(ResourceRepoService.class);
         ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
         mockResourceApiController = new ResourceApiController(mockObjectMapper, null);
+    }
+
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+
     }
 
 

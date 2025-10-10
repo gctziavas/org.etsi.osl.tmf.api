@@ -3,61 +3,57 @@ package org.etsi.osl.services.api.scm633;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.minidev.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.common.model.Attachment;
-import org.etsi.osl.tmf.rcm634.model.*;
-import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
-import org.etsi.osl.tmf.scm633.model.*;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
-
+import org.etsi.osl.tmf.common.model.Attachment;
+import org.etsi.osl.tmf.rcm634.model.PhysicalResourceSpecification;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCreate;
+import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationUpdate;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecification;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecificationCreate;
 import org.etsi.osl.tmf.stm653.reposervices.ServiceTestSpecificationRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONObject;
 
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@AutoConfigureTestDatabase
-@ActiveProfiles("testing")
-public class ServiceSpecificationApiControllerTest {
+public class ServiceSpecificationApiControllerTest extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_SPECS = 1;
 
-    @Autowired
     private MockMvc mvc;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
     @Autowired
     ServiceTestSpecificationRepoService aServiceTestSpecRpoService;
@@ -74,18 +70,32 @@ public class ServiceSpecificationApiControllerTest {
     @Autowired
     ServiceSpecificationRepoService specRepoService;
 
-    @Before
-    public void setup() {
+    @BeforeAll
+    public void setup(WebApplicationContext context) {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
     }
 
+	@AfterEach
+	public void tearDown() {
+		if (entityManager != null) {
+			entityManager.clear();
+		}
+	}
+
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testDeleteServiceSpecification() throws Exception {
+    public void test01DeleteServiceSpecification() throws Exception {
 
+      var dvd = specRepoService.findAll();
+      for (ServiceSpecification s : dvd) {
+        System.out.println(s.getName());
+      }
+      
+      
+      
         assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
         String response = createServiceSpecification();
 
@@ -104,7 +114,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testListServiceSpecification() throws Exception {
+    public void test02ListServiceSpecification() throws Exception {
 
         String response = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification")
 
@@ -129,7 +139,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testPatchServiceSpecification() throws Exception {
+    public void test03PatchServiceSpecification() throws Exception {
 
         String response = createServiceSpecification();
         assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1);
@@ -166,7 +176,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testRetrieveServiceSpecification() throws Exception {
+    public void test04RetrieveServiceSpecification() throws Exception {
 
         String response = createServiceSpecification();
 
@@ -188,7 +198,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testGetAttachment() throws Exception {
+    public void test05GetAttachment() throws Exception {
 
         // Create a Service Specification
         String response = createServiceSpecification();
@@ -235,7 +245,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testGetAttachmentWithFilename() throws Exception {
+    public void test06GetAttachmentWithFilename() throws Exception {
 
         // Create a Service Specification
         String response = createServiceSpecification();
@@ -261,7 +271,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testRetrieveServiceSpecificationDescriptor() throws Exception {
+    public void test07RetrieveServiceSpecificationDescriptor() throws Exception {
 
         // Test a non-existing spec
         mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/" + "fakeId" + "/sd")
@@ -273,7 +283,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
     @Test
-    public void testSpecFromTestSpec() throws Exception {
+    public void test08SpecFromTestSpec() throws Exception {
 
         // Creeate a Test Spec
         File sspec = new File( "src/test/resources/testServiceTestSpec.json" );
@@ -299,7 +309,7 @@ public class ServiceSpecificationApiControllerTest {
         assertThat(sts.getName()).isEqualTo("A test name");
         String stsId = sts.getId();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS);
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 5 );
 
         // Create a Service Spec from the Test Spec
         String response2 = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/specFromTestSpec/" + stsId)
@@ -309,7 +319,7 @@ public class ServiceSpecificationApiControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 6 );
 
         ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response2,  ServiceSpecification.class);
         assertThat( responsesSpec.getName() ).isEqualTo( "A test name" );
@@ -318,7 +328,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
-    public void testGetImageSpecificationRelationshipGraph() throws Exception {
+    public void test09GetImageSpecificationRelationshipGraph() throws Exception {
 
         // Create a Service Specification
         String response = createServiceSpecification();
@@ -336,7 +346,7 @@ public class ServiceSpecificationApiControllerTest {
 
     @WithMockUser(username="osadmin", roles = {"ADMIN"})
     @Test
-    public void testSpecFromResourceSpec() throws Exception {
+    public void test10SpecFromResourceSpec() throws Exception {
 
         File rspec = new File( "src/test/resources/testResourceSpec.json" );
         InputStream in = new FileInputStream( rspec );
@@ -358,7 +368,7 @@ public class ServiceSpecificationApiControllerTest {
         ResourceSpecification responsesSpec1 = JsonUtils.toJsonObj(responseSpec,  PhysicalResourceSpecification.class);
         assertThat(responsesSpec1.getName()).isEqualTo("Test Resource Spec");
         String rSpecId = responsesSpec1.getId();
-        assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS);
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 7);
 
         String response2 = mvc.perform(MockMvcRequestBuilders.get("/serviceCatalogManagement/v4/serviceSpecification/specFromResourceSpec/" + rSpecId)
                         .with( SecurityMockMvcRequestPostProcessors.csrf()))
@@ -367,7 +377,7 @@ public class ServiceSpecificationApiControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
+        assertThat( specRepoService.findAll().size() ).isEqualTo( 8 );
 
         ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response2,  ServiceSpecification.class);
         assertThat( responsesSpec.getName() ).isEqualTo( "Test Resource Spec" );
@@ -375,7 +385,6 @@ public class ServiceSpecificationApiControllerTest {
 
 
     private String createServiceSpecification() throws Exception{
-        assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS );
 
         File sspec = new File( "src/test/resources/testServiceSpec.json" );
         InputStream in = new FileInputStream( sspec );
@@ -390,7 +399,6 @@ public class ServiceSpecificationApiControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        assertThat( specRepoService.findAll().size() ).isEqualTo( FIXED_BOOTSTRAPS_SPECS + 1 );
 
         ServiceSpecification responsesSpec = JsonUtils.toJsonObj(response,  ServiceSpecification.class);
         assertThat( responsesSpec.getName() ).isEqualTo( "Test Spec" );

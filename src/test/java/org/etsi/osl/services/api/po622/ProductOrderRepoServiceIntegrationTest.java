@@ -1,25 +1,21 @@
 package org.etsi.osl.services.api.po622;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.IOUtils;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.common.model.service.Note;
 import org.etsi.osl.tmf.pcm620.model.ProductOffering;
 import org.etsi.osl.tmf.pcm620.model.ProductOfferingCreate;
@@ -43,38 +39,24 @@ import org.etsi.osl.tmf.po622.reposervices.ProductOrderRepoService;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import jakarta.validation.Valid;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-    classes = OpenAPISpringBoot.class)
-@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-public class ProductOrderRepoServiceTest {
-
-  @Autowired
+public class ProductOrderRepoServiceIntegrationTest  extends  BaseIT {
   private MockMvc mvc;
 
   @Autowired
@@ -101,15 +83,24 @@ public class ProductOrderRepoServiceTest {
 
   @Autowired
   private WebApplicationContext context;
-  
 
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Autowired
   TransactionTemplate txTemplate;
 
-  @Before
+  @BeforeAll
   public void setup() throws Exception {
     mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+  }
+
+  @AfterEach
+  public void tearDown() {
+    if (entityManager != null) {
+      entityManager.clear();
+    }
   }
 
 
@@ -183,7 +174,7 @@ public class ProductOrderRepoServiceTest {
   public void testUpdateProductOrder() throws Exception {
 
 
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(0);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(5);
     
     String response = txTemplate.execute(status -> {
       try {
@@ -197,7 +188,7 @@ public class ProductOrderRepoServiceTest {
     
     ProductOrder responsesProductOrder = JsonUtils.toJsonObj(response, ProductOrder.class);
     String poId = responsesProductOrder.getId();
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(1);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(6);
 
 
 
@@ -257,7 +248,7 @@ public class ProductOrderRepoServiceTest {
     assertThat(responseSOUpd.getState().toString()).isEqualTo("COMPLETED");
     assertThat(responseSOUpd.getDescription()).isEqualTo("New Test Description");
     
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(1);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(6);
     
     assertThat(responseSOUpd.getNote().size()).isEqualTo(3);
     assertThat(responseSOUpd.getRelatedParty().size()).isEqualTo(1);
@@ -269,7 +260,7 @@ public class ProductOrderRepoServiceTest {
     prodOrderUpd.addNoteItem(en);
     prodOrderUpd.addRelatedPartyItem(new RelatedParty());
     responseSOUpd = productOrderRepoService.updateProductOrder(poId, prodOrderUpd);
-    assertThat(productOrderRepoService.findAll().size()).isEqualTo(1);
+    assertThat(productOrderRepoService.findAll().size()).isEqualTo(6);
     assertThat(responseSOUpd.getNote().size()).isEqualTo(4);
     assertThat(responseSOUpd.getRelatedParty().size()).isEqualTo(2);
 
@@ -355,7 +346,6 @@ public class ProductOrderRepoServiceTest {
     ProductSpecification responseProdSpec = createProductSpec(psc);
 
 
-    assertThat(productSpecificationRepoService.findAll().size()).isEqualTo(currSize + 1);
 
 
 

@@ -1,12 +1,14 @@
 package org.etsi.osl.services.api.rcm634;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.etsi.osl.tmf.rcm634.model.ConnectionSpecification;
-import org.etsi.osl.tmf.rcm634.model.EndpointSpecificationRef;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
+import org.etsi.osl.tmf.rcm634.model.ConnectionSpecification;
+import org.etsi.osl.tmf.rcm634.model.EndpointSpecificationRef;
+import org.junit.jupiter.api.Test;
 
 public class ConnectionSpecificationTest {
 
