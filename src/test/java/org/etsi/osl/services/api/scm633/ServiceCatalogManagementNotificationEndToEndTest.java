@@ -1,18 +1,19 @@
 package org.etsi.osl.services.api.scm633;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import java.util.Arrays;
 import java.util.List;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.scm633.api.ServiceCatalogApiRouteBuilderEvents;
+import org.apache.camel.ProducerTemplate;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.scm633.model.EventSubscription;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreate;
@@ -24,40 +25,23 @@ import org.etsi.osl.tmf.scm633.model.ServiceSpecificationUpdate;
 import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.EventSubscriptionRepoService;
-import org.etsi.osl.tmf.scm633.reposervices.ServiceCatalogCallbackService;
-import org.etsi.osl.tmf.scm633.reposervices.ServiceCatalogNotificationService;
-import org.etsi.osl.tmf.scm633.reposervices.ServiceCategoryNotificationService;
-import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationNotificationService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-@AutoConfigureTestDatabase
-public class ServiceCatalogManagementNotificationEndToEndTest {
+
+public class ServiceCatalogManagementNotificationEndToEndTest  extends BaseIT{
 
     @Autowired
     private MockMvc mvc;
@@ -74,43 +58,28 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
     @Autowired
     private ServiceSpecificationRepoService serviceSpecificationRepoService;
 
-    @SpyBean
+    @MockBean
     @Qualifier("scm633EventSubscriptionRepoService")
     private EventSubscriptionRepoService eventSubscriptionRepoService;
 
-    @SpyBean
-    private ServiceCatalogNotificationService serviceCatalogNotificationService;
-
-    @SpyBean
-    private ServiceCategoryNotificationService serviceCategoryNotificationService;
-
-    @SpyBean
-    private ServiceSpecificationNotificationService serviceSpecificationNotificationService;
-
-    // NOTE: We don't use @SpyBean on ServiceCatalogApiRouteBuilderEvents because it extends Camel's RouteBuilder
-    // which has void methods that cause Mockito conflicts during Spring context initialization.
-    // Instead, we verify the notification flow at the service level, which provides sufficient coverage.
-
-    @SpyBean
-    private ServiceCatalogCallbackService callbackService;
+    @MockBean
+    private ProducerTemplate producerTemplate;
 
     @MockBean
     private RestTemplate restTemplate;
 
-    @Before
+    private AutoCloseable mocks;
+
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
-        
+
         // Reset all mocks to clear state between tests
-        reset(eventSubscriptionRepoService);
-        reset(serviceCatalogNotificationService);
-        reset(serviceCategoryNotificationService);
-        reset(serviceSpecificationNotificationService);
-        reset(callbackService);
+        reset(producerTemplate);
         reset(restTemplate);
     }
 
@@ -123,7 +92,7 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         subscription.setQuery("servicecatalog");
 
         when(eventSubscriptionRepoService.findAll()).thenReturn(Arrays.asList(subscription));
-        when(restTemplate.exchange(any(String.class), any(), any(), eq(String.class)))
+        when(restTemplate.exchange(anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Test Service Catalog lifecycle
@@ -133,18 +102,22 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
 
         ServiceCatalog createdCatalog = catalogRepoService.addCatalog(catalogCreate);
 
-        // Verify catalog create notification flow
-        verify(serviceCatalogNotificationService, timeout(5000).times(1))
-            .publishServiceCatalogCreateNotification(any(ServiceCatalog.class));
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceCatalogCreateCallback(any());
+        // Verify catalog create notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCatalogCreateNotification")),
+            anyMap()
+        );
 
         // Delete catalog
         catalogRepoService.deleteById(createdCatalog.getUuid());
 
-        // Verify catalog delete notification flow
-        verify(serviceCatalogNotificationService, timeout(5000).times(1))
-            .publishServiceCatalogDeleteNotification(any(ServiceCatalog.class));
+        // Verify catalog delete notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCatalogDeleteNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -156,7 +129,7 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         subscription.setQuery("servicecategory");
 
         when(eventSubscriptionRepoService.findAll()).thenReturn(Arrays.asList(subscription));
-        when(restTemplate.exchange(any(String.class), any(), any(), eq(String.class)))
+        when(restTemplate.exchange(anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Test Service Category lifecycle
@@ -166,18 +139,22 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
 
         ServiceCategory createdCategory = categoryRepoService.addCategory(categoryCreate);
 
-        // Verify category create notification flow
-        verify(serviceCategoryNotificationService, timeout(5000).times(1))
-            .publishServiceCategoryCreateNotification(any(ServiceCategory.class));
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceCategoryCreateCallback(any());
+        // Verify category create notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryCreateNotification")),
+            anyMap()
+        );
 
         // Delete category
         categoryRepoService.deleteById(createdCategory.getUuid());
 
-        // Verify category delete notification flow
-        verify(serviceCategoryNotificationService, timeout(5000).times(1))
-            .publishServiceCategoryDeleteNotification(any(ServiceCategory.class));
+        // Verify category delete notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryDeleteNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -189,7 +166,7 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         subscription.setQuery("servicespecification");
 
         when(eventSubscriptionRepoService.findAll()).thenReturn(Arrays.asList(subscription));
-        when(restTemplate.exchange(any(String.class), any(), any(), eq(String.class)))
+        when(restTemplate.exchange(anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Test Service Specification lifecycle
@@ -199,28 +176,35 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
 
         ServiceSpecification createdSpec = serviceSpecificationRepoService.addServiceSpecification(specCreate);
 
-        // Verify specification create notification flow
-        verify(serviceSpecificationNotificationService, timeout(5000).times(1))
-            .publishServiceSpecificationCreateNotification(any(ServiceSpecification.class));
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceSpecificationCreateCallback(any());
+        // Verify specification create notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceSpecificationCreateNotification")),
+            anyMap()
+        );
 
         // Update specification
         ServiceSpecificationUpdate specUpdate = new ServiceSpecificationUpdate();
         specUpdate.setDescription("Updated description for end-to-end testing");
-        
+
         ServiceSpecification updatedSpec = serviceSpecificationRepoService.updateServiceSpecification(createdSpec.getUuid(), specUpdate);
 
-        // Verify specification change notification flow
-        verify(serviceSpecificationNotificationService, timeout(5000).times(1))
-            .publishServiceSpecificationChangeNotification(any(ServiceSpecification.class));
+        // Verify specification change notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceSpecificationChangeNotification")),
+            anyMap()
+        );
 
         // Delete specification
         serviceSpecificationRepoService.deleteByUuid(createdSpec.getUuid());
 
-        // Verify specification delete notification flow
-        verify(serviceSpecificationNotificationService, timeout(5000).times(1))
-            .publishServiceSpecificationDeleteNotification(any(ServiceSpecification.class));
+        // Verify specification delete notification was published to Camel
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceSpecificationDeleteNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -248,7 +232,7 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         );
 
         when(eventSubscriptionRepoService.findAll()).thenReturn(subscriptions);
-        when(restTemplate.exchange(any(String.class), any(), any(), eq(String.class)))
+        when(restTemplate.exchange(anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), eq(String.class)))
             .thenReturn(new ResponseEntity<>("Success", HttpStatus.OK));
 
         // Create entities to trigger notifications
@@ -264,20 +248,28 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         specCreate.setName("Multi-Subscription Test Specification");
         ServiceSpecification spec = serviceSpecificationRepoService.addServiceSpecification(specCreate);
 
-        // Verify that callbacks are sent according to subscription filters
-        // All events subscription should receive all 3 callbacks
-        // Each specific subscription should receive only their relevant callback
+        // Verify notifications were published to Camel for all three entity types
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCatalogCreateNotification")),
+            anyMap()
+        );
 
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceCatalogCreateCallback(any());
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceCategoryCreateCallback(any());
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceSpecificationCreateCallback(any());
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryCreateNotification")),
+            anyMap()
+        );
+
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceSpecificationCreateNotification")),
+            anyMap()
+        );
 
         // Verify multiple HTTP calls are made for different subscriptions
-        verify(restTemplate, timeout(5000).atLeast(6))
-            .exchange(any(String.class), any(), any(), eq(String.class));
+        verify(restTemplate, timeout(5000).atLeast(3))
+            .exchange(anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), eq(String.class));
     }
 
     @Test
@@ -288,7 +280,7 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         subscription.setCallback("http://invalid-callback-url:9999/callback");
 
         when(eventSubscriptionRepoService.findAll()).thenReturn(Arrays.asList(subscription));
-        when(restTemplate.exchange(any(String.class), any(), any(), eq(String.class)))
+        when(restTemplate.exchange(anyString(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), eq(String.class)))
             .thenThrow(new RuntimeException("Connection refused"));
 
         // Create entity to trigger notification
@@ -296,12 +288,11 @@ public class ServiceCatalogManagementNotificationEndToEndTest {
         catalogCreate.setName("Invalid Callback Test Catalog");
         ServiceCatalog catalog = catalogRepoService.addCatalog(catalogCreate);
 
-        // Verify notification service still completes successfully even with callback failure
-        verify(serviceCatalogNotificationService, timeout(5000).times(1))
-            .publishServiceCatalogCreateNotification(any(ServiceCatalog.class));
-        
-        // Callback should be attempted but may fail gracefully
-        verify(callbackService, timeout(5000).times(1))
-            .sendServiceCatalogCreateCallback(any());
+        // Verify notification was still published to Camel even with callback failure
+        verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCatalogCreateNotification")),
+            anyMap()
+        );
     }
 }

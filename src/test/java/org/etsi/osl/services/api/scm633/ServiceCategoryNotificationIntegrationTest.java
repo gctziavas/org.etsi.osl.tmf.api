@@ -1,42 +1,32 @@
 package org.etsi.osl.services.api.scm633;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import org.apache.camel.ProducerTemplate;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreate;
-import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateNotification;
-import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
 import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
-import org.etsi.osl.tmf.scm633.reposervices.ServiceCategoryNotificationService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-@AutoConfigureTestDatabase
-public class ServiceCategoryNotificationIntegrationTest {
+
+public class ServiceCategoryNotificationIntegrationTest  extends BaseIT{
 
     @Autowired
     private MockMvc mvc;
@@ -47,16 +37,32 @@ public class ServiceCategoryNotificationIntegrationTest {
     @Autowired
     private CategoryRepoService categoryRepoService;
 
-    @SpyBean
-    private ServiceCategoryNotificationService serviceCategoryNotificationService;
+    @MockBean
+    private ProducerTemplate producerTemplate;
 
-    @Before
+    private AutoCloseable mocks;
+
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+    }
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
 
     @Test
@@ -70,9 +76,12 @@ public class ServiceCategoryNotificationIntegrationTest {
         // Act
         ServiceCategory createdCategory = categoryRepoService.addCategory(serviceCategoryCreate);
 
-        // Assert
-        verify(serviceCategoryNotificationService, timeout(5000).times(1))
-            .publishServiceCategoryCreateNotification(any(ServiceCategory.class));
+        // Assert - Verify notification was published to Camel
+        verify(producerTemplate, timeout(5000).times(1)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryCreateNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -82,16 +91,19 @@ public class ServiceCategoryNotificationIntegrationTest {
         ServiceCategoryCreate serviceCategoryCreate = new ServiceCategoryCreate();
         serviceCategoryCreate.setName("Test Category for Deletion");
         serviceCategoryCreate.setDescription("A test service category to be deleted");
-        
+
         ServiceCategory createdCategory = categoryRepoService.addCategory(serviceCategoryCreate);
         String categoryId = createdCategory.getUuid();
 
         // Act - Delete the category
         boolean deleted = categoryRepoService.deleteById(categoryId);
 
-        // Assert - Focus only on delete notification
-        verify(serviceCategoryNotificationService, timeout(5000).times(1))
-            .publishServiceCategoryDeleteNotification(any(ServiceCategory.class));
+        // Assert - Verify delete notification was published to Camel
+        verify(producerTemplate, timeout(5000).times(1)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryDeleteNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -105,9 +117,12 @@ public class ServiceCategoryNotificationIntegrationTest {
         // Act
         ServiceCategory createdCategory = categoryRepoService.addCategory(serviceCategory);
 
-        // Assert
-        verify(serviceCategoryNotificationService, timeout(5000).times(1))
-            .publishServiceCategoryCreateNotification(any(ServiceCategory.class));
+        // Assert - Verify notification was published to Camel
+        verify(producerTemplate, timeout(5000).times(1)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryCreateNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -117,8 +132,11 @@ public class ServiceCategoryNotificationIntegrationTest {
         boolean deleted = categoryRepoService.deleteById("non-existent-id");
 
         // Assert - No notification should be triggered for non-existent categories
-        verify(serviceCategoryNotificationService, timeout(2000).times(0))
-            .publishServiceCategoryDeleteNotification(any(ServiceCategory.class));
+        verify(producerTemplate, timeout(2000).times(0)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("ServiceCategoryDeleteNotification")),
+            anyMap()
+        );
     }
 
     @Test
@@ -141,10 +159,17 @@ public class ServiceCategoryNotificationIntegrationTest {
         // Delete first category
         boolean deleted1 = categoryRepoService.deleteById(created1.getUuid());
 
-        // Assert multiple notifications
-        verify(serviceCategoryNotificationService, timeout(5000).times(2))
-            .publishServiceCategoryCreateNotification(any(ServiceCategory.class));
-        verify(serviceCategoryNotificationService, timeout(5000).times(1))
-            .publishServiceCategoryDeleteNotification(any(ServiceCategory.class));
+        // Assert multiple notifications were published to Camel
+        verify(producerTemplate, timeout(5000).times(2)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("First test category")),
+            anyMap()
+        );
+
+        verify(producerTemplate, timeout(5000).times(1)).sendBodyAndHeaders(
+            anyString(),
+            argThat(body -> body != null && body.toString().contains("Second test category")),
+            anyMap()
+        );
     }
 }

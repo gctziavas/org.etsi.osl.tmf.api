@@ -4,25 +4,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.scm633.api.ServiceCatalogApiRouteBuilderEvents;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceCatalogCallbackService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceCategoryNotificationService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ServiceCategoryNotificationServiceTest {
+
+public class ServiceCategoryNotificationServiceTest  extends BaseIT{
 
     @Mock
     private ServiceCatalogApiRouteBuilderEvents eventPublisher;
@@ -33,9 +32,26 @@ public class ServiceCategoryNotificationServiceTest {
     @InjectMocks
     private ServiceCategoryNotificationService serviceCategoryNotificationService;
 
-    @Before
+    private AutoCloseable mocks;
+
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
 
     @Test

@@ -91,6 +91,12 @@ public class CategoryRepoService {
     @Transactional
 	public ServiceCategory findByUuid(String id) {
 		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByUuid( id );
+        if ( optionalCat.isPresent() ) {
+          optionalCat.get().getCategoryObj().size();      
+          optionalCat.get().getServiceCandidateObj().size();
+          optionalCat.get().getServiceCandidateObj().size();
+          optionalCat.get().getCategoryRefs().size();
+        }
 		return optionalCat
 				.orElse(null);
 	}
@@ -315,10 +321,16 @@ public class CategoryRepoService {
 	}
 
 
+	@Transactional
 	public ServiceCategory findByName(String aName) {
 		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByName( aName );
-		return optionalCat
-				.orElse(null);
+		if ( optionalCat.isPresent() ) {
+	        optionalCat.get().getCategoryObj().size();		
+            optionalCat.get().getServiceCandidateObj().size();
+            optionalCat.get().getServiceCandidateObj().size();
+            optionalCat.get().getCategoryRefs().size();
+		}
+		return optionalCat.orElse(null);
 	}
 
   public CategoriesRepository getCategsRepo() {

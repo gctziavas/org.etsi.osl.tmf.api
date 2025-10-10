@@ -212,6 +212,10 @@ public class ProductSpecificationRepoService {
 //	 noRollbackFor=Exception.class)
 	public ProductSpecification findByUuid(String id) {
 		Optional<ProductSpecification> optionalCat = this.prodsOfferingRepo.findByUuid(id);
+		if ( optionalCat.isPresent() ) {
+          optionalCat.get().getProductSpecCharacteristic().size();
+          optionalCat.get().getServiceSpecification().size();
+		}
 		return optionalCat.orElse(null);
 	}
 

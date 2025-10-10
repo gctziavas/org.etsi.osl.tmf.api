@@ -107,7 +107,9 @@ public class ProductCategoryRepoService {
 		
 	}
 
+	@Transactional
 	public List<Category> findAll() {
+	  this.categsRepo.findByOrderByName().stream().forEach( s->s.getProductOfferingObj().size());
 		return (List<Category>) this.categsRepo.findByOrderByName();
 	}
 

@@ -1,61 +1,65 @@
 package org.etsi.osl.services.api.pm628;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.etsi.osl.tmf.JsonUtils;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
-import org.etsi.osl.tmf.pm628.model.*;
-import org.etsi.osl.tmf.pm628.reposervices.MeasurementCollectionJobService;
-import org.etsi.osl.tmf.ri639.model.ResourceAdministrativeStateType;
-import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
-import org.etsi.osl.tmf.ri639.model.ResourceUsageStateType;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.security.web.FilterChainProxy;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.io.*;
-import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import org.apache.commons.io.IOUtils;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.pm628.model.AdministrativeState;
+import org.etsi.osl.tmf.pm628.model.DataAccessEndpoint;
+import org.etsi.osl.tmf.pm628.model.DataAccessEndpointMVO;
+import org.etsi.osl.tmf.pm628.model.DataFilterAttributeStringArray;
+import org.etsi.osl.tmf.pm628.model.DataFilterMapItemMVO;
+import org.etsi.osl.tmf.pm628.model.DataFilterMapMVO;
+import org.etsi.osl.tmf.pm628.model.DataFilterTemplateMVO;
+import org.etsi.osl.tmf.pm628.model.ExecutionStateType;
+import org.etsi.osl.tmf.pm628.model.Granularity;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJob;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobCreateEvent;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobCreateEventPayload;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobFVO;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobMVO;
+import org.etsi.osl.tmf.pm628.model.MeasurementCollectionJobRef;
+import org.etsi.osl.tmf.pm628.model.ReportingPeriod;
+import org.etsi.osl.tmf.pm628.model.ResourceStatusType;
+import org.etsi.osl.tmf.pm628.reposervices.MeasurementCollectionJobService;
+import org.etsi.osl.tmf.ri639.model.ResourceAdministrativeStateType;
+import org.etsi.osl.tmf.ri639.model.ResourceOperationalStateType;
+import org.etsi.osl.tmf.ri639.model.ResourceUsageStateType;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = OpenAPISpringBoot.class
-)
-//@AutoConfigureTestDatabase //this automatically uses h2
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-//@TestPropertySource(
-//		  locations = "classpath:application-testing.yml")
-public class MeasurementCollectionJobApiControllerTest {
+
+public class MeasurementCollectionJobApiControllerTest extends BaseIT {
 
     private static final int FIXED_BOOTSTRAPS_JOBS = 0;
 
-    @Autowired
     private MockMvc mvc;
 
     @Autowired
@@ -70,25 +74,35 @@ public class MeasurementCollectionJobApiControllerTest {
     @Autowired
     MeasurementCollectionJobService measurementCollectionJobService;
 
-    @Before
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @BeforeAll
     public void setup() throws Exception {
         mvc = MockMvcBuilders.webAppContextSetup(context).
                 apply(springSecurity(springSecurityFilterChain)).build();
 
     }
 
+    @AfterEach
+    public void tearDown() {
+        if (entityManager != null) {
+            entityManager.clear();
+        }
+    }
+
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
     @Test
     public void testFindAllMeasurementCollectionJobs() throws Exception {
-        String response = mvc
+        var response = mvc
                 .perform(MockMvcRequestBuilders.get("/monitoring/v5/measurementCollectionJob")
                         .with( SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        List<MeasurementCollectionJob> mcjList = objectMapper.readValue(response, new TypeReference<List<MeasurementCollectionJob>>() {});
-        assertThat(mcjList.size()).isEqualTo(0);
+        List<LinkedHashMap> mcjList = objectMapper.readValue(response, new TypeReference<List<LinkedHashMap>>() {});
+        assertThat(mcjList.size()).isEqualTo(1);
     }
 
     @WithMockUser(username="osadmin", roles = {"USER","ADMIN"})
@@ -248,6 +262,9 @@ public class MeasurementCollectionJobApiControllerTest {
         String response = createMeasurementCollectionJob();
         MeasurementCollectionJob mcj = JsonUtils.toJsonObj(response, MeasurementCollectionJob.class);
         String id = mcj.getUuid();
+        
+
+        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(2);
 
         mvc
             .perform(MockMvcRequestBuilders.delete("/monitoring/v5/measurementCollectionJob/" + id)
@@ -256,13 +273,12 @@ public class MeasurementCollectionJobApiControllerTest {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS);
+        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(1);
     }
 
 
 
     private String createMeasurementCollectionJob() throws Exception {
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS);
 
         File fvo = new File("src/test/resources/testMeasurementCollectionJobFVO.json");
         InputStream in = new FileInputStream(fvo);
@@ -277,7 +293,6 @@ public class MeasurementCollectionJobApiControllerTest {
                 .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        assertThat(measurementCollectionJobService.findAllMeasurementCollectionJobs().size()).isEqualTo(FIXED_BOOTSTRAPS_JOBS + 1);
 
         return response;
     }

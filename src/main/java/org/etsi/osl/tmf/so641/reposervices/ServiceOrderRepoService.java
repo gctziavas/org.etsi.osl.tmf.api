@@ -39,6 +39,8 @@ import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.EValueType;
 import org.etsi.osl.tmf.common.model.UserPartRoleType;
 import org.etsi.osl.tmf.common.model.service.*;
+import org.etsi.osl.tmf.pm632.model.Individual;
+import org.etsi.osl.tmf.pm632.reposervices.IndividualRepoService;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
@@ -86,6 +88,11 @@ public class ServiceOrderRepoService {
 	@Autowired
 	ServiceRepoService serviceRepoService;
 
+
+    @Autowired
+    IndividualRepoService individualRepoService;
+
+    
 	private SessionFactory  sessionFactory;
 
 
@@ -300,7 +307,7 @@ public class ServiceOrderRepoService {
 	}
 
     @Transactional
-	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate) throws NotFoundException {
+	public ServiceOrder addServiceOrder(@Valid ServiceOrderCreate serviceOrderCreate, Boolean autoAcknowledge) throws NotFoundException {
 		// Ensure that all Services Specifications exist
 		List <ServiceOrderItem> serviceOrderItemList = serviceOrderCreate.getOrderItem();
 		for (ServiceOrderItem serviceOrderItem: serviceOrderItemList) {
@@ -350,8 +357,26 @@ public class ServiceOrderRepoService {
 		}
 
 		if (serviceOrderCreate.getRelatedParty() != null) {
-			so.getRelatedParty().addAll(serviceOrderCreate.getRelatedParty());
+
+		  for (RelatedParty rp : serviceOrderCreate.getRelatedParty()) {
+
+		    if ( rp.getId() == null ) {
+		      Individual ind = individualRepoService.findByUsername(  rp.getName() );
+		      if ( ind != null ) {
+		        rp.setId(ind.getId());
+		      }
+		      else {
+		        rp.setId( rp.getName());
+		      }
+		    }	          
+
+	          so.getRelatedParty().add(rp);
+          }
+          
+			
 		}
+		
+		
 		if (serviceOrderCreate.getOrderRelationship() != null) {
 			so.getOrderRelationship().addAll(serviceOrderCreate.getOrderRelationship());
 
@@ -366,9 +391,8 @@ public class ServiceOrderRepoService {
 		noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 		so.addNoteItem(noteItem);
 
-		so = this.serviceOrderRepo.saveAndFlush(so);
 		
-		if (allAcknowledged) { //in the case were order items are automatically acknowledged
+		if (allAcknowledged || autoAcknowledge ) { //in the case were order items are automatically acknowledged
 			so.setState( ServiceOrderStateType.ACKNOWLEDGED );
 			so.setStartDate(  OffsetDateTime.now(ZoneOffset.UTC) );
 			noteItem = new Note();
@@ -377,9 +401,9 @@ public class ServiceOrderRepoService {
 			noteItem.setDate(OffsetDateTime.now(ZoneOffset.UTC) );
 			so.addNoteItem(noteItem);
 			
-			so = this.serviceOrderRepo.saveAndFlush(so);
 		}
-		
+
+        so = this.serviceOrderRepo.saveAndFlush(so);
 		raiseSOCreateNotification(so);
 
 		return so;
@@ -620,8 +644,17 @@ public class ServiceOrderRepoService {
 
 		if (serviceOrderUpd.getRelatedParty() != null) {
 			for (RelatedParty n : serviceOrderUpd.getRelatedParty()) {
-				if (n.getUuid() == null) {
-					so.addRelatedPartyItem(n);
+								
+				var partyFound = false;
+				for (RelatedParty rp : so.getRelatedParty()) {
+				  if (rp.getId().equals(n.getId())) {
+				    partyFound = true;
+				  }
+                }
+				
+				if (!partyFound) {
+	                n.setRole("MODIFIER");
+	                so.addRelatedPartyItem(n);				  
 				}
 			}
 		}
@@ -824,9 +857,9 @@ public class ServiceOrderRepoService {
 		return null;
 	}
 	
-	public String addServiceOrderReturnEager(@Valid ServiceOrderCreate serviceOrderCreate) {
+	public String addServiceOrderReturnEager(@Valid ServiceOrderCreate serviceOrderCreate, Boolean autoCreate) {
 		try {
-			ServiceOrder so = this.addServiceOrder(serviceOrderCreate);
+			ServiceOrder so = this.addServiceOrder(serviceOrderCreate, autoCreate);
 			return this.getServiceOrderEagerAsString( so.getUuid());
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
@@ -838,6 +871,7 @@ public class ServiceOrderRepoService {
 		return null;
 	}
 
+	@Transactional
 	public String getImageServiceOrderItemRelationshipGraph(String id, String itemid) {
 
 		ServiceOrder so = this.findByUuid(id);

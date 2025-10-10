@@ -4,38 +4,33 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-
+import java.util.Map;
 import org.apache.camel.ProducerTemplate;
+import org.aspectj.lang.annotation.Before;
 import org.etsi.osl.centrallog.client.CentralLogger;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.scm633.api.ServiceCatalogApiRouteBuilderEvents;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceCatalogDeleteNotification;
-import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteNotification;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-import java.util.Map;
-
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ServiceCatalogApiRouteBuilderEventsTest {
+public class ServiceCatalogApiRouteBuilderEventsTest  extends BaseIT {
 
     @Mock
     private ProducerTemplate template;
@@ -45,10 +40,13 @@ public class ServiceCatalogApiRouteBuilderEventsTest {
 
     @InjectMocks
     private ServiceCatalogApiRouteBuilderEvents routeBuilderEvents;
+    
 
-    @Before
+    private AutoCloseable mocks;
+    
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         
         // Set event topic properties using reflection
         ReflectionTestUtils.setField(routeBuilderEvents, "EVENT_SERVICE_CATALOG_CREATE", "direct:EVENT_SERVICE_CATALOG_CREATE");
@@ -58,6 +56,21 @@ public class ServiceCatalogApiRouteBuilderEventsTest {
         ReflectionTestUtils.setField(routeBuilderEvents, "EVENT_SERVICE_SPECIFICATION_CREATE", "direct:EVENT_SERVICE_SPECIFICATION_CREATE");
         ReflectionTestUtils.setField(routeBuilderEvents, "EVENT_SERVICE_SPECIFICATION_DELETE", "direct:EVENT_SERVICE_SPECIFICATION_DELETE");
         ReflectionTestUtils.setField(routeBuilderEvents, "EVENT_SERVICE_SPECIFICATION_CHANGE", "direct:EVENT_SERVICE_SPECIFICATION_CHANGE");
+    }
+    
+    
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
     }
 
     @Test

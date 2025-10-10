@@ -5,10 +5,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.List;
-
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.scm633.model.EventSubscription;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateEvent;
@@ -16,17 +15,17 @@ import org.etsi.osl.tmf.scm633.model.ServiceCategoryCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteEvent;
 import org.etsi.osl.tmf.scm633.model.ServiceCategoryDeleteNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeEvent;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateEvent;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreateNotification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteEvent;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationDeleteNotification;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeEvent;
-import org.etsi.osl.tmf.scm633.model.ServiceSpecificationChangeNotification;
 import org.etsi.osl.tmf.scm633.reposervices.EventSubscriptionRepoService;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceCatalogCallbackService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -34,13 +33,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-public class ServiceCatalogCallbackServiceExtendedTest {
+public class ServiceCatalogCallbackServiceExtendedTest  extends BaseIT {
 
     @Mock
     private EventSubscriptionRepoService eventSubscriptionRepoService;
@@ -51,10 +48,30 @@ public class ServiceCatalogCallbackServiceExtendedTest {
     @InjectMocks
     private ServiceCatalogCallbackService serviceCatalogCallbackService;
 
-    @Before
+
+    private AutoCloseable mocks;
+    
+    @BeforeAll
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
     }
+    
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    
+    @AfterEach
+    public void tearDown() throws Exception {
+        if (mocks != null) {
+            mocks.close();
+        }
+        if (entityManager != null) {
+          entityManager.clear();
+      }
+    }
+
+
 
     @Test
     public void testSendServiceCategoryCreateCallback() {
