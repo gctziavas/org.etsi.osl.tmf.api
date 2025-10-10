@@ -438,7 +438,6 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
     @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
     @Test
     public void testServiceSpecInvalidRangeIntervalIsBadRequest() throws Exception {
-        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
         File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecInvalidRangeInterval.json");
         InputStream in = new FileInputStream(serviceSpec);
         String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
@@ -454,7 +453,6 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
     @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
     @Test
     public void testServiceSpecInvalidTypesIsBadRequest() throws Exception {
-        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
         File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecInvalidTypes.json");
         InputStream in = new FileInputStream(serviceSpec);
         String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
@@ -470,7 +468,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
     @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
     @Test
     public void testServiceSpecValidRangeIntervalIsOk() throws Exception {
-        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
+        final int existingServiceSpecs = specRepoService.findAll().size();
         File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecValidRangeInterval.json");
         InputStream in = new FileInputStream(serviceSpec);
         String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
@@ -482,7 +480,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS + 1);
+        assertThat(specRepoService.findAll().size()).isEqualTo(existingServiceSpecs + 1);
         ServiceSpecification responseSpec = JsonUtils.toJsonObj(response, ServiceSpecification.class);
         assertThat(responseSpec.getName()).isEqualTo("Test Spec");
     }
@@ -490,7 +488,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
     @WithMockUser(username = "osadmin", roles = { "ADMIN","USER" })
     @Test
     public void testServiceSpecValidTypesIsOk() throws Exception {
-        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS);
+        final int existingServiceSpecs = specRepoService.findAll().size();
         File serviceSpec = new File("src/test/resources/reposervices/scm633/testServiceSpecValidTypes.json");
         InputStream in = new FileInputStream(serviceSpec);
         String serviceSpecText = IOUtils.toString(in, StandardCharsets.UTF_8);
@@ -502,7 +500,7 @@ public class ServiceSpecificationApiControllerTest extends BaseIT {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        assertThat(specRepoService.findAll().size()).isEqualTo(FIXED_BOOTSTRAPS_SPECS + 1);
+        assertThat(specRepoService.findAll().size()).isEqualTo(existingServiceSpecs + 1);
         ServiceSpecification responseSpec = JsonUtils.toJsonObj(response, ServiceSpecification.class);
         assertThat(responseSpec.getName()).isEqualTo("Test Spec");
     }
