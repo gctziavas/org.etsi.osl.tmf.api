@@ -77,14 +77,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCandidateChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCandidateChangeNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCandidateChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -103,14 +103,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCandidateCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCandidateCreateNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCandidateCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -129,14 +129,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCandidateDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCandidateDeleteNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCandidateDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -155,14 +155,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogBatchNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCatalogBatchNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogBatchNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -181,14 +181,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCatalogChangeNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -207,14 +207,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCatalogCreateNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -233,14 +233,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCatalogDeleteNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCatalogDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -259,14 +259,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCategoryChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCategoryChangeNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCategoryChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -285,14 +285,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCategoryCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCategoryCreateNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCategoryCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -311,14 +311,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCategoryDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceCategoryDeleteNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceCategoryDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -337,14 +337,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceSpecificationChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceSpecificationChangeNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceSpecificationChangeNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -363,14 +363,14 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceSpecificationCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceSpecificationCreateNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceSpecificationCreateNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 
 
@@ -389,13 +389,13 @@ public class ListenerApiControllerTest   extends BaseIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceSpecificationDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
 
         // Test when not providing an "Accept" request header
         mvc.perform(MockMvcRequestBuilders.post("/serviceCatalogManagement/v4/listener/serviceSpecificationDeleteNotification")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content( JsonUtils.toJson( serviceSpecificationDeleteNotification ) ))
-                .andExpect(status().is(501));
+                .andExpect(status().is(200));
     }
 }

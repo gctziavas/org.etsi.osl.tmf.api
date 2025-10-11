@@ -55,6 +55,9 @@ public class CategoryRepoService {
 	private final CategoriesRepository categsRepo;
 	
 	private final CandidateRepository candidateRepo;
+	
+	@Autowired
+	private ServiceCategoryNotificationService serviceCategoryNotificationService;
 
 	
     @Autowired
@@ -64,8 +67,9 @@ public class CategoryRepoService {
     }
 	
 	public ServiceCategory addCategory(ServiceCategory c) {
-
-		return this.getCategsRepo().save( c );
+		ServiceCategory savedCategory = this.getCategsRepo().save(c);
+		serviceCategoryNotificationService.publishServiceCategoryCreateNotification(savedCategory);
+		return savedCategory;
 	}
 
 	public ServiceCategory addCategory(@Valid ServiceCategoryCreate serviceCategory) {	
@@ -73,7 +77,9 @@ public class CategoryRepoService {
 		
 		ServiceCategory sc = new ServiceCategory() ;
 		sc = updateCategoryDataFromAPICall(sc, serviceCategory);
-		return this.getCategsRepo().save( sc );
+		ServiceCategory savedCategory = this.getCategsRepo().save(sc);
+		serviceCategoryNotificationService.publishServiceCategoryCreateNotification(savedCategory);
+		return savedCategory;
 		
 	}
 
@@ -165,17 +171,25 @@ public class CategoryRepoService {
 
 	public boolean deleteById(String id) {
 		Optional<ServiceCategory> optionalCat = this.getCategsRepo().findByUuid( id );
-		if ( optionalCat.get().getCategoryObj().size()>0 ) {
+		
+		// Check if category exists
+		if (!optionalCat.isPresent()) {
+			return false; // Category not found
+		}
+		
+		ServiceCategory category = optionalCat.get();
+		
+		if ( category.getCategoryObj().size()>0 ) {
 			return false; //has children
 		}
 		
 		
-		if ( optionalCat.get().getParentId() != null ) {
-			ServiceCategory parentCat = (this.getCategsRepo().findByUuid( optionalCat.get().getParentId() )).get();
+		if ( category.getParentId() != null ) {
+			ServiceCategory parentCat = (this.getCategsRepo().findByUuid( category.getParentId() )).get();
 			
 			//remove from parent category
 			for (ServiceCategory ss : parentCat.getCategoryObj()) {
-				if  ( ss.getId()  == optionalCat.get().getId() ) {
+				if  ( ss.getId()  == category.getId() ) {
 					 parentCat.getCategoryObj().remove(ss);
 					 break;
 				}
@@ -183,8 +197,8 @@ public class CategoryRepoService {
 			parentCat = this.getCategsRepo().save(parentCat);
 		}
 		
-		
-		this.getCategsRepo().delete( optionalCat.get());
+		serviceCategoryNotificationService.publishServiceCategoryDeleteNotification(category);
+		this.getCategsRepo().delete(category);
 		return true;
 		
 	}

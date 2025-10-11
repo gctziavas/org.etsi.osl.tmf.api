@@ -5,7 +5,6 @@
  */
 package org.etsi.osl.tmf.pim637.api;
 
-import org.etsi.osl.tmf.pim637.model.Error;
 import org.etsi.osl.tmf.pim637.model.EventSubscription;
 import org.etsi.osl.tmf.pim637.model.ProductAttributeValueChangeEvent;
 import org.etsi.osl.tmf.pim637.model.ProductBatchEvent;

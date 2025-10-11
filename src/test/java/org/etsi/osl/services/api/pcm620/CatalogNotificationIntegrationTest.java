@@ -1,6 +1,7 @@
 package org.etsi.osl.services.api.pcm620;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,6 +44,9 @@ public class CatalogNotificationIntegrationTest extends BaseIT {
     private EntityManager entityManager;
 
     private AutoCloseable mocks;
+
+    @Value("${EVENT_PRODUCT_CATALOG_CREATE}")
+    private String EVENT_CATALOG_CREATE = "";
 
     @BeforeAll
     public void setupOnce() {
@@ -80,10 +85,10 @@ public class CatalogNotificationIntegrationTest extends BaseIT {
 
         // Assert - Verify notification was published to Camel ProducerTemplate (ActiveMQ)
         verify(producerTemplate, timeout(5000)).sendBodyAndHeaders(
-            anyString(), // topic name
+            eq(EVENT_CATALOG_CREATE), // topic name
             argThat(body -> {
                 // Verify the body contains JSON with catalog create event
-                return body != null && body.toString().contains("CatalogCreateNotification");
+                return body != null && body.toString().contains("A catalog to test notifications");
             }),
             anyMap() // headers
         );
