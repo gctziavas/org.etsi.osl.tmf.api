@@ -1,7 +1,9 @@
 package org.etsi.osl.tmf.aim915.integrations.mlflow;
 
 import org.mlflow.tracking.MlflowClient;
+import org.mlflow.api.proto.Service.Experiment;
 import org.mlflow.api.proto.Service.FileInfo;
+import org.mlflow.api.proto.Service.Run;
 import org.mlflow.api.proto.ModelRegistry.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -188,6 +190,81 @@ public class MlflowUtils {
     public File getLogsArtifact(String runId) {
         log.debug("Retrieving logs artifact for run: {}", runId);
         return getArtifactByPath(runId, "logs");
+    }
+
+    /**
+     * Retrieves model datasheet artifact from a run.
+     * The datasheet may be stored in different formats (markdown, pdf, txt).
+     * Tries common paths: "model_data_sheet", "datasheet", "model_card"
+     * 
+     * @param runId The MLflow run ID
+     * @return File pointing to the model datasheet, or null if not found
+     */
+    public File getModelDataSheetArtifact(String runId) {
+        log.debug("Retrieving model datasheet artifact for run: {}", runId);
+        
+        // Try common datasheet paths
+        String[] datasheetPaths = {"model_data_sheet", "datasheet", "model_card", "model_datasheet"};
+        for (String path : datasheetPaths) {
+            File artifact = getArtifactByPath(runId, path);
+            if (artifact != null) {
+                log.info("Found model datasheet at path: {}", path);
+                return artifact;
+            }
+        }
+        
+        log.warn("No model datasheet artifact found for run: {}", runId);
+        return null;
+    }
+
+    /**
+     * Retrieves deployment record artifact from a run.
+     * The deployment record may be stored in different formats.
+     * Tries common paths: "deployment_record", "deployment", "deployment.yaml", "deployment.json"
+     * 
+     * @param runId The MLflow run ID
+     * @return File pointing to the deployment record, or null if not found
+     */
+    public File getDeploymentRecordArtifact(String runId) {
+        log.debug("Retrieving deployment record artifact for run: {}", runId);
+        
+        // Try common deployment record paths
+        String[] deploymentPaths = {"deployment_record", "deployment", "deployment.yaml", "deployment.json", "deployment_config"};
+        for (String path : deploymentPaths) {
+            File artifact = getArtifactByPath(runId, path);
+            if (artifact != null) {
+                log.info("Found deployment record at path: {}", path);
+                return artifact;
+            }
+        }
+        
+        log.warn("No deployment record artifact found for run: {}", runId);
+        return null;
+    }
+
+    /**
+     * Retrieves inherited/base model artifact from a run.
+     * The base model may be stored in different formats.
+     * Tries common paths: "base_model", "inherited_model", "parent_model", "base_model.pkl"
+     * 
+     * @param runId The MLflow run ID
+     * @return File pointing to the inherited model, or null if not found
+     */
+    public File getInheritedModelArtifact(String runId) {
+        log.debug("Retrieving inherited model artifact for run: {}", runId);
+        
+        // Try common inherited model paths
+        String[] inheritedModelPaths = {"base_model", "inherited_model", "parent_model", "base_model.pkl", "foundation_model"};
+        for (String path : inheritedModelPaths) {
+            File artifact = getArtifactByPath(runId, path);
+            if (artifact != null) {
+                log.info("Found inherited model at path: {}", path);
+                return artifact;
+            }
+        }
+        
+        log.warn("No inherited model artifact found for run: {}", runId);
+        return null;
     }
 
     /**
@@ -462,5 +539,15 @@ public class MlflowUtils {
             log.error("Error listing artifacts by path for run {} at {}: {}", runId, path, e.getMessage(), e);
             return java.util.Collections.emptyList();
         }
+    }
+
+    public Run getMlFlowRun(String runId) {
+        log.debug("Fetching MLflow run: {}", runId);
+        return client.getRun(runId);
+    }
+
+    public Experiment getMlFlowExperiment(String experimentId) {
+        log.debug("Fetching MLflow experiment: {}", experimentId);
+        return client.getExperiment(experimentId);
     }
 }

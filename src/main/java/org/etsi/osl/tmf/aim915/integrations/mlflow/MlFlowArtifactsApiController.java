@@ -85,7 +85,7 @@ public class MlFlowArtifactsApiController implements MlFlowArtifactsApi {
     
     /**
      * Maps artifact type to MLflow artifact path
-     * @param artifactType: 'model', 'training_data', 'evaluation_data'
+     * @param artifactType: 'model', 'training_data', 'evaluation_data', 'model_data_sheet', 'deployment_record', 'inherited_model'
      * @return MLflow artifact path or null if invalid
      */
     private String mapArtifactTypeToPath(String artifactType) {
@@ -96,6 +96,16 @@ public class MlFlowArtifactsApiController implements MlFlowArtifactsApi {
                 return "training_data";
             case "evaluation_data":
                 return "evaluation_data";
+            case "model_data_sheet":
+            case "datasheet":
+            case "model_card":
+                return "model_data_sheet";
+            case "deployment_record":
+            case "deployment":
+                return "deployment_record";
+            case "inherited_model":
+            case "base_model":
+                return "inherited_model";
             default:
                 return null;
         }

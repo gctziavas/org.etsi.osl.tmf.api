@@ -27,6 +27,8 @@ public class AiModelRepositoryService {
         this.aiModelRepository = aiModelRepository;
     }
 
+    private AiModelMapper aiModelMapper;
+
     public List<AiModel> findAllAiModels() {
         log.info("AiModels LIST");
         return (List<AiModel>)  aiModelRepository.findAll();
@@ -39,8 +41,8 @@ public class AiModelRepositoryService {
 
     public AiModel createAiModel(AiModelCreate aiModelCreate) {
         log.info("AiModel CREATE: {}", aiModelCreate);
-        AiModelMapper mapper = AiModelMapper.INSTANCE;
-        AiModel aiModel = mapper.toAiModel(aiModelCreate);
+
+        AiModel aiModel = aiModelMapper.fromCreate(aiModelCreate);
         return aiModelRepository.save(aiModel);
     }
 
@@ -48,8 +50,7 @@ public class AiModelRepositoryService {
         log.info("AiModel UPDATE with UUID: {}", uuid);
         aiModelRepository.findByUuid(uuid).
                 orElseThrow(() -> new IllegalArgumentException("No AI Model with UUID: " + uuid));
-        AiModelMapper mapper = AiModelMapper.INSTANCE;
-        AiModel aiModel = mapper.toAiModel(aiModelUpdate);
+        AiModel aiModel = aiModelMapper.fromUpdate(aiModelUpdate);
         return aiModelRepository.save(aiModel);
     }
 
