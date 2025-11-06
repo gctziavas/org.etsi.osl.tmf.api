@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.etsi.osl.tmf.aim915.integrations.mlflow.MlflowUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,10 +21,10 @@ import java.nio.file.Files;
 public class MlFlowArtifactsApiController implements MlFlowArtifactsApi {
 
     private static final Logger log = LoggerFactory.getLogger(MlFlowArtifactsApiController.class);
-    private final MlflowService mlflowService;
+    private final MlflowUtils mlflowUtils;
 
-    public MlFlowArtifactsApiController(MlflowService mlflowService) {
-        this.mlflowService = mlflowService;
+    public MlFlowArtifactsApiController(MlflowUtils mlflowUtils) {
+        this.mlflowUtils = mlflowUtils;
     }
 
     @Override
@@ -42,8 +44,8 @@ public class MlFlowArtifactsApiController implements MlFlowArtifactsApi {
             }
             
             log.debug("Mapped artifact type '{}' to path '{}'", artifactType, artifactPath);
-            
-            File downloadedArtifact = mlflowService.getUtils().downloadArtifact(modelName, artifactPath);
+
+            File downloadedArtifact = mlflowUtils.downloadArtifact(modelName, artifactPath);
 
             if (downloadedArtifact == null) {
                 log.warn("Artifact not found: {} for model {}", artifactPath, modelName);
