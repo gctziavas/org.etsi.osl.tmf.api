@@ -16,12 +16,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 @RestController
-public class AiModelArtifactsApiController implements AiModelArtifactsApi {
+public class MlFlowArtifactsApiController implements MlFlowArtifactsApi {
 
-    private static final Logger log = LoggerFactory.getLogger(AiModelArtifactsApiController.class);
+    private static final Logger log = LoggerFactory.getLogger(MlFlowArtifactsApiController.class);
     private final MlflowService mlflowService;
 
-    public AiModelArtifactsApiController(MlflowService mlflowService) {
+    public MlFlowArtifactsApiController(MlflowService mlflowService) {
         this.mlflowService = mlflowService;
     }
 
@@ -43,7 +43,7 @@ public class AiModelArtifactsApiController implements AiModelArtifactsApi {
             
             log.debug("Mapped artifact type '{}' to path '{}'", artifactType, artifactPath);
             
-            File downloadedArtifact = mlflowService.downloadArtifact(modelName, artifactPath);
+            File downloadedArtifact = mlflowService.getUtils().downloadArtifact(modelName, artifactPath);
 
             if (downloadedArtifact == null) {
                 log.warn("Artifact not found: {} for model {}", artifactPath, modelName);

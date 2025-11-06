@@ -8,14 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.mlflow.api.proto.Service.Run;
 import org.mlflow.api.proto.Service.Experiment;
-import org.mlflow.api.proto.Service.RunInfo;
 import org.mlflow.api.proto.Service.RunData;
 import org.mlflow.api.proto.Service.Param;
-import org.mlflow.api.proto.Service.Metric;
 import org.mlflow.api.proto.Service.RunTag;
-import org.mlflow.entities.model_registry.ModelVersion;
-import org.mlflow.entities.model_registry.ModelVersionTag;
-import org.mlflow.paginator.ModelVersionsPage;
 
 import org.etsi.osl.tmf.common.model.service.Characteristic;
 import org.etsi.osl.tmf.common.model.service.ServiceStateType;
@@ -24,10 +19,7 @@ import org.etsi.osl.tmf.common.model.Any;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -36,12 +28,14 @@ public class MlflowService {
 
     private static final Logger log = LoggerFactory.getLogger(MlflowService.class);
     private final MlflowClient client;
+    private final MlflowUtils mlflowUtils;
 
     public MlflowService(@Value("${mlflow.host:127.0.0.1}") String host,
                          @Value("${mlflow.port:5000}") int port) {
         String url = String.format("http://%s:%d", host, port);
         log.info("Initializing MlflowService with URL: {}", url);
         this.client = new MlflowClient(url);
+        this.mlflowUtils = new MlflowUtils(client);
     }
 
     public Run getMlFlowRun(String runId) {
@@ -63,13 +57,9 @@ public class MlflowService {
         spec.setName(modelVersion.getName());
         spec.setVersion(modelVersion.getVersion());
         spec.setLifecycleStatus(modelVersion.getStatus().name());
-        if (modelVersion.getLastUpdatedTimestamp() > 0) {
-            spec.setLastUpdate(java.time.OffsetDateTime.ofInstant(
-                    java.time.Instant.ofEpochMilli(modelVersion.getLastUpdatedTimestamp()),
-                    java.time.ZoneId.systemDefault()));
-        }
 
         // Model data sheet from model version description
+        spec.setModelDataSheet(client.listArtifacts(run.getInfo().getRunId()));
         spec.setModelDataSheet(modelVersion.getDescription());
         log.debug("Set model data sheet from description");
 
@@ -232,109 +222,13 @@ public class MlflowService {
         return aiModel;
     }
 
-    public File downloadArtifact(String modelName, String artifactPath) {
-        log.info("Downloading artifact {} for model: {}", artifactPath, modelName);
-        try {
-            // Search for model versions - returns a paginated result
-            ModelVersionsPage versionsPage = client.searchModelVersions("name='" + modelName + "'");
-            List<ModelVersion> versions = versionsPage.getItems();
-            
-            if (versions == null || versions.isEmpty()) {
-                log.warn("No versions found for model: {}", modelName);
-                return null; // Or throw an exception
-            }
-            
-            // Get the latest version's run ID
-            String runId = versions.get(0).getRunId();
-            log.debug("Using run ID {} for model {}", runId, modelName);
-            
-            File artifact = client.downloadArtifacts(runId, artifactPath);
-            log.info("Successfully downloaded artifact {} from model {}", artifactPath, modelName);
-            return artifact;
-            
-        } catch (Exception e) {
-            log.error("Error downloading artifact {} for model {}: {}", 
-                artifactPath, modelName, e.getMessage(), e);
-            return null;
-        }
-    }
-
     /**
-     * Lists all available artifacts for a given model.
-     * This is useful to discover what artifacts (model files, datasets, etc.) are available.
+     * Gets the MlflowUtils instance for artifact operations.
      * 
-     * @param modelName The name of the model
-     * @return List of artifact paths available for the model's run
+     * @return MlflowUtils instance
      */
-    public List<String> listAvailableArtifacts(String modelName) {
-        log.debug("Listing available artifacts for model: {}", modelName);
-        try {
-            // Search for model versions
-            ModelVersionsPage versionsPage = client.searchModelVersions("name='" + modelName + "'");
-            List<ModelVersion> versions = versionsPage.getItems();
-            
-            if (versions == null || versions.isEmpty()) {
-                log.warn("No versions found for model: {}", modelName);
-                return new ArrayList<>();
-            }
-            
-            // Get the latest version's run ID
-            String runId = versions.get(0).getRunId();
-            log.debug("Listing artifacts for run ID: {}", runId);
-            
-            // List all artifacts for this run
-            List<String> artifacts = client.listArtifacts(runId).stream()
-                    .map(fileInfo -> fileInfo.getPath())
-                    .collect(java.util.stream.Collectors.toList());
-                    
-            log.info("Found {} artifacts for model {}", artifacts.size(), modelName);
-            return artifacts;
-            
-        } catch (Exception e) {
-            log.error("Error listing artifacts for model {}: {}", modelName, e.getMessage(), e);
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Lists artifacts for a specific run ID.
-     * 
-     * @param runId The MLflow run ID
-     * @return List of artifact paths
-     */
-    public List<String> listArtifactsByRunId(String runId) {
-        log.debug("Listing artifacts for run ID: {}", runId);
-        try {
-            List<String> artifacts = client.listArtifacts(runId).stream()
-                    .map(fileInfo -> fileInfo.getPath())
-                    .collect(java.util.stream.Collectors.toList());
-            log.info("Found {} artifacts for run {}", artifacts.size(), runId);
-            return artifacts;
-        } catch (Exception e) {
-            log.error("Error listing artifacts for run {}: {}", runId, e.getMessage(), e);
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Lists artifacts under a specific path in a run.
-     * 
-     * @param runId The MLflow run ID
-     * @param path The path within the artifacts directory (e.g., "training_data")
-     * @return List of artifact paths under the specified path
-     */
-    public List<String> listArtifactsByPath(String runId, String path) {
-        log.debug("Listing artifacts by path: runId={}, path={}", runId, path);
-        try {
-            List<String> artifacts = client.listArtifacts(runId, path).stream()
-                    .map(fileInfo -> fileInfo.getPath())
-                    .collect(java.util.stream.Collectors.toList());
-            log.info("Found {} artifacts for run {} at path {}", artifacts.size(), runId, path);
-            return artifacts;
-        } catch (Exception e) {
-            log.error("Error listing artifacts by path for run {} at {}: {}", runId, path, e.getMessage(), e);
-            return java.util.Collections.emptyList();
-        }
+    public MlflowUtils getUtils() {
+        return mlflowUtils;
     }
 
 }

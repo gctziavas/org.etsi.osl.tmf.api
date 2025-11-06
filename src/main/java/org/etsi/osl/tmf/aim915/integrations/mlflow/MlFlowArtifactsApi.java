@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "AI Model Artifacts", description = "Endpoints for downloading AI Model artifacts")
 @RequestMapping("/tmf-api/aim/v1")
-public interface AiModelArtifactsApi {
+public interface MlFlowArtifactsApi {
 
     @Operation(
         summary = "Downloads a model artifact from MLflow",
