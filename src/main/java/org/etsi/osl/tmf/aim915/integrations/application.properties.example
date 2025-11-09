@@ -1,0 +1,39 @@
+# Hugging Face Integration Configuration
+# =======================================
+
+# Optional: Hugging Face API token for accessing private models
+# Get your token from: https://huggingface.co/settings/tokens
+huggingface.api.token=
+
+# Download timeout in milliseconds (default: 300000 = 5 minutes)
+# Adjust based on your network speed and typical model sizes
+# Examples:
+#   Small models (<1GB):    120000 (2 minutes)
+#   Medium models (1-5GB):  600000 (10 minutes)
+#   Large models (>5GB):   1800000 (30 minutes)
+huggingface.download.timeout=300000
+
+# MLflow Integration Configuration
+# =================================
+
+# MLflow server host (default: 127.0.0.1)
+mlflow.host=127.0.0.1
+
+# MLflow server port (default: 5000)
+mlflow.port=5000
+
+# Performance Tuning Notes
+# ========================
+# 
+# The Hugging Face integration automatically optimizes for file size:
+# - Files ≤ 50MB: Downloaded completely (faster for small files)
+# - Files > 50MB: Streamed directly (memory efficient for large files)
+#
+# If you experience timeout issues with large models:
+# 1. Increase huggingface.download.timeout proportionally to file size
+# 2. Check network connectivity and bandwidth to huggingface.co
+# 3. Consider using a caching proxy for frequently accessed models
+#
+# Memory Usage:
+# - Small files: ~2x file size (one copy in temp file, one in response)
+# - Large files: ~64KB (buffer size only, streaming enabled)

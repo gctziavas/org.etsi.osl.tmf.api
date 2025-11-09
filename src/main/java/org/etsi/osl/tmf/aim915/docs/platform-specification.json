@@ -1,0 +1,87 @@
+{
+  "id": "generated-uuid",
+  "name": "HuggingFace Platform",
+  "version": "1.0",
+  "description": "Hugging Face Hub - A platform for hosting and sharing AI models, particularly for natural language processing, computer vision, and other machine learning tasks. Supports models from various frameworks including Transformers, Diffusers, and more.",
+  "specCharacteristic": [
+    {
+      "name": "platformUrl",
+      "description": "Base URL for the Hugging Face Hub platform",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "string",
+          "value": "https://huggingface.co",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "name": "apiUrl",
+      "description": "Base URL for the Hugging Face API",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "string",
+          "value": "https://huggingface.co/api",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "name": "supportedModelTypes",
+      "description": "Types of models supported by the platform",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "array",
+          "value": "text-generation,text-classification,token-classification,question-answering,translation,summarization,conversational,text-to-image,image-classification,object-detection,image-segmentation,audio-classification,automatic-speech-recognition,text-to-speech,fill-mask,sentence-similarity",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "name": "supportedLibraries",
+      "description": "Machine learning libraries supported by the platform",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "array",
+          "value": "transformers,diffusers,sentence-transformers,timm,spacy,paddlenlp,tensorflowjs,fairseq,asteroid,speechbrain,espnet,allennlp",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "name": "licenseTypes",
+      "description": "Types of licenses available on the platform",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "array",
+          "value": "apache-2.0,mit,openrail,creativeml-openrail-m,bigscience-bloom-rail-1.0,bigscience-openrail-m,cc-by-4.0,cc-by-nc-4.0,cc-by-sa-4.0,gpl-3.0,lgpl-3.0,other",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "name": "accessTypes",
+      "description": "Model access levels supported by the platform",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "array",
+          "value": "public,private,gated",
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "name": "deploymentArtifactsInfo",
+      "description": "Information about downloadable deployment artifacts",
+      "characteristicValueSpecification": [
+        {
+          "valueType": "string",
+          "value": "Each model provides a deploymentArtifactsUrl characteristic that points to a tar.gz archive containing all essential files needed for deployment (config, tokenizer, weights, etc.). Archives are created on-demand and served via the TMF API.",
+          "isDefault": true
+        }
+      ]
+    }
+  ],
+  "@type": "AiModelSpecification",
+  "@schemaLocation": "https://tmforum.org/schemas/aim915/AiModelSpecification"
+}

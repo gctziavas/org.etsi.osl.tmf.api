@@ -1,0 +1,132 @@
+{
+  "id": "generated-uuid-for-model",
+  "name": "mistralai/Mistral-7B-v0.1",
+  "description": "Mistral 7B v0.1 - A 7-billion parameter language model",
+  "aiModelSpecification": {
+    "id": "platform-spec-uuid",
+    "href": "/tmf-api/aim/v1/aiModelSpecification/platform-spec-uuid",
+    "name": "HuggingFace Platform",
+    "version": "1.0"
+  },
+  "serviceCharacteristic": [
+    {
+      "name": "modelId",
+      "value": "mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "repositoryUrl",
+      "value": "https://huggingface.co/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "modelType",
+      "value": "text-generation",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "library",
+      "value": "transformers",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "author",
+      "value": "mistralai",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "lastModified",
+      "value": "2024-09-30T14:23:56.000Z",
+      "valueType": "datetime",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "tags",
+      "value": "text-generation,transformers,pytorch,mistral,en,arxiv:2310.06825,license:apache-2.0",
+      "valueType": "array",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "totalSize",
+      "value": "14483963727",
+      "valueType": "integer",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "totalSizeHuman",
+      "value": "13.5 GB",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "languages",
+      "value": "en,fr,de,es,it",
+      "valueType": "array",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "modelDataSheet",
+      "value": "https://huggingface.co/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Model card URL with full documentation"
+    },
+    {
+      "name": "inheritedModel",
+      "value": "mistralai/Mistral-7B-base",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Base model identifier"
+    },
+    {
+      "name": "inheritedModelUrl",
+      "value": "https://huggingface.co/mistralai/Mistral-7B-base",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "trainingData",
+      "value": "wikipedia,bookcorpus,openwebtext2",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Training dataset names"
+    },
+    {
+      "name": "trainingDataUrl",
+      "value": "https://huggingface.co/datasets/wikipedia",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic"
+    },
+    {
+      "name": "evaluationData",
+      "value": "mmlu,hellaswag,arc",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Evaluation datasets"
+    },
+    {
+      "name": "deploymentRecord",
+      "value": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Inference API endpoint"
+    },
+    {
+      "name": "deploymentArtifactsUrl",
+      "value": "/tmf-api/aim/v1/aiModel/artifacts/huggingface/mistralai_Mistral-7B-v0.1/deployment.tar.gz",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Download URL for tar.gz archive containing all deployment files (config, tokenizer, model weights)"
+    }
+  ],
+  "@type": "AiModel",
+  "@schemaLocation": "https://tmforum.org/schemas/aim915/AiModel",
+  "@baseType": "Resource",
+  "lifecycleStatus": "Active",
+  "version": "0.1"
+}
