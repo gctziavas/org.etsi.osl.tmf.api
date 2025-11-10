@@ -430,12 +430,11 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
 
 
     private ServiceOrderCreate createServiceOrderWithCharacteristicValue(String characteristicValue) throws Exception {
-        File sspec = new File("src/test/resources/testServiceSpecValidRangeInterval.json");
+        File sspec = new File("src/test/resources/reposervices/scm633/testServiceSpecValidRangeInterval.json");
         InputStream in = new FileInputStream(sspec);
         String sspectext = IOUtils.toString(in, "UTF-8");
 
         ServiceSpecificationCreate sspeccr = JsonUtils.toJsonObj(sspectext, ServiceSpecificationCreate.class);
-        sspeccr.setName("Spec1");
         ServiceSpecification responsesSpec = createServiceSpec(sspeccr);
 
         ServiceOrderCreate serviceOrder = new ServiceOrderCreate();
