@@ -92,9 +92,17 @@ public class HuggingFacePlatformService {
         AiModelSpecificationCreate specCreate = new AiModelSpecificationCreate();
         specCreate.setName(PLATFORM_SPEC_NAME);
         specCreate.setVersion(PLATFORM_SPEC_VERSION);
-        specCreate.setDescription("Hugging Face Hub - A platform for hosting and sharing AI models, particularly "
+        specCreate.setDescription("This specification describes how to define models from the Hugging Face Hub -"
+            + "A platform for hosting and sharing AI models, particularly "
             + "for natural language processing, computer vision, and other machine learning tasks. "
             + "Supports models from various frameworks including Transformers, Diffusers, and more.");
+        specCreate.setBaseType("AiModelSpecification");
+
+        specCreate.setDeploymentRecord("The URL to the artifact or the location of the deployment record");
+        specCreate.setModelDataSheet("The URL to the location of the model data sheet (model card)");
+        specCreate.setInheritedModel("The URL to the artifact or the location of the inherited model");
+        specCreate.setModelEvaluationData("The URL to the artifact or the location of the model evaluation data");
+        specCreate.setModelTrainingData("The URL to the artifact or the location of the model training data");
         
         // Platform characteristics
         
@@ -121,13 +129,11 @@ public class HuggingFacePlatformService {
         // 3. Supported model types (pipeline tags)
         specCreate.addSpecCharacteristicItem(
             createCharacteristicSpec(
-                "supportedModelTypes",
-                "Types of models supported by the platform",
-                "array",
-                "text-generation,text-classification,token-classification,question-answering,"
-                    + "translation,summarization,conversational,text-to-image,image-classification,"
-                    + "object-detection,image-segmentation,audio-classification,automatic-speech-recognition,"
-                    + "text-to-speech,fill-mask,sentence-similarity"
+                "modelType",
+                "Type of the model. (e.g.\"text-generation,text-classification,token-classification,question-answering,\"\n" + //
+                                        "                    + \"translation,summarization,conversational,text-to-image,image-classification,\"\n" + //
+                                        "                    + \"object-detection,image-segmentation,audio-classification,automatic-speech-recognition,\"\n" + //
+                                        "                    + \"text-to-speech,fill-mask,sentence-similarity\")"
             )
         );
         
@@ -135,10 +141,9 @@ public class HuggingFacePlatformService {
         specCreate.addSpecCharacteristicItem(
             createCharacteristicSpec(
                 "supportedLibraries",
-                "Machine learning libraries supported by the platform",
-                "array",
-                "transformers,diffusers,sentence-transformers,timm,spacy,paddlenlp,"
-                    + "tensorflowjs,fairseq,asteroid,speechbrain,espnet,allennlp"
+                "Machine learning libraries supported by the platform (e.g ,\n" + //
+                                        "                \"transformers,diffusers,sentence-transformers,timm,spacy,paddlenlp,\"\n" + //
+                                        "                    + \"tensorflowjs,fairseq,asteroid,speechbrain,espnet,allennlp\")"
             )
         );
         
@@ -146,23 +151,14 @@ public class HuggingFacePlatformService {
         specCreate.addSpecCharacteristicItem(
             createCharacteristicSpec(
                 "provider",
-                "Organization providing the platform",
-                "string",
-                "Hugging Face Inc."
+                "Organization providing the model",
+                "string"
             )
         );
         
-        // 6. Authentication method
-        specCreate.addSpecCharacteristicItem(
-            createCharacteristicSpec(
-                "authenticationMethod",
-                "Method for authenticating with the platform",
-                "string",
-                "Bearer Token"
-            )
-        );
+
         
-        // 7. Deployment artifacts URL pattern
+        // 6. Deployment artifacts URL pattern
         specCreate.addSpecCharacteristicItem(
             createCharacteristicSpec(
                 "deploymentArtifactsUrl",
@@ -171,28 +167,24 @@ public class HuggingFacePlatformService {
                 "URI pattern: /tmf-api/aim/v1/aiModel/artifacts/huggingface/{modelId}/deployment.tar.gz"
             )
         );
-        
-        // Set platform-level information for TMF AIM915 fields
-        
-        // modelDataSheet: Platform documentation
-        specCreate.setModelDataSheet("URI that leads to platform documentation and API reference");
-        log.debug("Set platform modelDataSheet description");
-        
-        // deploymentRecord: Platform deployment/infrastructure information
-        specCreate.setDeploymentRecord("URI that leads to deployment options and infrastructure documentation");
-        log.debug("Set platform deploymentRecord description");
-        
-        // inheritedModel: Not applicable at platform level (N/A for platform specification)
-        // This field is more relevant for individual models that inherit from base models
-        specCreate.setInheritedModel(null);
-        
-        // modelTrainingData: Platform-level information about datasets
-        specCreate.setModelTrainingData("URI that leads to the training dataset artifacts");
-        log.debug("Set platform modelTrainingData description");
-        
-        // modelEvaluationData: Platform-level evaluation/benchmarking information
-        specCreate.setModelEvaluationData("URI that leads to evaluation results and benchmark metrics");
-        log.debug("Set platform modelEvaluationData description");
+
+        // 7. Total size of deployment artifacts
+        specCreate.addSpecCharacteristicItem(
+            createCharacteristicSpec(
+                "totalSize (in bytes)",
+                "Total size of the model files",
+                "integer"
+            )
+        );
+
+        // 8. Tags
+        specCreate.addSpecCharacteristicItem(
+            createCharacteristicSpec(
+                "tags",
+                "Common tags associated with models on the Hugging Face Hub",
+                "array"
+            )
+        );
         
         log.debug("Creating platform specification in repository");
         AiModelSpecification createdSpec = aiModelSpecificationRepositoryService.createAiModelSpecification(specCreate);
@@ -293,95 +285,96 @@ public class HuggingFacePlatformService {
         aiModelCreate.setName(modelId);
         aiModelCreate.setDescription(extractModelDescription(modelInfo, modelId));
         
-        // Service characteristics - model-specific attributes
+        // Service characteristics - model-specific attributes matching specification
         
-        // 1. Model ID
-        addCharacteristic(aiModelCreate, "modelId", modelId, "string");
+        // 1. platformUrl - Model repository URL
+        addCharacteristic(aiModelCreate, "platformUrl", buildRepositoryUrl(modelId), "string");
         
-        // 2. Model repository URL
-        addCharacteristic(aiModelCreate, "repositoryUrl", buildRepositoryUrl(modelId), "string");
+        // 2. apiUrl - Model API endpoint
+        addCharacteristic(aiModelCreate, "apiUrl", HF_API_BASE_URL + "/models/" + modelId, "string");
         
-        // 3. Model type/task (pipeline tag)
+        // 3. modelType - Model type/task (pipeline tag)
         String pipelineTag = getTextValue(modelInfo, "pipeline_tag");
         if (pipelineTag != null) {
             addCharacteristic(aiModelCreate, "modelType", pipelineTag, "string");
         }
         
-        // 4. Library/framework
+        // 4. supportedLibraries - Library/framework
         String libraryName = getTextValue(modelInfo, "library_name");
         if (libraryName != null) {
-            addCharacteristic(aiModelCreate, "library", libraryName, "string");
+            addCharacteristic(aiModelCreate, "supportedLibraries", libraryName, "string");
         }
         
-        // 5. Model author/organization
+        // 5. provider - Model author/organization
         String author = getTextValue(modelInfo, "author");
         if (author != null) {
-            addCharacteristic(aiModelCreate, "author", author, "string");
+            addCharacteristic(aiModelCreate, "provider", author, "string");
         }
         
-        // 6. Last modified timestamp
-        String lastModified = getTextValue(modelInfo, "lastModified");
-        if (lastModified != null) {
-            addCharacteristic(aiModelCreate, "lastModified", lastModified, "datetime");
+        // 6. deploymentArtifactsUrl - URL for tar.gz download
+        addCharacteristic(aiModelCreate, "deploymentArtifactsUrl", buildDeploymentArtifactsUrl(modelId, baseUrl), "string");
+        
+        // 7. totalSize - Model size in bytes
+        if (modelInfo.has("siblings")) {
+            long totalSize = calculateTotalSize(modelInfo.get("siblings"));
+            if (totalSize > 0) {
+                addCharacteristic(aiModelCreate, "totalSize (in bytes)", String.valueOf(totalSize), "integer");
+                addCharacteristic(aiModelCreate, "totalSizeHuman", formatBytes(totalSize), "string");
+            }
         }
         
-        // 7. Tags (model characteristics)
+        // 8. tags - Model characteristics
         String tags = extractTags(modelInfo);
         if (tags != null) {
             addCharacteristic(aiModelCreate, "tags", tags, "array");
         }
         
-        // 8. Model size (if available from siblings)
-        if (modelInfo.has("siblings")) {
-            long totalSize = calculateTotalSize(modelInfo.get("siblings"));
-            if (totalSize > 0) {
-                addCharacteristic(aiModelCreate, "totalSize", String.valueOf(totalSize), "integer");
-                addCharacteristic(aiModelCreate, "totalSizeHuman", formatBytes(totalSize), "string");
-            }
-        }
+        // Additional TMF 915 standard fields
         
-        // 9. Language (for NLP models)
-        String languages = extractLanguages(modelInfo);
-        if (languages != null) {
-            addCharacteristic(aiModelCreate, "languages", languages, "array");
-        }
-        
-        // 10. Model Data Sheet (TMF field)
+        // Model Data Sheet - model card URL
         addCharacteristic(aiModelCreate, "modelDataSheet", buildRepositoryUrl(modelId), "string");
-        log.debug("Added modelDataSheet characteristic");
         
-        // 11. Inherited Model (Base Model) - TMF field
+        // Deployment Record - Inference API URL
+        addCharacteristic(aiModelCreate, "deploymentRecord", buildInferenceApiUrl(modelId), "string");
+        
+        // Inherited Model (base model) - if available
         String baseModel = getNestedTextValue(modelInfo, "cardData", "base_model");
         if (baseModel != null) {
             addCharacteristic(aiModelCreate, "inheritedModel", baseModel, "string");
             addCharacteristic(aiModelCreate, "inheritedModelUrl", buildRepositoryUrl(baseModel), "string");
-            log.debug("Added inheritedModel and inheritedModelUrl characteristics");
         }
         
-        // 12. Model Training Data - TMF field
+        // Model Training Data - if available
         String trainingDatasets = getNestedTextValue(modelInfo, "cardData", "datasets");
         if (trainingDatasets != null && !trainingDatasets.isEmpty()) {
-            addCharacteristic(aiModelCreate, "trainingData", trainingDatasets, "string");
+            addCharacteristic(aiModelCreate, "modelTrainingData", trainingDatasets, "string");
             // Create dataset URL - assuming first dataset name
             String firstDataset = trainingDatasets.split(",")[0].trim();
-            addCharacteristic(aiModelCreate, "trainingDataUrl", buildDatasetUrl(firstDataset), "string");
-            log.debug("Added trainingData and trainingDataUrl characteristics");
+            addCharacteristic(aiModelCreate, "modelTrainingDataUrls", buildDatasetUrl(firstDataset), "string");
         }
         
-        // 13. Evaluation Data - TMF field
+        // Model Evaluation Data - if available
         String evalDatasets = getNestedTextValue(modelInfo, "cardData", "eval_datasets");
         if (evalDatasets != null && !evalDatasets.isEmpty()) {
-            addCharacteristic(aiModelCreate, "evaluationData", evalDatasets, "string");
-            log.debug("Added evaluationData characteristic");
+            addCharacteristic(aiModelCreate, "modelEvaluationData", evalDatasets, "string");
         }
         
-        // 14. Deployment Record - TMF field 
-        addCharacteristic(aiModelCreate, "deploymentRecord", buildInferenceApiUrl(modelId), "string");
-        log.debug("Added deploymentRecord characteristic with Hugging Face Inference API URL");
+        // Additional model-specific metadata (not in specification)
         
-        // 15. Deployment Artifacts URL - provides tar.gz with all deployment files
-        addCharacteristic(aiModelCreate, "deploymentArtifactsUrl", buildDeploymentArtifactsUrl(modelId, baseUrl), "string");
-        log.debug("Added deploymentArtifactsUrl characteristic");
+        // Model ID for reference
+        addCharacteristic(aiModelCreate, "modelId", modelId, "string");
+        
+        // Last modified timestamp
+        String lastModified = getTextValue(modelInfo, "lastModified");
+        if (lastModified != null) {
+            addCharacteristic(aiModelCreate, "lastModified", lastModified, "datetime");
+        }
+        
+        // Language (for NLP models)
+        String languages = extractLanguages(modelInfo);
+        if (languages != null) {
+            addCharacteristic(aiModelCreate, "languages", languages, "array");
+        }
         
         log.info("Successfully converted Hugging Face model {} to AiModelCreate with platform specification", modelId);
         return aiModelCreate;

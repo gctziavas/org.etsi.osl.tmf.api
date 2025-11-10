@@ -10,64 +10,67 @@
   },
   "serviceCharacteristic": [
     {
-      "name": "modelId",
-      "value": "mistralai/Mistral-7B-v0.1",
-      "valueType": "string",
-      "@type": "ServiceCharacteristic"
-    },
-    {
-      "name": "repositoryUrl",
+      "name": "platformUrl",
       "value": "https://huggingface.co/mistralai/Mistral-7B-v0.1",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Model repository URL on Hugging Face Hub"
+    },
+    {
+      "name": "apiUrl",
+      "value": "https://huggingface.co/api/models/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Model API endpoint"
     },
     {
       "name": "modelType",
       "value": "text-generation",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Type of model task (pipeline tag)"
     },
     {
-      "name": "library",
+      "name": "supportedLibraries",
       "value": "transformers",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "ML framework/library used"
     },
     {
-      "name": "author",
+      "name": "provider",
       "value": "mistralai",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Model author/organization"
     },
     {
-      "name": "lastModified",
-      "value": "2024-09-30T14:23:56.000Z",
-      "valueType": "datetime",
-      "@type": "ServiceCharacteristic"
+      "name": "deploymentArtifactsUrl",
+      "value": "/tmf-api/aim/v1/aiModel/artifacts/huggingface/mistralai_Mistral-7B-v0.1/deployment.tar.gz",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Download URL for tar.gz archive with all deployment files"
     },
     {
-      "name": "tags",
-      "value": "text-generation,transformers,pytorch,mistral,en,arxiv:2310.06825,license:apache-2.0",
-      "valueType": "array",
-      "@type": "ServiceCharacteristic"
-    },
-    {
-      "name": "totalSize",
+      "name": "totalSize (in bytes)",
       "value": "14483963727",
       "valueType": "integer",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Total size of model files in bytes"
     },
     {
       "name": "totalSizeHuman",
       "value": "13.5 GB",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Human-readable size"
     },
     {
-      "name": "languages",
-      "value": "en,fr,de,es,it",
+      "name": "tags",
+      "value": "text-generation,transformers,pytorch,mistral,en,arxiv:2310.06825,license:apache-2.0",
       "valueType": "array",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Model tags and metadata"
     },
     {
       "name": "modelDataSheet",
@@ -75,6 +78,13 @@
       "valueType": "string",
       "@type": "ServiceCharacteristic",
       "description": "TMF 915 field: Model card URL with full documentation"
+    },
+    {
+      "name": "deploymentRecord",
+      "value": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Inference API endpoint"
     },
     {
       "name": "inheritedModel",
@@ -87,41 +97,50 @@
       "name": "inheritedModelUrl",
       "value": "https://huggingface.co/mistralai/Mistral-7B-base",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Base model repository URL"
     },
     {
-      "name": "trainingData",
+      "name": "modelTrainingData",
       "value": "wikipedia,bookcorpus,openwebtext2",
       "valueType": "string",
       "@type": "ServiceCharacteristic",
       "description": "TMF 915 field: Training dataset names"
     },
     {
-      "name": "trainingDataUrl",
+      "name": "modelTrainingDataUrls",
       "value": "https://huggingface.co/datasets/wikipedia",
       "valueType": "string",
-      "@type": "ServiceCharacteristic"
+      "@type": "ServiceCharacteristic",
+      "description": "Training dataset URL"
     },
     {
-      "name": "evaluationData",
+      "name": "modelEvaluationData",
       "value": "mmlu,hellaswag,arc",
       "valueType": "string",
       "@type": "ServiceCharacteristic",
-      "description": "TMF 915 field: Evaluation datasets"
+      "description": "TMF 915 field: Evaluation dataset names"
     },
     {
-      "name": "deploymentRecord",
-      "value": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-v0.1",
+      "name": "modelId",
+      "value": "mistralai/Mistral-7B-v0.1",
       "valueType": "string",
       "@type": "ServiceCharacteristic",
-      "description": "TMF 915 field: Inference API endpoint"
+      "description": "Hugging Face model identifier"
     },
     {
-      "name": "deploymentArtifactsUrl",
-      "value": "/tmf-api/aim/v1/aiModel/artifacts/huggingface/mistralai_Mistral-7B-v0.1/deployment.tar.gz",
-      "valueType": "string",
+      "name": "lastModified",
+      "value": "2024-09-30T14:23:56.000Z",
+      "valueType": "datetime",
       "@type": "ServiceCharacteristic",
-      "description": "Download URL for tar.gz archive containing all deployment files (config, tokenizer, model weights)"
+      "description": "Last modification timestamp"
+    },
+    {
+      "name": "languages",
+      "value": "en,fr,de,es,it",
+      "valueType": "array",
+      "@type": "ServiceCharacteristic",
+      "description": "Supported languages for NLP models"
     }
   ],
   "@type": "AiModel",

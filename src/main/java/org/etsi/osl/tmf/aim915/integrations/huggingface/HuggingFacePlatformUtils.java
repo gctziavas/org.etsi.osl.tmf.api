@@ -46,6 +46,40 @@ public class HuggingFacePlatformUtils {
     }
     
     /**
+     * Creates a CharacteristicSpecification with only name and description (no value specification)
+     * 
+     * @param name Characteristic name
+     * @param description Characteristic description
+     * @param valueType Value type (string, array, etc.)
+     * @return CharacteristicSpecification object
+     */
+    public static CharacteristicSpecification createCharacteristicSpec(String name, String description, String valueType) {
+        CharacteristicSpecification spec = new CharacteristicSpecification();
+        spec.setName(name);
+        spec.setDescription(description);
+                
+        CharacteristicValueSpecification valueSpec = new CharacteristicValueSpecification();
+        valueSpec.setValueType(valueType);
+        spec.setCharacteristicValueSpecification(List.of(valueSpec));
+
+        return spec;
+    }
+    
+    /**
+     * Creates a CharacteristicSpecification with only name and description (no value specification)
+     * 
+     * @param name Characteristic name
+     * @param description Characteristic description
+     * @return CharacteristicSpecification object
+     */
+    public static CharacteristicSpecification createCharacteristicSpec(String name, String description) {
+        CharacteristicSpecification spec = new CharacteristicSpecification();
+        spec.setName(name);
+        spec.setDescription(description);
+        return spec;
+    }
+
+    /**
      * Adds a service characteristic to an AiModelCreate
      * 
      * @param aiModelCreate The AiModelCreate object
