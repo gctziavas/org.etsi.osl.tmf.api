@@ -7,16 +7,19 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+
+import java.io.*;
 import java.security.Principal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.io.IOUtils;
 import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.JsonUtils;
+import org.etsi.osl.tmf.common.model.Any;
+import org.etsi.osl.tmf.common.model.service.Characteristic;
 import org.etsi.osl.tmf.common.model.service.ServiceSpecificationRef;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
@@ -24,10 +27,7 @@ import org.etsi.osl.tmf.sim638.api.ServiceApiController;
 import org.etsi.osl.tmf.sim638.model.Service;
 import org.etsi.osl.tmf.sim638.model.ServiceCreate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
-import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
-import org.etsi.osl.tmf.so641.model.ServiceOrderItem;
-import org.etsi.osl.tmf.so641.model.ServiceOrderStateType;
-import org.etsi.osl.tmf.so641.model.ServiceRestriction;
+import org.etsi.osl.tmf.so641.model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -177,6 +177,27 @@ public class ServiceApiControllerTest  extends BaseIT {
     }
 
 
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testServiceInvalidRangeIntervalIsBadRequest() throws Exception {
+        ServiceOrderCreate serviceOrder = createServiceOrderWithCharacteristicValue("9000");
+        mvc.perform(MockMvcRequestBuilders.post("/serviceInventory/v4/service")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(serviceOrder)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
+    @Test
+    public void testServiceInvalidTypesIsBadRequest() throws Exception {
+        ServiceOrderCreate serviceOrder = createServiceOrderWithCharacteristicValue("not an integer");
+        mvc.perform(MockMvcRequestBuilders.post("/serviceInventory/v4/service")
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(serviceOrder)))
+                .andExpect(status().isBadRequest());
+    }
+
+
     private String createService() throws Exception {
         int servicesCount = serviceRepoService.findAll().size();
 
@@ -221,6 +242,41 @@ public class ServiceApiControllerTest  extends BaseIT {
         assertThat(responseService.getDescription()).isEqualTo("A Test Service");
 
         return response;
+    }
+
+
+    private ServiceOrderCreate createServiceOrderWithCharacteristicValue(String characteristicValue) throws Exception {
+        File sspec = new File("src/test/resources/testServiceSpecValidRangeInterval.json");
+        InputStream in = new FileInputStream(sspec);
+        String sspectext = IOUtils.toString(in, "UTF-8");
+
+        ServiceSpecificationCreate sspeccr = JsonUtils.toJsonObj(sspectext, ServiceSpecificationCreate.class);
+        sspeccr.setName("Spec1");
+        ServiceSpecification responsesSpec = createServiceSpec(sspeccr);
+
+        ServiceOrderCreate serviceOrder = new ServiceOrderCreate();
+        serviceOrder.setCategory("Test Category");
+        serviceOrder.setDescription("A Test Service");
+        serviceOrder.setRequestedStartDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
+        serviceOrder.setRequestedCompletionDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
+
+        ServiceOrderItem soi = new ServiceOrderItem();
+        serviceOrder.getOrderItem().add(soi);
+        soi.setState(ServiceOrderStateType.ACKNOWLEDGED);
+
+        ServiceRestriction serviceRestriction = new ServiceRestriction();
+        ServiceSpecificationRef aServiceSpecificationRef = new ServiceSpecificationRef();
+        aServiceSpecificationRef.setId(responsesSpec.getId());
+        aServiceSpecificationRef.setName(responsesSpec.getName());
+
+        serviceRestriction.setServiceSpecification(aServiceSpecificationRef);
+        serviceRestriction.setName("aServiceRestriction");
+        Characteristic characteristic = new Characteristic();
+        characteristic.setName("Port");
+        characteristic.setValue(new Any(characteristicValue));
+        serviceRestriction.setServiceCharacteristic(Set.of(characteristic));
+        soi.setService(serviceRestriction);
+        return serviceOrder;
     }
 
 
