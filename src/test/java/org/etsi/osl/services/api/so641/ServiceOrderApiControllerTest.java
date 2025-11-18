@@ -315,6 +315,7 @@ public class ServiceOrderApiControllerTest  extends BaseIT {
                 .andExpect(status().isBadRequest());
     }
 
+
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
     public void testCreateServiceOrderInvalidTypesIsBadRequest() throws Exception {
