@@ -42,7 +42,7 @@ public class ServiceOrderValidator implements Validator {
             CharacteristicParser characteristicParser = new CharacteristicParser();
             for (Characteristic characteristic: service.getServiceCharacteristic()) {
                 ServiceSpecCharacteristic serviceSpecCharacteristic = serviceSpecification.findSpecCharacteristicByName(characteristic.getName());
-                serviceSpecCharacteristic.setServiceSpecCharacteristicValue(characteristicParser.toSetOfCharacteristicValues(characteristic));
+                characteristicParser.updateServiceSpecCharacteristicValues(serviceSpecCharacteristic.getServiceSpecCharacteristicValue(), characteristic);
                 if (serviceSpecCharacteristic.getServiceSpecCharacteristicValue().stream()
                         .anyMatch(value -> {
                             ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator =

@@ -7,42 +7,38 @@ import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.service.Characteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class CharacteristicParser {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public Set<ServiceSpecCharacteristicValue> toSetOfCharacteristicValues(Characteristic characteristic) {
-        Set<ServiceSpecCharacteristicValue> result = new HashSet<>();
+    public void updateServiceSpecCharacteristicValues(
+            Set<ServiceSpecCharacteristicValue> serviceSpecCharacteristicValues,
+            Characteristic characteristic
+    ) {
         Any input = characteristic.getValue();
         if (input == null) {
-            return result;
+            return;
         }
+        List<Any> values = new ArrayList<>();
         try {
             JsonNode node = mapper.readTree(input.getValue());
             if (node.isArray()) {
-                Set<Any> values = mapper.readValue(input.getValue(), new TypeReference<Set<Any>>() {});
-                result = values.stream().map(value -> {
-                    ServiceSpecCharacteristicValue serviceSpecCharacteristicValue = new ServiceSpecCharacteristicValue();
-                    serviceSpecCharacteristicValue.setValue(value);
-                    return serviceSpecCharacteristicValue;
-                }).collect(Collectors.toSet());
+                values = mapper.readValue(input.getValue(), new TypeReference<>() {});
             } else if (node.isObject()) {
-                ServiceSpecCharacteristicValue serviceSpecCharacteristicValue = new ServiceSpecCharacteristicValue();
-                serviceSpecCharacteristicValue.setValue(mapper.treeToValue(node, Any.class));
-                result.add(serviceSpecCharacteristicValue);
+                values.add(mapper.treeToValue(node, Any.class));
             } else {
-                ServiceSpecCharacteristicValue serviceSpecCharacteristicValue = new ServiceSpecCharacteristicValue();
-                serviceSpecCharacteristicValue.setValue(input);
-                result.add(serviceSpecCharacteristicValue);
+                values.add(input);
             }
         } catch (Exception e) {
-            ServiceSpecCharacteristicValue serviceSpecCharacteristicValue = new ServiceSpecCharacteristicValue();
-            serviceSpecCharacteristicValue.setValue(input);
-            result.add(serviceSpecCharacteristicValue);
+            values.add(input);
         }
-        return result;
+        Iterator<ServiceSpecCharacteristicValue> serviceSpecCharacteristicValueIterator = serviceSpecCharacteristicValues.iterator();
+        Iterator<Any> valueIterator = values.iterator();
+        while (serviceSpecCharacteristicValueIterator.hasNext() && valueIterator.hasNext()) {
+            ServiceSpecCharacteristicValue serviceSpecCharacteristicValue = serviceSpecCharacteristicValueIterator.next();
+            Any value = valueIterator.next();
+            serviceSpecCharacteristicValue.setValue(value);
+        }
     }
 }
