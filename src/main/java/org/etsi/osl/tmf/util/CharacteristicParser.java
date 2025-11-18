@@ -7,7 +7,10 @@ import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.common.model.service.Characteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 
-import java.util.*;
+import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class CharacteristicParser {
     private static final ObjectMapper mapper = new ObjectMapper();

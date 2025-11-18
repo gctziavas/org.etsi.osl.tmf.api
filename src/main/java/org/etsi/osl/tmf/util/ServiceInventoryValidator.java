@@ -2,6 +2,7 @@ package org.etsi.osl.tmf.util;
 
 import org.etsi.osl.tmf.common.model.service.Characteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
+import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
 import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.util.Set;
 
 @Component
 public class ServiceInventoryValidator implements Validator {
@@ -31,15 +34,16 @@ public class ServiceInventoryValidator implements Validator {
         CharacteristicParser characteristicParser = new CharacteristicParser();
         for (Characteristic characteristic: update.getServiceCharacteristic()) {
             ServiceSpecCharacteristic serviceSpecCharacteristic = serviceSpecification.findSpecCharacteristicByName(characteristic.getName());
-            characteristicParser.updateServiceSpecCharacteristicValues(serviceSpecCharacteristic.getServiceSpecCharacteristicValue(), characteristic);
-            if (serviceSpecCharacteristic.getServiceSpecCharacteristicValue().stream()
-                    .anyMatch(value -> {
-                        ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator =
-                                new ServiceSpecCharacteristicValueValidator(value);
-                        return !serviceSpecCharacteristicValueValidator.validateType() || !serviceSpecCharacteristicValueValidator.isWithinRangeInterval();
-                    })) {
-                errors.reject("invalid.request");
-                return;
+            if (serviceSpecCharacteristic != null) {
+                Set<ServiceSpecCharacteristicValue> serviceSpecCharacteristicValues = serviceSpecCharacteristic.getServiceSpecCharacteristicValue();
+                characteristicParser.updateServiceSpecCharacteristicValues(serviceSpecCharacteristicValues, characteristic);
+                if (serviceSpecCharacteristicValues.stream().anyMatch(value -> {
+                    ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator = new ServiceSpecCharacteristicValueValidator(value);
+                    return !serviceSpecCharacteristicValueValidator.validateType() || !serviceSpecCharacteristicValueValidator.isWithinRangeInterval();
+                })) {
+                    errors.reject("invalid.request");
+                    return;
+                }
             }
         }
     }
