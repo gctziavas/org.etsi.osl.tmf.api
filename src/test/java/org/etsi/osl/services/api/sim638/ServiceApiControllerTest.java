@@ -180,20 +180,21 @@ public class ServiceApiControllerTest  extends BaseIT {
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
     public void testServiceInvalidRangeIntervalIsBadRequest() throws Exception {
-        ServiceOrderCreate serviceOrder = createServiceOrderWithCharacteristicValue("9000");
+        ServiceCreate service = createServiceWithCharacteristicValue("9000");
         mvc.perform(MockMvcRequestBuilders.post("/serviceInventory/v4/service")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(serviceOrder)))
+                        .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(service)))
                 .andExpect(status().isBadRequest());
     }
+
 
     @WithMockUser(username="osadmin", roles = {"ADMIN","USER"})
     @Test
     public void testServiceInvalidTypesIsBadRequest() throws Exception {
-        ServiceOrderCreate serviceOrder = createServiceOrderWithCharacteristicValue("not an integer");
+        ServiceCreate service = createServiceWithCharacteristicValue("not an integer");
         mvc.perform(MockMvcRequestBuilders.post("/serviceInventory/v4/service")
                         .with(SecurityMockMvcRequestPostProcessors.csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(serviceOrder)))
+                        .contentType(MediaType.APPLICATION_JSON).content(JsonUtils.toJson(service)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -245,38 +246,26 @@ public class ServiceApiControllerTest  extends BaseIT {
     }
 
 
-    private ServiceOrderCreate createServiceOrderWithCharacteristicValue(String characteristicValue) throws Exception {
+    private ServiceCreate createServiceWithCharacteristicValue(String characteristicValue) throws Exception {
         File sspec = new File("src/test/resources/reposervices/scm633/testServiceSpecValidRangeInterval.json");
         InputStream in = new FileInputStream(sspec);
         String sspectext = IOUtils.toString(in, "UTF-8");
+        ServiceCreate service = new ServiceCreate();
 
         ServiceSpecificationCreate sspeccr = JsonUtils.toJsonObj(sspectext, ServiceSpecificationCreate.class);
         sspeccr.setName("Spec1");
         ServiceSpecification responsesSpec = createServiceSpec(sspeccr);
-
-        ServiceOrderCreate serviceOrder = new ServiceOrderCreate();
-        serviceOrder.setCategory("Test Category");
-        serviceOrder.setDescription("A Test Service");
-        serviceOrder.setRequestedStartDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
-        serviceOrder.setRequestedCompletionDate(OffsetDateTime.now(ZoneOffset.UTC).toString());
-
-        ServiceOrderItem soi = new ServiceOrderItem();
-        serviceOrder.getOrderItem().add(soi);
-        soi.setState(ServiceOrderStateType.ACKNOWLEDGED);
-
-        ServiceRestriction serviceRestriction = new ServiceRestriction();
         ServiceSpecificationRef aServiceSpecificationRef = new ServiceSpecificationRef();
         aServiceSpecificationRef.setId(responsesSpec.getId());
         aServiceSpecificationRef.setName(responsesSpec.getName());
+        service.setServiceSpecificationRef(aServiceSpecificationRef);
 
-        serviceRestriction.setServiceSpecification(aServiceSpecificationRef);
-        serviceRestriction.setName("aServiceRestriction");
         Characteristic characteristic = new Characteristic();
         characteristic.setName("Port");
         characteristic.setValue(new Any(characteristicValue));
-        serviceRestriction.setServiceCharacteristic(Set.of(characteristic));
-        soi.setService(serviceRestriction);
-        return serviceOrder;
+        service.setServiceCharacteristic(List.of(characteristic));
+
+        return service;
     }
 
 
