@@ -38,8 +38,8 @@ public class ServiceInventoryValidator implements Validator {
                 Set<ServiceSpecCharacteristicValue> serviceSpecCharacteristicValues = serviceSpecCharacteristic.getServiceSpecCharacteristicValue();
                 characteristicParser.updateServiceSpecCharacteristicValues(serviceSpecCharacteristicValues, characteristic);
                 if (serviceSpecCharacteristicValues.stream().anyMatch(value -> {
-                    ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator = new ServiceSpecCharacteristicValueValidator(value);
-                    return !serviceSpecCharacteristicValueValidator.validateType() || !serviceSpecCharacteristicValueValidator.isWithinRangeInterval();
+                        ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator = new ServiceSpecCharacteristicValueValidator(value);
+                        return !serviceSpecCharacteristicValueValidator.validateType() || !serviceSpecCharacteristicValueValidator.isWithinRangeInterval();
                 })) {
                     errors.reject("invalid.request");
                     return;

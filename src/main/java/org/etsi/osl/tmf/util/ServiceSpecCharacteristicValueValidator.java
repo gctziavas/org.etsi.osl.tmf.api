@@ -21,7 +21,7 @@ public class ServiceSpecCharacteristicValueValidator {
         final String INTEGER_REGEX = "[-+]?\\d+";
         final String FLOAT_REGEX = "[-+]?\\d*([.,]\\d+)?([eE][-+]?\\d+)?";
         final String BOOLEAN_REGEX = "(?i)true|false";
-        final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         if (serviceSpecCharacteristicValue.getValueType() == null) {
             return true;
         }
@@ -40,7 +40,7 @@ public class ServiceSpecCharacteristicValueValidator {
                 case BOOLEAN -> stringValue.matches(BOOLEAN_REGEX) || stringValue.matches(INTEGER_REGEX);
                 case TIMESTAMP -> {
                     try {
-                        LocalDateTime.parse(stringValue, TIMESTAMP_FORMATTER);
+                        LocalDateTime.parse(stringValue, ISO_DATE_TIME);
                         yield true;
                     } catch (DateTimeParseException e) {
                         yield false;

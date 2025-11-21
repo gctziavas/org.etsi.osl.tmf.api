@@ -48,10 +48,9 @@ public class ServiceOrderValidator implements Validator {
                 if (serviceSpecCharacteristic != null) {
                     Set<ServiceSpecCharacteristicValue> serviceSpecCharacteristicValues = serviceSpecCharacteristic.getServiceSpecCharacteristicValue();
                     characteristicParser.updateServiceSpecCharacteristicValues(serviceSpecCharacteristicValues, characteristic);
-                    if (serviceSpecCharacteristicValues.stream().anyMatch(
-                            value -> {
-                        ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator = new ServiceSpecCharacteristicValueValidator(value);
-                        return !serviceSpecCharacteristicValueValidator.validateType() || !serviceSpecCharacteristicValueValidator.isWithinRangeInterval();
+                    if (serviceSpecCharacteristicValues.stream().anyMatch(value -> {
+                            ServiceSpecCharacteristicValueValidator serviceSpecCharacteristicValueValidator = new ServiceSpecCharacteristicValueValidator(value);
+                            return !serviceSpecCharacteristicValueValidator.validateType() || !serviceSpecCharacteristicValueValidator.isWithinRangeInterval();
                     })) {
                         errors.reject("invalid.request");
                         return;
