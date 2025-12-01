@@ -134,6 +134,9 @@ public class ServiceSpecificationRepoService {
 	@Autowired
 	ServiceTestSpecificationRepoService serviceTestSpecificationRepoService;
 	
+	@Autowired
+	ServiceSpecificationNotificationService serviceSpecificationNotificationService;
+	
 	private SessionFactory sessionFactory;
 
 	private static final String METADATADIR = System.getProperty("user.home") + File.separator + ".attachments"
@@ -156,6 +159,8 @@ public class ServiceSpecificationRepoService {
 		serviceSpec = this.updateServiceSpecDataFromAPIcall(serviceSpec, serviceServiceSpecification);
 		serviceSpec = this.serviceSpecificationRepo.save(serviceSpec);
 		serviceSpec.fixSpecCharRelationhsipIDs();
+		
+		serviceSpecificationNotificationService.publishServiceSpecificationCreateNotification(serviceSpec);
 
 		/**
 		 * we automatically create s Service Candidate for this spec ready to be
@@ -342,7 +347,8 @@ public class ServiceSpecificationRepoService {
 		/**
 		 * prior deleting we need to delete other dependency objects
 		 */
-
+		
+		serviceSpecificationNotificationService.publishServiceSpecificationDeleteNotification(s);
 		this.serviceSpecificationRepo.delete(s);
 		return null;
 	}
@@ -380,6 +386,8 @@ public class ServiceSpecificationRepoService {
 
 		serviceSpec = this.serviceSpecificationRepo.save(serviceSpec);
 		serviceSpec.fixSpecCharRelationhsipIDs();
+		
+		serviceSpecificationNotificationService.publishServiceSpecificationChangeNotification(serviceSpec);
 		
 		//save the equivalent candidate
 		ServiceCandidate serviceCandidateObj = candidateRepoService.findById( serviceSpec.getServiceCandidateObjId() );

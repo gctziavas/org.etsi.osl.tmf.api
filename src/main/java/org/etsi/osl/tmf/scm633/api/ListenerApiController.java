@@ -19,7 +19,7 @@
  */
 package org.etsi.osl.tmf.scm633.api;
 
-import java.io.IOException;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.etsi.osl.tmf.scm633.model.EventSubscription;
@@ -64,186 +64,168 @@ public class ListenerApiController implements ListenerApi {
         this.request = request;
     }
 
+    public Optional<ObjectMapper> getObjectMapper() {
+        return Optional.ofNullable(objectMapper);
+    }
+
+    public Optional<HttpServletRequest> getRequest() {
+        return Optional.ofNullable(request);
+    }
+
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCandidateChangeNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCandidateChangeNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCandidateChangeNotification: {}", data.getEventId());
+            log.debug("ServiceCandidateChangeNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCandidateChangeNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCandidateCreateNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCandidateCreateNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCandidateCreateNotification: {}", data.getEventId());
+            log.debug("ServiceCandidateCreateNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCandidateCreateNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCandidateDeleteNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCandidateDeleteNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCandidateDeleteNotification: {}", data.getEventId());
+            log.debug("ServiceCandidateDeleteNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCandidateDeleteNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCatalogBatchNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCatalogBatchNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCatalogBatchNotification: {}", data.getEventId());
+            log.debug("ServiceCatalogBatchNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCatalogBatchNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCatalogChangeNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCatalogChangeNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCatalogChangeNotification: {}", data.getEventId());
+            log.debug("ServiceCatalogChangeNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCatalogChangeNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCatalogCreateNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCatalogCreateNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCatalogCreateNotification: {}", data.getEventId());
+            log.debug("ServiceCatalogCreateNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCatalogCreateNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCatalogDeleteNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCatalogDeleteNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCatalogDeleteNotification: {}", data.getEventId());
+            log.debug("ServiceCatalogDeleteNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCatalogDeleteNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCategoryChangeNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCategoryChangeNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCategoryChangeNotification: {}", data.getEventId());
+            log.debug("ServiceCategoryChangeNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCategoryChangeNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCategoryCreateNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCategoryCreateNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCategoryCreateNotification: {}", data.getEventId());
+            log.debug("ServiceCategoryCreateNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCategoryCreateNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceCategoryDeleteNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceCategoryDeleteNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceCategoryDeleteNotification: {}", data.getEventId());
+            log.debug("ServiceCategoryDeleteNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceCategoryDeleteNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceSpecificationChangeNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceSpecificationChangeNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceSpecificationChangeNotification: {}", data.getEventId());
+            log.debug("ServiceSpecificationChangeNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceSpecificationChangeNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceSpecificationCreateNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceSpecificationCreateNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceSpecificationCreateNotification: {}", data.getEventId());
+            log.debug("ServiceSpecificationCreateNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceSpecificationCreateNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    @Override
     public ResponseEntity<EventSubscription> listenToServiceSpecificationDeleteNotification(@Parameter(description = "The event data" ,required=true )  @Valid @RequestBody ServiceSpecificationDeleteNotification data) {
-        String accept = request.getHeader("Accept");
-        if (accept != null && accept.contains("application/json")) {
-            try {
-                return new ResponseEntity<EventSubscription>(objectMapper.readValue("{  \"query\" : \"query\",  \"callback\" : \"callback\",  \"id\" : \"id\"}", EventSubscription.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
-                return new ResponseEntity<EventSubscription>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        try {
+            log.info("Received ServiceSpecificationDeleteNotification: {}", data.getEventId());
+            log.debug("ServiceSpecificationDeleteNotification details: {}", data);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error processing ServiceSpecificationDeleteNotification", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<EventSubscription>(HttpStatus.NOT_IMPLEMENTED);
     }
 
 }
