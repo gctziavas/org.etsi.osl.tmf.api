@@ -36,6 +36,7 @@ import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCreate;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRef;
 import org.etsi.osl.tmf.rcm634.repo.ResourceCatalogRepository;
+import org.etsi.osl.tmf.rcm634.repo.ResourceCategoriesRepository;
 import org.etsi.osl.tmf.rcm634.repo.ResourceSpecificationRepository;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCandidateRepoService;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceCatalogRepoService;
@@ -70,6 +71,9 @@ public class BootstrapResources {
 	
 	@Autowired
 	ResourceSpecificationRepository resourceSpecificationRepo;
+
+    @Autowired
+	ResourceCategoriesRepository resourceCategoriesRepository;
 	
 	@Autowired
 	ObjectMapper objectMapper;
@@ -248,7 +252,8 @@ public class BootstrapResources {
 		
 	}
 	
-	
+
+    @Transactional
 	private void createBootResourceSpec( ResourceCategory scategory, String aname, String afile) {		 
 		
 		ResourceSpecificationCreate rsc = this.resourceSpecRepoService.readFromLocalLogicalResourceSpec( afile );
@@ -258,7 +263,8 @@ public class BootstrapResources {
 		addToCategory(scategory, resourceSpecificationObj);
 		
 	}
-	
+
+    @Transactional
 	private void addToCategory(ResourceCategory scategory,  ResourceSpecification resourceSpecificationObj) {	
 		
 		//Turn the ResourceSpecification to a ResourceCanditate to save it to the ResourceCatalogRepo			
