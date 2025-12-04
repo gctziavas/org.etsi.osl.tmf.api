@@ -430,9 +430,10 @@ public class ProductSpecificationRepoService {
 				// we need the attachment model from resource spec models
 				boolean idexists = false;
 				for (ProductSpecificationCharacteristic orinalAtt : prodSpec.getProductSpecCharacteristic()) {
-					if (orinalAtt.getName().equals(ar.getName())) {
+					if (orinalAtt.getName()!=null && ar.getName()!=null &&  orinalAtt.getName().equals(ar.getName())) {
 						idexists = true;
 						idAddedUpdated.put(orinalAtt.getName(), true);
+						orinalAtt.updateWith( ar );
 						break;
 					}
 				}
