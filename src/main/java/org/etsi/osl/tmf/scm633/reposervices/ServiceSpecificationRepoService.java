@@ -1546,13 +1546,13 @@ public class ServiceSpecificationRepoService {
             
                       
             // Build the name LIKE clause
-            StringJoiner nameJoiner = new StringJoiner(" AND ");
+            StringJoiner nameJoiner = new StringJoiner(" OR ");
             for (String term : searchList) {
                 nameJoiner.add("s.name LIKE '%" + term + "%'");
             }
 
             // Build the description LIKE clause
-            StringJoiner descriptionJoiner = new StringJoiner(" AND ");
+            StringJoiner descriptionJoiner = new StringJoiner(" OR ");
             for (String term : searchList) {
                 descriptionJoiner.add("s.description LIKE '%" + term + "%'");
             }

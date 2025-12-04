@@ -33,9 +33,11 @@ import org.etsi.osl.tmf.rcm634.model.ResourceCategoryRef;
 import org.etsi.osl.tmf.rcm634.repo.ResourceCatalogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class ResourceCatalogRepoService {
 
 	@Autowired
@@ -89,10 +91,12 @@ public class ResourceCatalogRepoService {
 		sc = updateCatalogDataFromAPICall(sc, serviceCatalog);
 		return this.catalogRepo.save(sc);
 	}
-	
-	public ResourceCatalog updateCatalog(ResourceCatalog serviceCatalog) {
+
+	@Transactional
+	public ResourceCatalog updateCatalog(ResourceCatalog resourceCatalog) {
 		
-		return this.catalogRepo.save(serviceCatalog);
+	    resourceCatalog.getCategoryObj().size();
+		return this.catalogRepo.save(resourceCatalog);
 	}
 
 	public ResourceCatalog updateCatalogDataFromAPICall(ResourceCatalog rc, ResourceCatalogUpdate resCatalog) {
@@ -172,7 +176,8 @@ public class ResourceCatalogRepoService {
 	}
 ---------------------------------------------------------------------------------------------------------------*/
 	
-	
+
+	@Transactional
 	public ResourceCatalog findByName(String aName) {
 		Optional<ResourceCatalog> optionalCat = this.catalogRepo.findByName( aName );
 		if ( optionalCat.isPresent()) {
