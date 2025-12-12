@@ -176,7 +176,7 @@ public class ServiceSpecificationRepoService {
 		ServiceSpecificationRef serviceSpecificationRef = new ServiceSpecificationRef();
 		serviceCandidate.setServiceSpecification(serviceSpecificationRef);
 		serviceSpecificationRef.setId(serviceSpec.getId());
-		if(serviceServiceSpecification.getRelatedParty().get(0).getRole().equalsIgnoreCase(UserPartRoleType.ORGANIZATION.getValue())){
+		if(serviceServiceSpecification.getRelatedParty()!=null && !serviceServiceSpecification.getRelatedParty().isEmpty() && serviceServiceSpecification.getRelatedParty().get(0).getRole().equalsIgnoreCase(UserPartRoleType.ORGANIZATION.getValue())){
 			Optional<ServiceCategory> serviceCategory =categoriesRepository.findByName(serviceServiceSpecification.getRelatedParty().get(0).getName());
 			if (serviceCategory.isPresent()) serviceCandidate.setCategory(new ArrayList<>((Collection) serviceCategory.get()));
 		}
