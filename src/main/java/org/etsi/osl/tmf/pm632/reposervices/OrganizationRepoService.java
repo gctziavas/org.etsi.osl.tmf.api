@@ -43,6 +43,8 @@ import org.etsi.osl.tmf.pm632.model.OrganizationCreateEvent;
 import org.etsi.osl.tmf.pm632.model.OrganizationCreateEventPayload;
 import org.etsi.osl.tmf.pm632.model.OrganizationUpdate;
 import org.etsi.osl.tmf.pm632.repo.OrganizationRepository;
+import org.etsi.osl.tmf.scm633.model.ServiceCategory;
+import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -62,6 +64,9 @@ public class OrganizationRepoService {
 
 	@Autowired
 	OrganizationApiRouteBuilderEvents organizationApiRouteBuilder;
+
+	@Autowired
+	CategoryRepoService categoryRepoService;
 
 	private SessionFactory  sessionFactory;
 	
@@ -195,6 +200,11 @@ public class OrganizationRepoService {
 			c.addPartyCharacteristicItem(partyCharacteristicItem);
 			
 		}
+		//we proceed to create a category with the name of the external org
+		ServiceCategory serviceCategory= new ServiceCategory();
+		serviceCategory.setName(organization.getName());
+		categoryRepoService.addCategory(serviceCategory);
+
 		
 		c = updateOrganizationData(c, organization);
 		c = organizationRepository.save(c);

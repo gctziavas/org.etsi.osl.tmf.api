@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +72,7 @@ import org.etsi.osl.tmf.scm633.model.ServiceSpecRelationship;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationUpdate;
+import org.etsi.osl.tmf.scm633.repo.CategoriesRepository;
 import org.etsi.osl.tmf.scm633.repo.ServiceSpecificationRepository;
 import org.etsi.osl.tmf.stm653.model.CharacteristicSpecification;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecification;
@@ -136,6 +138,9 @@ public class ServiceSpecificationRepoService {
 	
 	@Autowired
 	ServiceSpecificationNotificationService serviceSpecificationNotificationService;
+
+	@Autowired
+	CategoriesRepository categoriesRepository;
 	
 	private SessionFactory sessionFactory;
 
@@ -171,6 +176,10 @@ public class ServiceSpecificationRepoService {
 		ServiceSpecificationRef serviceSpecificationRef = new ServiceSpecificationRef();
 		serviceCandidate.setServiceSpecification(serviceSpecificationRef);
 		serviceSpecificationRef.setId(serviceSpec.getId());
+		if(serviceServiceSpecification.getRelatedParty().get(0).getRole().equalsIgnoreCase(UserPartRoleType.ORGANIZATION.getValue())){
+			Optional<ServiceCategory> serviceCategory =categoriesRepository.findByName(serviceServiceSpecification.getRelatedParty().get(0).getName());
+			if (serviceCategory.isPresent()) serviceCandidate.setCategory(new ArrayList<>((Collection) serviceCategory.get()));
+		}
 		ServiceCandidate serviceCandidateObj = candidateRepoService.addServiceCandidate(serviceCandidate);
 
 		serviceSpec.setServiceCandidateObjId(serviceCandidateObj.getUuid());
