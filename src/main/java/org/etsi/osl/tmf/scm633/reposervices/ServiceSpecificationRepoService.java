@@ -66,6 +66,7 @@ import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateUpdate;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryRef;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecRelationship;
@@ -178,7 +179,16 @@ public class ServiceSpecificationRepoService {
 		serviceSpecificationRef.setId(serviceSpec.getId());
 		if(serviceServiceSpecification.getRelatedParty()!=null && !serviceServiceSpecification.getRelatedParty().isEmpty() && serviceServiceSpecification.getRelatedParty().get(0).getRole().equalsIgnoreCase(UserPartRoleType.ORGANIZATION.getValue())){
 			Optional<ServiceCategory> serviceCategory =categoriesRepository.findByName(serviceServiceSpecification.getRelatedParty().get(0).getName());
-			if (serviceCategory.isPresent()) serviceCandidate.setCategory(new ArrayList<>((Collection) serviceCategory.get()));
+
+			if (serviceCategory.isPresent()){
+				List<ServiceCategoryRef> serviceCategoryRefs = new ArrayList<>();
+				ServiceCategoryRef serviceCategoryRef= new ServiceCategoryRef();
+				serviceCategoryRef.setId(serviceCategory.get().getId());
+				serviceCategoryRef.setName(serviceCategory.get().getName());
+				serviceCategoryRefs.add(serviceCategoryRef);
+				serviceCandidate.setCategory(serviceCategoryRefs);
+
+			}
 		}
 		ServiceCandidate serviceCandidateObj = candidateRepoService.addServiceCandidate(serviceCandidate);
 
