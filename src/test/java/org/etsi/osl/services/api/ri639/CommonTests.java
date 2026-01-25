@@ -20,24 +20,28 @@
 
 package org.etsi.osl.services.api.ri639;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import java.io.IOException;
+import java.util.Optional;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.ri639.api.ApiException;
+import org.etsi.osl.tmf.ri639.api.ApiOriginFilter;
+import org.etsi.osl.tmf.ri639.api.ApiResponseMessage;
+import org.etsi.osl.tmf.ri639.api.HubApiController;
+import org.etsi.osl.tmf.ri639.api.ListenerApiController;
+import org.etsi.osl.tmf.ri639.api.NotFoundException;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.etsi.osl.tmf.ri639.api.*;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-public class CommonTests {
+public class CommonTests  extends BaseIT{
 
     @Test
     public void testApiException() {

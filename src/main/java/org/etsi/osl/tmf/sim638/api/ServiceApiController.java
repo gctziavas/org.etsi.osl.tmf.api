@@ -30,6 +30,8 @@ import org.etsi.osl.tmf.sim638.model.ServiceCreate;
 import org.etsi.osl.tmf.sim638.model.ServiceUpdate;
 import org.etsi.osl.tmf.sim638.service.ServiceRepoService;
 import org.etsi.osl.tmf.util.AddUserAsOwnerToRelatedParties;
+import org.etsi.osl.tmf.util.ServiceInventoryValidator;
+import org.etsi.osl.tmf.util.ServiceSpecificationValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.etsi.osl.model.nfv.UserRoleType;
@@ -60,6 +64,15 @@ public class ServiceApiController implements ServiceApi {
 
 	@Autowired
 	ServiceRepoService serviceRepoService;
+
+	@Autowired
+	private ServiceInventoryValidator serviceInventoryValidator;
+
+	// Custom validation resulting from ServiceSpecCharacteristicValue range interval and type validation (https://labs.etsi.org/rep/groups/osl/code/-/epics/30)
+	@InitBinder
+	protected void initBinder(WebDataBinder binder) {
+		binder.addValidators(serviceInventoryValidator);
+	}
 
 	@org.springframework.beans.factory.annotation.Autowired
 	public ServiceApiController(ObjectMapper objectMapper, HttpServletRequest request) {

@@ -1,0 +1,394 @@
+{
+	"name": "Test Spec",
+	"description": "Test Spec example",
+	"version": "1.8.0",
+	"isBundle": false,
+	"attachment": [
+	],
+	"relatedParty": [
+	],
+	"resourceSpecification": [
+	],
+	"serviceLevelSpecification": [
+	],
+	"serviceSpecCharacteristic": [
+		{
+			"name": "INTEGER 1",
+			"configurable": true,
+			"description": "This attribute is an integer",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "INTEGER",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "INTEGER",
+					"validFor": null,
+					"value": {
+						"value": "+0.1",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "INTEGER 2",
+			"configurable": true,
+			"description": "This attribute is an integer",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "INTEGER",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "INTEGER",
+					"validFor": null,
+					"value": {
+						"value": "not an integer",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "SMALLINT 1",
+			"configurable": true,
+			"description": "This attribute is a smallint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "SMALLINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "SMALLINT",
+					"validFor": null,
+					"value": {
+						"value": "-0.1",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "SMALLINT 2",
+			"configurable": true,
+			"description": "This attribute is a smallint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "SMALLINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "SMALLINT",
+					"validFor": null,
+					"value": {
+						"value": "not a smallint",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "LONGINT 1",
+			"configurable": true,
+			"description": "This attribute is a longint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "LONGINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "LONGINT",
+					"validFor": null,
+					"value": {
+						"value": "1.123456789",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "LONGINT 2",
+			"configurable": true,
+			"description": "This attribute is a longint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "LONGINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "LONGINT",
+					"validFor": null,
+					"value": {
+						"value": "not a longint",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "FLOAT 1",
+			"configurable": true,
+			"description": "This attribute is a float",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "FLOAT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "FLOAT",
+					"validFor": null,
+					"value": {
+						"value": "+-2.3",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "FLOAT 2",
+			"configurable": true,
+			"description": "This attribute is a float",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "FLOAT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "FLOAT",
+					"validFor": null,
+					"value": {
+						"value": "127.0.0.1",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "FLOAT 3",
+			"configurable": true,
+			"description": "This attribute is a float",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "FLOAT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "FLOAT",
+					"validFor": null,
+					"value": {
+						"value": "not a float",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "BOOLEAN",
+			"configurable": true,
+			"description": "This attribute is a boolean",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "BOOLEAN",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "BOOLEAN",
+					"validFor": null,
+					"value": {
+						"value": "maybe",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "TIMESTAMP 1",
+			"configurable": true,
+			"description": "This attribute is a timestamp",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "TIMESTAMP",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "TIMESTAMP",
+					"validFor": null,
+					"value": {
+						"value": "sunday",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "TIMESTAMP 2",
+			"configurable": true,
+			"description": "This attribute is a timestamp",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "TIMESTAMP",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "TIMESTAMP",
+					"validFor": null,
+					"value": {
+						"value": "13:38:01 2025/09/03",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "TIMESTAMP 3",
+			"configurable": true,
+			"description": "This attribute is a timestamp",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "TIMESTAMP",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "TIMESTAMP",
+					"validFor": null,
+					"value": {
+						"value": "2025-99-99 13:38:01",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "TIMESTAMP 4",
+			"configurable": true,
+			"description": "This attribute is a timestamp",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "TIMESTAMP",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "TIMESTAMP",
+					"validFor": null,
+					"value": {
+						"value": "2025-09-03 99:99:99",
+						"alias": ""
+					}
+				}
+			]
+		}
+	]
+}

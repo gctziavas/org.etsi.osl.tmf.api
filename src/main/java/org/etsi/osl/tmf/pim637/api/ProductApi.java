@@ -6,7 +6,6 @@
 package org.etsi.osl.tmf.pim637.api;
 
 import java.util.List;
-import org.etsi.osl.tmf.pim637.model.Error;
 import org.etsi.osl.tmf.pim637.model.Product;
 import org.etsi.osl.tmf.pim637.model.ProductCreate;
 import org.etsi.osl.tmf.pim637.model.ProductUpdate;

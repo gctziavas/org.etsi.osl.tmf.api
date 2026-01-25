@@ -1,0 +1,394 @@
+{
+	"name": "Test Spec",
+	"description": "Test Spec example",
+	"version": "1.8.0",
+	"isBundle": false,
+	"attachment": [
+	],
+	"relatedParty": [
+	],
+	"resourceSpecification": [
+	],
+	"serviceLevelSpecification": [
+	],
+	"serviceSpecCharacteristic": [
+		{
+			"name": "INTEGER 1",
+			"configurable": true,
+			"description": "This attribute is an integer",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "INTEGER",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "INTEGER",
+					"validFor": null,
+					"value": {
+						"value": "+0",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "INTEGER 2",
+			"configurable": true,
+			"description": "This attribute is an integer",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "INTEGER",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "INTEGER",
+					"validFor": null,
+					"value": {
+						"value": "-0",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "SMALLINT 1",
+			"configurable": true,
+			"description": "This attribute is a smallint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "SMALLINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "SMALLINT",
+					"validFor": null,
+					"value": {
+						"value": "32767",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "SMALLINT 2",
+			"configurable": true,
+			"description": "This attribute is a smallint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "SMALLINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "SMALLINT",
+					"validFor": null,
+					"value": {
+						"value": "-32768",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "LONGINT 1",
+			"configurable": true,
+			"description": "This attribute is a longint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "LONGINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "LONGINT",
+					"validFor": null,
+					"value": {
+						"value": "9223372036854775807",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "LONGINT 2",
+			"configurable": true,
+			"description": "This attribute is a longint",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "LONGINT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "LONGINT",
+					"validFor": null,
+					"value": {
+						"value": "-9223372036854775808",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "FLOAT 1",
+			"configurable": true,
+			"description": "This attribute is a float",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "FLOAT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "FLOAT",
+					"validFor": null,
+					"value": {
+						"value": "-5.0",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "FLOAT 2",
+			"configurable": true,
+			"description": "This attribute is a float",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "FLOAT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "FLOAT",
+					"validFor": null,
+					"value": {
+						"value": "1234.567890",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "BINARY",
+			"configurable": true,
+			"description": "This attribute is a binary",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "BINARY",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "BINARY",
+					"validFor": null,
+					"value": {
+						"value": "binary_text\n",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "BOOLEAN 1",
+			"configurable": true,
+			"description": "This attribute is a boolean",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "BOOLEAN",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "BOOLEAN",
+					"validFor": null,
+					"value": {
+						"value": "true",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "BOOLEAN 2",
+			"configurable": true,
+			"description": "This attribute is a boolean",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "BOOLEAN",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "BOOLEAN",
+					"validFor": null,
+					"value": {
+						"value": "0",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "TEXT",
+			"configurable": true,
+			"description": "This attribute is a text",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "TEXT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "TEXT",
+					"validFor": null,
+					"value": {
+						"value": "Whatever",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "LONGTEXT",
+			"configurable": true,
+			"description": "This attribute is a longtext",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "LONGTEXT",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "LONGTEXT",
+					"validFor": null,
+					"value": {
+						"value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer erat mi, tincidunt vel tincidunt laoreet, lacinia in diam. Vivamus arcu risus, facilisis at leo sed, tempor scelerisque ipsum. Donec non vulputate leo, ut faucibus eros. Sed dignissim vitae nisi eu lacinia. Aenean vitae massa sed orci dictum congue vitae sit amet diam. Sed ex ligula, finibus id pulvinar sit amet, posuere vel leo. Nunc scelerisque est massa. Curabitur nec ipsum feugiat, maximus ipsum sed, elementum diam. Etiam luctus fermentum dignissim. Pellentesque eget rhoncus eros. Aenean rutrum cursus ante, eu ultricies mauris bibendum at.\n\nIn hac habitasse platea dictumst. Ut maximus mattis nunc. Nunc dapibus faucibus hendrerit. In molestie, nibh id aliquet congue, ante massa luctus augue, non porttitor libero diam sollicitudin sapien. Sed malesuada faucibus finibus. Cras posuere, justo ac tempor dictum, ante arcu convallis eros, non ullamcorper metus sapien nec quam. Etiam a libero eu elit semper tempus. Aliquam odio.",
+						"alias": ""
+					}
+				}
+			]
+		},
+		{
+			"name": "TIMESTAMP",
+			"configurable": true,
+			"description": "This attribute is a timestamp",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "TIMESTAMP",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": null,
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": null,
+					"valueTo": null,
+					"valueType": "TIMESTAMP",
+					"validFor": null,
+					"value": {
+						"value": "2045-06-30T14:52:18.783+0100",
+						"alias": ""
+					}
+				}
+			]
+		}
+	]
+}

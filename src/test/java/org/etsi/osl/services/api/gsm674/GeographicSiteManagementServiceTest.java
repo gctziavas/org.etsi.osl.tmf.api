@@ -1,15 +1,27 @@
 package org.etsi.osl.services.api.gsm674;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.OpenAPISpringBoot;
 import org.etsi.osl.tmf.gsm674.model.GeographicSite;
 import org.etsi.osl.tmf.gsm674.repo.GeographicSiteManagementRepository;
 import org.etsi.osl.tmf.gsm674.reposervices.GeographicSiteManagementService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,16 +29,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@AutoConfigureMockMvc
-@ActiveProfiles("testing")
-class GeographicSiteManagementServiceTest {
-    @InjectMocks
+
+class GeographicSiteManagementServiceTest extends BaseIT {
+
+
+    @Autowired
     private GeographicSiteManagementService service;
 
-    @Mock
+    @MockBean
     private GeographicSiteManagementRepository repository;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }

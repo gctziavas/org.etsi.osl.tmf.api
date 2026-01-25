@@ -123,7 +123,7 @@ public class ServiceOrderApiRouteBuilder extends RouteBuilder {
 				.log(LoggingLevel.INFO, log, CATALOG_ADD_SERVICEORDER + " message received!")
 				.to("log:DEBUG?showBody=true&showHeaders=true").unmarshal()
 				.json(JsonLibrary.Jackson, ServiceOrderCreate.class, true)
-				.bean(serviceOrderRepoService, "addServiceOrderReturnEager(${body})")
+				.bean(serviceOrderRepoService, "addServiceOrderReturnEager(${body}, false)")
 				.convertBodyTo(String.class); //creates back a response
 		
 

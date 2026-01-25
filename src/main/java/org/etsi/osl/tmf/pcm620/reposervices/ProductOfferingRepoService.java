@@ -77,6 +77,9 @@ public class ProductOfferingRepoService {
 
     @Autowired
     ServiceSpecificationRepoService serviceSpecificationRepoService;
+    
+    @Autowired
+    private ProductOfferingNotificationService productOfferingNotificationService;
 
 	private SessionFactory sessionFactory;
 
@@ -101,8 +104,12 @@ public class ProductOfferingRepoService {
 		serviceSpec = this.updateProductOfferingDataFromAPIcall(serviceSpec, serviceProductOffering);
 		serviceSpec = this.prodsOfferingRepo.save(serviceSpec);
 
+		// Publish product offering create notification
+		if (productOfferingNotificationService != null) {
+			productOfferingNotificationService.publishProductOfferingCreateNotification(serviceSpec);
+		}
 	
-		return this.prodsOfferingRepo.save(serviceSpec);
+		return serviceSpec;
 	}
 
 	public List<ProductOffering> findAll() {
@@ -259,8 +266,14 @@ public class ProductOfferingRepoService {
 		/**
 		 * prior deleting we need to delete other dependency objects
 		 */
+		
+		// Publish product offering delete notification BEFORE deletion to ensure session is still active
+		if (productOfferingNotificationService != null) {
+			productOfferingNotificationService.publishProductOfferingDeleteNotification(s);
+		}
 
 		this.prodsOfferingRepo.delete(s);
+		
 		return null;
 	}
 	
@@ -273,14 +286,28 @@ public class ProductOfferingRepoService {
 		if (s == null) {
 			return null;
 		}
+		
+		// Store original state for comparison
+		String originalLifecycleStatus = s.getLifecycleStatus();
+		
 		ProductOffering prodOff = s;
 		prodOff = this.updateProductOfferingDataFromAPIcall(prodOff, aProductOffering);
 
 		prodOff = this.prodsOfferingRepo.save(prodOff);
 		
+		// Publish notifications
+		if (productOfferingNotificationService != null) {
+			// Always publish attribute value change notification on update
+			productOfferingNotificationService.publishProductOfferingAttributeValueChangeNotification(prodOff);
+			
+			// Publish state change notification if lifecycle status changed
+			if (originalLifecycleStatus != null && prodOff.getLifecycleStatus() != null 
+				&& !originalLifecycleStatus.equals(prodOff.getLifecycleStatus())) {
+				productOfferingNotificationService.publishProductOfferingStateChangeNotification(prodOff);
+			}
+		}
 		
-		
-		return this.prodsOfferingRepo.save(prodOff);
+		return prodOff;
 
 	}
 
@@ -679,7 +706,8 @@ public class ProductOfferingRepoService {
       Transaction tx = session.beginTransaction();
       
       try {
-        String sql = "SELECT p.id as productOfferingId, p.name as productName, p.description as productDescription";
+        String sql = "SELECT p.id as productOfferingId, p.name as productName, p.description as productDescription,"
+            + "  p.type, p.isBundle, pcateg.name as categoryName";
                      
           
 
@@ -688,13 +716,13 @@ public class ProductOfferingRepoService {
           
                     
           // Build the name LIKE clause
-          StringJoiner nameJoiner = new StringJoiner(" AND ");
+          StringJoiner nameJoiner = new StringJoiner(" OR ");
           for (String term : searchList) {
               nameJoiner.add("p.name LIKE '%" + term + "%'");
           }
 
           // Build the description LIKE clause
-          StringJoiner descriptionJoiner = new StringJoiner(" AND ");
+          StringJoiner descriptionJoiner = new StringJoiner(" OR ");
           for (String term : searchList) {
               descriptionJoiner.add("p.description LIKE '%" + term + "%'");
           }

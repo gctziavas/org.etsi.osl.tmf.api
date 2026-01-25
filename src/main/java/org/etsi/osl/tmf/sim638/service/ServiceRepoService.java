@@ -349,8 +349,15 @@ public class ServiceRepoService {
 
 	
 
+    @Transactional
 	public Service findByUuid(String id) {
 		Optional<Service> optionalCat = this.serviceRepo.findByUuid( id );
+		if (optionalCat.isPresent()) {
+		  optionalCat.get().getServiceCharacteristic().size();
+          optionalCat.get().getNote().size();
+          optionalCat.get().getSupportingResource().size();
+          optionalCat.get().getSupportingService().size();
+		}
 		return optionalCat
 				.orElse(null);
 	}

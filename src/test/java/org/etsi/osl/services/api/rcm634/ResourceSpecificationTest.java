@@ -1,16 +1,24 @@
 package org.etsi.osl.services.api.rcm634;
 
-import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
-import org.etsi.osl.tmf.prm669.model.RelatedParty;
-import org.etsi.osl.tmf.rcm634.model.*;
-import org.junit.jupiter.api.Test;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
+import org.etsi.osl.services.api.BaseIT;
+import org.etsi.osl.tmf.common.model.AttachmentRefOrValue;
+import org.etsi.osl.tmf.prm669.model.RelatedParty;
+import org.etsi.osl.tmf.rcm634.model.FeatureSpecification;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecCharRelationship;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCharacteristic;
+import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationRelationship;
+import org.etsi.osl.tmf.rcm634.model.TargetResourceSchema;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-public class ResourceSpecificationTest {
+public class ResourceSpecificationTest   extends BaseIT{
 
     static class TestResourceSpecification extends ResourceSpecification {
         // You can add additional methods or override existing ones if needed

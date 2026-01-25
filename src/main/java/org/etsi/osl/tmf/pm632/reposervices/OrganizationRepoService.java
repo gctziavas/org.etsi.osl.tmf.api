@@ -21,9 +21,11 @@ package org.etsi.osl.tmf.pm632.reposervices;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -43,10 +45,17 @@ import org.etsi.osl.tmf.pm632.model.OrganizationCreateEvent;
 import org.etsi.osl.tmf.pm632.model.OrganizationCreateEventPayload;
 import org.etsi.osl.tmf.pm632.model.OrganizationUpdate;
 import org.etsi.osl.tmf.pm632.repo.OrganizationRepository;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalog;
+import org.etsi.osl.tmf.scm633.model.ServiceCatalogCreate;
+import org.etsi.osl.tmf.scm633.model.ServiceCategory;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryRef;
+import org.etsi.osl.tmf.scm633.reposervices.CatalogRepoService;
+import org.etsi.osl.tmf.scm633.reposervices.CategoryRepoService;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
@@ -62,6 +71,13 @@ public class OrganizationRepoService {
 
 	@Autowired
 	OrganizationApiRouteBuilderEvents organizationApiRouteBuilder;
+
+	@Autowired
+	CategoryRepoService categoryRepoService;
+
+	@Autowired
+	@Lazy
+	CatalogRepoService catalogRepoService;
 
 	private SessionFactory  sessionFactory;
 	
@@ -195,7 +211,26 @@ public class OrganizationRepoService {
 			c.addPartyCharacteristicItem(partyCharacteristicItem);
 			
 		}
-		
+		//we proceed to create a category with the name of the external org
+		ServiceCategory serviceCategory= new ServiceCategory();
+		serviceCategory.setName(organization.getName());
+		ServiceCategory savedServiceCategory= categoryRepoService.addCategory(serviceCategory);
+
+		ServiceCatalog serviceCatalog= catalogRepoService.findByName("External Services Catalog");
+
+		if(serviceCatalog==null){
+			ServiceCatalogCreate sc = new ServiceCatalogCreate();
+			sc.setName("External Services Catalog");
+			sc.setDescription("Secondary Catalog");
+			sc.setVersion("1.0");
+			Set<ServiceCategory> serviceCategories=new HashSet<>();
+			serviceCategories.add(savedServiceCategory);
+			this.catalogRepoService.addCatalog(sc);
+		}else {
+			serviceCatalog.getCategoryObj().add(savedServiceCategory);
+			this.catalogRepoService.updateCatalog(serviceCatalog);
+		}
+
 		c = updateOrganizationData(c, organization);
 		c = organizationRepository.save(c);
 		raiseOrganizationCreate( c );

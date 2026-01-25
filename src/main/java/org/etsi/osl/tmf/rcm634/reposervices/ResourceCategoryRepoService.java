@@ -43,10 +43,12 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class ResourceCategoryRepoService {
 
 
@@ -91,6 +93,7 @@ public class ResourceCategoryRepoService {
 		
 	}
 
+    @Transactional
 	public List<ResourceCategory> findAll() {
 		return (List<ResourceCategory>) this.categsRepo.findAll();
 	}
@@ -285,9 +288,18 @@ public class ResourceCategoryRepoService {
 
 	public ResourceCategory findByName(String aName) {
 		Optional<ResourceCategory> optionalCat = this.categsRepo.findByName( aName );
+		if (optionalCat.isPresent()) {
+          optionalCat.get().getResourceCandidateObj().size();
+          optionalCat.get().getResourceCandidateRefs().size();
+		}
 		return optionalCat
 				.orElse(null);
 	}
+
+
+  public ResourceCategory categsRepoSave(ResourceCategory catObj) {
+    return categsRepo.save(catObj); 
+  }
 
 
 }

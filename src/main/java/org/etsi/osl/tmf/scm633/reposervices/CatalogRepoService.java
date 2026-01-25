@@ -60,11 +60,14 @@ public class CatalogRepoService {
 
 	@Autowired
 	ServiceSpecificationRepoService specRepoService;	    
-    
+
+	@Autowired
+	ServiceCatalogNotificationService serviceCatalogNotificationService;
 
 	public ServiceCatalog addCatalog(ServiceCatalog c) {
-
-		return this.catalogRepo.save(c);
+		ServiceCatalog savedCatalog = this.catalogRepo.save(c);
+		serviceCatalogNotificationService.publishServiceCatalogCreateNotification(savedCatalog);
+		return savedCatalog;
 	}
 
 	public ServiceCatalog addCatalog(@Valid ServiceCatalogCreate serviceCat) {
@@ -72,7 +75,9 @@ public class CatalogRepoService {
 		ServiceCatalog sc = new ServiceCatalog();
 
 		sc = updateCatalogDataFromAPICall(sc, serviceCat);
-		return this.catalogRepo.save(sc);
+		ServiceCatalog savedCatalog = this.catalogRepo.save(sc);
+		serviceCatalogNotificationService.publishServiceCatalogCreateNotification(savedCatalog);
+		return savedCatalog;
 	}
 
 	public String findAllEager() {
@@ -97,6 +102,8 @@ public class CatalogRepoService {
 	   
 	   
 	public List<ServiceCatalog> findAll() {
+      this.catalogRepo.findByOrderByName().stream().forEach(s->s.getCategoryObj().size());
+      this.catalogRepo.findByOrderByName().stream().forEach(s->s.getCategoryObj().stream().forEach( c -> c.getServiceCandidateObj().size()) );
 		return (List<ServiceCatalog>) this.catalogRepo.findByOrderByName();
 	}
 
@@ -152,14 +159,21 @@ public class CatalogRepoService {
 
 	public ServiceCatalog findByName(String aName) {
 		Optional<ServiceCatalog> optionalCat = this.catalogRepo.findByName( aName );
+		if ( optionalCat.isPresent() ) {
+          optionalCat.get().getCategoryObj().size();
+          optionalCat.get().getCategoryRefs().size();
+		}
 		return optionalCat.orElse(null);
 	}
 
 	public Void deleteById(String id) {
 		Optional<ServiceCatalog> optionalCat = this.catalogRepo.findByUuid(id);
-		this.catalogRepo.delete(optionalCat.get());
+		if (optionalCat.isPresent()) {
+			ServiceCatalog catalogToDelete = optionalCat.get();
+			serviceCatalogNotificationService.publishServiceCatalogDeleteNotification(catalogToDelete);
+			this.catalogRepo.delete(catalogToDelete);
+		}
 		return null;
-
 	}
 
 	public ServiceCatalog updateCatalog(String id, ServiceCatalogUpdate serviceCatalog) {

@@ -24,15 +24,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.tmf.JsonUtils;
 import org.etsi.osl.tmf.cm629.model.Customer;
 import org.etsi.osl.tmf.cm629.model.CustomerCreate;
 import org.etsi.osl.tmf.cm629.model.CustomerUpdate;
@@ -40,28 +37,15 @@ import org.etsi.osl.tmf.cm629.service.CustomerRepoService;
 import org.etsi.osl.tmf.pm632.model.ContactMedium;
 import org.etsi.osl.tmf.pm632.model.MediumCharacteristic;
 import org.etsi.osl.tmf.prm669.model.RelatedParty;
-import org.etsi.osl.tmf.JsonUtils;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
-@RunWith(SpringRunner.class)
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc 
-@ActiveProfiles("testing")
-public class CustomerIntegrationTest {
+public class CustomerIntegrationTest extends BaseIT {
 
 
 	private static final transient Log logger = LogFactory.getLog( CustomerIntegrationTest.class.getName());
@@ -79,7 +63,7 @@ public class CustomerIntegrationTest {
 //    private WebApplicationContext context;
 //    
 // 
-//    @Before
+//    @BeforeEach
 //    public void setup() {
 //        mvc = MockMvcBuilders
 //          .webAppContextSetup(context).dispatchOptions(true)

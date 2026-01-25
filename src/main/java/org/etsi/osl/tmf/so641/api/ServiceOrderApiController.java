@@ -32,6 +32,7 @@ import org.etsi.osl.tmf.so641.model.ServiceOrderCreate;
 import org.etsi.osl.tmf.so641.model.ServiceOrderUpdate;
 import org.etsi.osl.tmf.so641.reposervices.ServiceOrderRepoService;
 import org.etsi.osl.tmf.util.AddUserAsOwnerToRelatedParties;
+import org.etsi.osl.tmf.util.ServiceOrderValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 
 import org.etsi.osl.model.nfv.UserRoleType;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -79,6 +78,15 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 	@Autowired
 	ServiceOrderApiRouteBuilder serviceOrderApiRouteBuilder;
 
+	@Autowired
+	private ServiceOrderValidator serviceOrderValidator;
+
+	// Custom validation resulting from ServiceSpecCharacteristicValue range interval and type validation (https://labs.etsi.org/rep/groups/osl/code/-/epics/30)
+	@InitBinder
+	protected void initBinder(WebDataBinder binder) {
+		binder.addValidators(serviceOrderValidator);
+	}
+
 	@org.springframework.beans.factory.annotation.Autowired
 	public ServiceOrderApiController(ObjectMapper objectMapper, HttpServletRequest request) {
 		this.objectMapper = objectMapper;
@@ -99,6 +107,7 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 			
 				log.info("authentication=  " + principal.toString());
 				String extInfo = null;
+				Boolean autoAcknowledge = false;
 				try {
 					
 
@@ -113,32 +122,29 @@ public class ServiceOrderApiController implements ServiceOrderApi {
 						serviceOrder.setRelatedParty(AddUserAsOwnerToRelatedParties.addUser(
 								principal.getName(), 
 								//user.getId()+"", 
-								principal.getName(), 
+								null, 
 								UserPartRoleType.REQUESTER,
 								extInfo,
 								serviceOrder.getRelatedParty()));
 					} 
-					else if ( principal instanceof UsernamePasswordAuthenticationToken ) {
+					else if ( principal instanceof UsernamePasswordAuthenticationToken token) {
 						serviceOrder.setRelatedParty(AddUserAsOwnerToRelatedParties.addUser(
-								principal.getName(), 
+						      token.getName(), 
 								//user.getId()+"", 
-								principal.getName(), 
+								null, 
 								UserPartRoleType.REQUESTER,
 								extInfo,
 								serviceOrder.getRelatedParty()));
+						
+						autoAcknowledge = token.getAuthorities().stream().anyMatch( s -> s.getAuthority().equals("ROLE_OSL_AUTOACK_ORDER"));
+						
 					}
 				
 					
 				}finally {
 					
 				}
-				
-
-				
-				
-				
-				
-				ServiceOrder c = serviceOrderRepoService.addServiceOrder(serviceOrder);
+				ServiceOrder c = serviceOrderRepoService.addServiceOrder(serviceOrder, autoAcknowledge);
 
 				return new ResponseEntity<ServiceOrder>(c, HttpStatus.OK);				
 			

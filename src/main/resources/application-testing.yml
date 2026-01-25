@@ -9,18 +9,33 @@ spring:
   application:
     name: openslice-service-catalog-management-api-testing
   datasource:
-    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
     password: sa
     username: sa
+    hikari:
+      maximum-pool-size: 5  # Reduce from default
+      minimum-idle: 1
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
       hbm2ddl.auto: create-drop
     properties:
-      hibernate:        
+      hibernate:
         globally_quoted_identifiers: true
         globally_quoted_identifiers_skip_column_definitions: true
+        # Memory optimizations for tests
+        jdbc.batch_size: 20
+        order_inserts: true
+        order_updates: true
+        cache.use_second_level_cache: false
+        cache.use_query_cache: false
+        jdbc.fetch_size: 50
+        # Reduce connection pool overhead
+        connection.provider_disables_autocommit: true
+        query.plan_cache_max_size: 256
+        query.plan_parameter_metadata_max_size: 128
+        query.in_clause_parameter_padding: true
     show-sql: false
     generate-ddl: true
     
@@ -37,7 +52,7 @@ spring:
         expiry-timeout: 0
         idle-timeout: 30000
         max-connections: 1
-        maximum-active-session-per-connection: 500
+        maximum-active-session-per-connection: 100  # Reduced from 500
         reconnect-on-exception: true
         time-between-expiration-check: -1
         use-anonymous-producers: true
@@ -184,6 +199,29 @@ EVENT_PRODUCT_ORDER_CREATE: "jms:topic:EVENT.PRODUCTORDER.CREATE"
 EVENT_PRODUCT_ORDER_STATE_CHANGED: "jms:topic:EVENT.PRODUCTORDER.STATECHANGED"
 EVENT_PRODUCT_ORDER_DELETE: "jms:topic:EVENT.PRODUCTORDER.DELETE"
 EVENT_PRODUCT_ORDER_ATTRIBUTE_VALUE_CHANGED: "jms:topic:EVENT.PRODUCTORDER.ATTRCHANGED"
+
+EVENT_PRODUCT_CATALOG_CREATE: "jms:topic:EVENT.PRODUCTCATALOG.CREATE"
+EVENT_PRODUCT_CATALOG_DELETE: "jms:topic:EVENT.PRODUCTCATALOG.DELETE"
+EVENT_PRODUCT_CATEGORY_CREATE: "jms:topic:EVENT.PRODUCTCATEGORY.CREATE"
+EVENT_PRODUCT_CATEGORY_DELETE: "jms:topic:EVENT.PRODUCTCATEGORY.DELETE"
+EVENT_PRODUCT_SPECIFICATION_CREATE: "jms:topic:EVENT.PRODUCTSPECIFICATION.CREATE"
+EVENT_PRODUCT_SPECIFICATION_DELETE: "jms:topic:EVENT.PRODUCTSPECIFICATION.DELETE"
+EVENT_PRODUCT_OFFERING_CREATE: "jms:topic:EVENT.PRODUCTOFFERING.CREATE"
+EVENT_PRODUCT_OFFERING_DELETE: "jms:topic:EVENT.PRODUCTOFFERING.DELETE"
+EVENT_PRODUCT_OFFERING_ATTRIBUTE_VALUE_CHANGE: "jms:topic:EVENT.PRODUCTOFFERING.ATTRCHANGED"
+EVENT_PRODUCT_OFFERING_STATE_CHANGE: "jms:topic:EVENT.PRODUCTOFFERING.STATECHANGED"
+EVENT_PRODUCT_OFFERING_PRICE_CREATE: "jms:topic:EVENT.PRODUCTOFFERINGPRICE.CREATE"
+EVENT_PRODUCT_OFFERING_PRICE_DELETE: "jms:topic:EVENT.PRODUCTOFFERINGPRICE.DELETE"
+EVENT_PRODUCT_OFFERING_PRICE_ATTRIBUTE_VALUE_CHANGE: "jms:topic:EVENT.PRODUCTOFFERINGPRICE.ATTRCHANGED"
+EVENT_PRODUCT_OFFERING_PRICE_STATE_CHANGE: "jms:topic:EVENT.PRODUCTOFFERINGPRICE.STATECHANGED"
+
+EVENT_SERVICE_CATALOG_CREATE: "jms:topic:EVENT.SERVICECATALOG.CREATE"
+EVENT_SERVICE_CATALOG_DELETE: "jms:topic:EVENT.SERVICECATALOG.DELETE"
+EVENT_SERVICE_CATEGORY_CREATE: "jms:topic:EVENT.SERVICECATEGORY.CREATE"
+EVENT_SERVICE_CATEGORY_DELETE: "jms:topic:EVENT.SERVICECATEGORY.DELETE"
+EVENT_SERVICE_SPECIFICATION_CREATE: "jms:topic:EVENT.SERVICESPECIFICATION.CREATE"
+EVENT_SERVICE_SPECIFICATION_DELETE: "jms:topic:EVENT.SERVICESPECIFICATION.DELETE"
+EVENT_SERVICE_SPECIFICATION_CHANGE: "jms:topic:EVENT.SERVICESPECIFICATION.CHANGE"
 
 #QUEUE MESSSAGES WITH VNFNSD CATALOG
 NFV_CATALOG_GET_NSD_BY_ID: "jms:queue:NFVCATALOG.GET.NSD_BY_ID"
