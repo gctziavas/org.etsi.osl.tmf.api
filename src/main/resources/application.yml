@@ -115,14 +115,6 @@ mlflow: # MLflow configuration for AIM915 model management
   connection-timeout: 30000 #seconds
   read-timeout: 60000 #seconds
 
-huggingface: # Hugging Face API configuration for AIM915 model management
-   enabled: true
-   api-base-url: "https://api-inference.huggingface.co/models"
-  api:
-    token: ""
-  download:
-    timeout: 300000
-
 aimodel: # AIM915 model management configuration
   deployment:
     default-platform: mlflow # Options: mlflow, seldon, kserve, triton, custom

@@ -7,7 +7,7 @@ Spring Boot implementation of the TMF 915 AI Model Management API specification.
 This implementation provides a comprehensive API for managing AI models according to TMF (TeleManagement Forum) standards. It includes:
 
 - **TMF 915 AI Model Management** - Core API implementation
-- **Platform Integrations** - MLflow and HuggingFace Hub integrations
+- **Platform Integrations** - MLflow integration
 - **Model Lifecycle Management** - Creation, retrieval, update, and deletion of AI models
 - **Artifact Management** - On-demand deployment artifact generation and download
 
@@ -20,10 +20,6 @@ This implementation provides a comprehensive API for managing AI models accordin
 - See [docs/mlflow_to_tmf915_class_entity_mapping.puml](docs/mlflow_to_tmf915_class_entity_mapping.puml) for entity mapping diagram
 - See [docs/mlflow_to_tmf915_field_mapping.puml](docs/mlflow_to_tmf915_field_mapping.puml) for field mapping details
 
-### HuggingFace Integration
-
-- See [integrations/huggingface/README.md](integrations/huggingface/README.md) for comprehensive HuggingFace integration guide
-
 ## API Endpoints
 
 ### Base Path: `/AiM/v4/`
@@ -34,7 +30,6 @@ This implementation provides a comprehensive API for managing AI models accordin
 | AiModel              | `/AiM/v4/aiModel`              | AI Model instance management      |
 | AiModelSpecification | `/AiM/v4/aiModelSpecification` | AI Model specification management |
 | MLflow               | `/AiM/v4/mlflow/*`             | MLflow integration endpoints      |
-| HuggingFace          | `/AiM/v4/huggingface/*`        | HuggingFace integration endpoints |
 
 ## API Documentation
 
@@ -57,11 +52,6 @@ mlflow:
   enabled: true
   host: "127.0.0.1"
   port: 5000
-
-# Optional: HuggingFace API token for private models
-huggingface:
-  api:
-    token: your_token_here
 ```
 
 ### Running the Server
