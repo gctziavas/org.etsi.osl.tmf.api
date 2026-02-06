@@ -76,6 +76,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class ResourceSpecificationRepoService {
 	private static final transient Log logger = LogFactory.getLog(ResourceSpecificationRepoService.class.getName());
 

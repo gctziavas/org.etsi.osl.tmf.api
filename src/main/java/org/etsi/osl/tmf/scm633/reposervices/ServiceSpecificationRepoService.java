@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,12 +66,14 @@ import org.etsi.osl.tmf.scm633.model.ServiceCandidate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceCandidateUpdate;
 import org.etsi.osl.tmf.scm633.model.ServiceCategory;
+import org.etsi.osl.tmf.scm633.model.ServiceCategoryRef;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecRelationship;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationCreate;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecificationUpdate;
+import org.etsi.osl.tmf.scm633.repo.CategoriesRepository;
 import org.etsi.osl.tmf.scm633.repo.ServiceSpecificationRepository;
 import org.etsi.osl.tmf.stm653.model.CharacteristicSpecification;
 import org.etsi.osl.tmf.stm653.model.ServiceTestSpecification;
@@ -134,6 +137,12 @@ public class ServiceSpecificationRepoService {
 	@Autowired
 	ServiceTestSpecificationRepoService serviceTestSpecificationRepoService;
 	
+	@Autowired
+	ServiceSpecificationNotificationService serviceSpecificationNotificationService;
+
+	@Autowired
+	CategoriesRepository categoriesRepository;
+	
 	private SessionFactory sessionFactory;
 
 	private static final String METADATADIR = System.getProperty("user.home") + File.separator + ".attachments"
@@ -156,6 +165,8 @@ public class ServiceSpecificationRepoService {
 		serviceSpec = this.updateServiceSpecDataFromAPIcall(serviceSpec, serviceServiceSpecification);
 		serviceSpec = this.serviceSpecificationRepo.save(serviceSpec);
 		serviceSpec.fixSpecCharRelationhsipIDs();
+		
+		serviceSpecificationNotificationService.publishServiceSpecificationCreateNotification(serviceSpec);
 
 		/**
 		 * we automatically create s Service Candidate for this spec ready to be
@@ -166,6 +177,19 @@ public class ServiceSpecificationRepoService {
 		ServiceSpecificationRef serviceSpecificationRef = new ServiceSpecificationRef();
 		serviceCandidate.setServiceSpecification(serviceSpecificationRef);
 		serviceSpecificationRef.setId(serviceSpec.getId());
+		if(serviceServiceSpecification.getRelatedParty()!=null && !serviceServiceSpecification.getRelatedParty().isEmpty() && serviceServiceSpecification.getRelatedParty().get(0).getRole().equalsIgnoreCase(UserPartRoleType.ORGANIZATION.getValue())){
+			Optional<ServiceCategory> serviceCategory =categoriesRepository.findByName(serviceServiceSpecification.getRelatedParty().get(0).getName());
+
+			if (serviceCategory.isPresent()){
+				List<ServiceCategoryRef> serviceCategoryRefs = new ArrayList<>();
+				ServiceCategoryRef serviceCategoryRef= new ServiceCategoryRef();
+				serviceCategoryRef.setId(serviceCategory.get().getId());
+				serviceCategoryRef.setName(serviceCategory.get().getName());
+				serviceCategoryRefs.add(serviceCategoryRef);
+				serviceCandidate.setCategory(serviceCategoryRefs);
+
+			}
+		}
 		ServiceCandidate serviceCandidateObj = candidateRepoService.addServiceCandidate(serviceCandidate);
 
 		serviceSpec.setServiceCandidateObjId(serviceCandidateObj.getUuid());
@@ -173,8 +197,12 @@ public class ServiceSpecificationRepoService {
 		return this.serviceSpecificationRepo.save(serviceSpec);
 	}
 
+
+    @Transactional
 	public List<ServiceSpecification> findAll() {
-		return (List<ServiceSpecification>) this.serviceSpecificationRepo.findByOrderByName();
+	  
+	    var alist = (List<ServiceSpecification>) this.serviceSpecificationRepo.findByOrderByName();
+		return alist;
 	}
 
 	/**
@@ -338,7 +366,8 @@ public class ServiceSpecificationRepoService {
 		/**
 		 * prior deleting we need to delete other dependency objects
 		 */
-
+		
+		serviceSpecificationNotificationService.publishServiceSpecificationDeleteNotification(s);
 		this.serviceSpecificationRepo.delete(s);
 		return null;
 	}
@@ -376,6 +405,8 @@ public class ServiceSpecificationRepoService {
 
 		serviceSpec = this.serviceSpecificationRepo.save(serviceSpec);
 		serviceSpec.fixSpecCharRelationhsipIDs();
+		
+		serviceSpecificationNotificationService.publishServiceSpecificationChangeNotification(serviceSpec);
 		
 		//save the equivalent candidate
 		ServiceCandidate serviceCandidateObj = candidateRepoService.findById( serviceSpec.getServiceCandidateObjId() );
@@ -821,6 +852,14 @@ public class ServiceSpecificationRepoService {
 		List<ServiceSpecification> optionalCat = this.serviceSpecificationRepo.findByNameAndVersion(aname,
 				aversion);
 		if ( ( optionalCat !=null) && ( optionalCat.size()>0) ) {
+          optionalCat.get(0).getAttachment().size();
+          optionalCat.get(0).getServiceSpecRelationship().size();
+          optionalCat.get(0).getServiceSpecCharacteristic().size();
+          optionalCat.get(0).getServiceSpecCharacteristic().stream().forEach(s -> s.getServiceSpecCharacteristicValue().size());
+          optionalCat.get(0).getServiceSpecCharacteristic().stream().forEach(s -> s.getServiceSpecCharRelationship().size());
+          optionalCat.get(0).getResourceSpecification().size();
+          optionalCat.get(0).getServiceLevelSpecification().size();
+          optionalCat.get(0).getRelatedParty().size();
 			return optionalCat.get(0);
 		} else {
 			return null;
@@ -1516,7 +1555,8 @@ public class ServiceSpecificationRepoService {
         Transaction tx = session.beginTransaction();
         
         try {
-          String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription";
+          String sql = "SELECT s.id as serviceSpecificationId, s.name as serviceName, s.description as serviceDescription,"
+              + " s.type, s.isBundle, scateg.name as categoryName";
                        
             
 
@@ -1525,13 +1565,13 @@ public class ServiceSpecificationRepoService {
             
                       
             // Build the name LIKE clause
-            StringJoiner nameJoiner = new StringJoiner(" AND ");
+            StringJoiner nameJoiner = new StringJoiner(" OR ");
             for (String term : searchList) {
                 nameJoiner.add("s.name LIKE '%" + term + "%'");
             }
 
             // Build the description LIKE clause
-            StringJoiner descriptionJoiner = new StringJoiner(" AND ");
+            StringJoiner descriptionJoiner = new StringJoiner(" OR ");
             for (String term : searchList) {
                 descriptionJoiner.add("s.description LIKE '%" + term + "%'");
             }

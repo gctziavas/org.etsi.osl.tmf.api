@@ -1,18 +1,19 @@
 package org.etsi.osl.services.api.rcm634;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.common.model.TimePeriod;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecCharRelationship;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCharacteristic;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecificationCharacteristicValue;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-public class ResourceSpecificationCharacteristicTest {
+public class ResourceSpecificationCharacteristicTest  extends BaseIT{
     @Test
     void testResourceSpecificationCharacteristicConstructorAndAllProperties() {
         // Create a new ResourceSpecificationCharacteristic object and set its properties

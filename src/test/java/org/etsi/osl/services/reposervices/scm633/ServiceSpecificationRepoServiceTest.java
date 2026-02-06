@@ -7,15 +7,21 @@
 
 package org.etsi.osl.services.reposervices.scm633;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-
 import org.etsi.osl.model.nfv.NetworkServiceDescriptor;
-import org.etsi.osl.tmf.OpenAPISpringBoot;
+import org.etsi.osl.services.api.BaseIT;
 import org.etsi.osl.tmf.common.model.Any;
 import org.etsi.osl.tmf.rcm634.model.ResourceSpecification;
 import org.etsi.osl.tmf.rcm634.reposervices.ResourceSpecificationRepoService;
@@ -24,37 +30,17 @@ import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristic;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecCharacteristicValue;
 import org.etsi.osl.tmf.scm633.model.ServiceSpecification;
 import org.etsi.osl.tmf.scm633.reposervices.ServiceSpecificationRepoService;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import org.junit.runner.RunWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.validation.Valid;
 
-@RunWith(SpringRunner.class)
-@ActiveProfiles("testing")
-@Transactional
-@SpringBootTest( webEnvironment = SpringBootTest.WebEnvironment.MOCK , classes = OpenAPISpringBoot.class)
-@AutoConfigureMockMvc
-@AutoConfigureTestDatabase
-public class ServiceSpecificationRepoServiceTest {
+
+public class ServiceSpecificationRepoServiceTest  extends BaseIT {
 
     @Autowired
     private ServiceSpecificationRepoService serviceSpecificationRepoService;
@@ -69,7 +55,7 @@ public class ServiceSpecificationRepoServiceTest {
 
     private static ResourceSpecification resourceNSD;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupBeforeClass() {
         // Load NSD from JSON file to NetworkServiceDescriptor.class
         try {
@@ -94,7 +80,7 @@ public class ServiceSpecificationRepoServiceTest {
         resourceNSD.setDescription(nsd.getShortDescription());
     }
 
-    @Before
+    @BeforeEach
     public void setupBefore() {
         when(serviceSpecificationApiRouteBuilderNSD.retrieveNSD(anyString())).thenReturn(nsd);
         when(resourceSpecRepoService.addResourceSpec(any())).thenReturn(resourceNSD);
@@ -118,7 +104,7 @@ public class ServiceSpecificationRepoServiceTest {
         NetworkServiceDescriptor result = serviceSpecificationApiRouteBuilderNSD.retrieveNSD(id);
 
         // Assertion
-        assertNotNull("The result should not be null when NSD is not null", result);
+        assertNotNull(  result);        
     }
 
 

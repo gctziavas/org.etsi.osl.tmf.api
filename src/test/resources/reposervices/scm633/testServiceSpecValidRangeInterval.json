@@ -1,0 +1,43 @@
+{
+	"name": "Test Spec",
+	"description": "Test Spec example",
+	"version": "1.8.0",
+	"isBundle": false,
+	"attachment": [
+	],
+	"relatedParty": [
+	],
+	"resourceSpecification": [
+	],
+	"serviceLevelSpecification": [
+	],
+	"serviceSpecCharacteristic": [
+		{
+			"name": "Port",
+			"configurable": true,
+			"description": "This attribute specifies the port number of the service",
+			"extensible": null,
+			"isUnique": true,
+			"maxCardinality": 1,
+			"minCardinality": 1,
+			"regex": null,
+			"valueType": "INTEGER",
+			"serviceSpecCharacteristicValue": [
+				{
+					"isDefault": true,
+					"rangeInterval": "closed",
+					"regex": null,
+					"unitOfMeasure": "N/A",
+					"valueFrom": 8080,
+					"valueTo": 8090,
+					"valueType": "INTEGER",
+					"validFor": null,
+					"value": {
+						"value": "8080",
+						"alias": "Number"
+					}
+				}
+			]
+		}
+	]
+}

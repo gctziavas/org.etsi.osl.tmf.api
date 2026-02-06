@@ -27,6 +27,7 @@ package org.etsi.osl.tmf.scm633.api;
 import org.etsi.osl.tmf.scm633.model.EventSubscription;
 import org.etsi.osl.tmf.scm633.model.EventSubscriptionInput;
 import org.springframework.http.ResponseEntity;
+import java.util.List;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,5 +74,17 @@ public interface HubApi {
         consumes = { "application/json;charset=utf-8" },
         method = RequestMethod.DELETE)
     ResponseEntity<Void> unregisterListener(@Parameter(description = "The id of the registered listener",required=true) @PathVariable("id") String id);
+
+    @Operation(summary = "Get all registered listeners", operationId = "getListeners", description = "Retrieves all registered event subscriptions", tags={ "events subscription", })
+    @ApiResponses(value = { 
+        @ApiResponse(responseCode = "200", description = "Success" ),
+        @ApiResponse(responseCode = "400", description = "Bad Request" ),
+        @ApiResponse(responseCode = "401", description = "Unauthorized" ),
+        @ApiResponse(responseCode = "403", description = "Forbidden" ),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error" ) })
+    @RequestMapping(value = "/hub",
+        produces = { "application/json;charset=utf-8" },
+        method = RequestMethod.GET)
+    ResponseEntity<List<EventSubscription>> getListeners();
 
 }

@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 
 @Service
+@Transactional
 public class ResourceCandidateRepoService {
 
 
@@ -157,7 +158,7 @@ public class ResourceCandidateRepoService {
 	
 				if ( catObj!=null){
 					catObj.getResourceCandidateObj().add(savedCand); //add candidate ref to category
-					catObj = this.categsRepoService.categsRepo.save(catObj); 
+					catObj = this.categsRepoService.categsRepoSave(catObj); 
 					
 				}
 			}
