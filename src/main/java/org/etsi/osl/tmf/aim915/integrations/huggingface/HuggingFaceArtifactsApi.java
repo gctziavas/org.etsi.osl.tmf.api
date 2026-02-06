@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Hugging Face Artifacts", description = "Endpoints for downloading Hugging Face model artifacts")
-@RequestMapping("/tmf-api/aim/v1")
+@RequestMapping("/AiM/v4")
 public interface HuggingFaceArtifactsApi {
 
     @Operation(

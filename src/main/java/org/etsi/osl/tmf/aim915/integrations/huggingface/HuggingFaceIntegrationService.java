@@ -170,7 +170,7 @@ public class HuggingFaceIntegrationService {
     public AiModel createModelInstance(String specificationId, String instanceName, String deploymentEndpoint) {
         log.info("Creating model instance from specification: {}", specificationId);
 
-        AiModelSpecification spec = specificationRepository.findByUuid(specificationId);
+        AiModelSpecification spec = specificationRepository.findAiModelSpecificationByUuid(specificationId);
         if (spec == null) {
             throw new IllegalArgumentException("Specification not found: " + specificationId);
         }

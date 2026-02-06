@@ -10,7 +10,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +22,7 @@ import java.util.Map;
  * - Searching the Hugging Face Hub
  */
 @Tag(name = "Hugging Face Integration", description = "Endpoints for Hugging Face AI Model integration")
-@RequestMapping("/tmf-api/aim/v1")
+@RequestMapping("/AiM/v4")
 public interface HuggingFaceApi {
 
     // ========================================

@@ -42,6 +42,11 @@ public class AiModelSpecificationRepositoryService {
         return aiModelSpecificationRepository.findByNameAndVersion(name, version).orElse(null);
     }
 
+    public AiModelSpecification findAiModelSpecificationByName(String name) {
+        log.info("AiModelSpecification FIND BY name: {}", name);
+        return aiModelSpecificationRepository.findByName(name).orElse(null);
+    }
+
     public AiModelSpecification createAiModelSpecification(AiModelSpecificationCreate aiModelSpecCreate) {
         log.info("AiModelSpecification CREATE: {}", aiModelSpecCreate);
         AiModelSpecification aiModelSpec = specificationMapper.fromCreate(aiModelSpecCreate);

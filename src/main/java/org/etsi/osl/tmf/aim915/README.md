@@ -7,23 +7,41 @@ Spring Boot implementation of the TMF 915 AI Model Management API specification.
 This implementation provides a comprehensive API for managing AI models according to TMF (TeleManagement Forum) standards. It includes:
 
 - **TMF 915 AI Model Management** - Core API implementation
-- **Platform Integrations** - HuggingFace Hub integration with platform-based approach
+- **Platform Integrations** - MLflow and HuggingFace Hub integrations
 - **Model Lifecycle Management** - Creation, retrieval, update, and deletion of AI models
 - **Artifact Management** - On-demand deployment artifact generation and download
 
 ## Documentation
 
-For detailed documentation on the HuggingFace integration:
-- See [docs/README.md](docs/README.md) for comprehensive integration guide
-- See [docs/huggingface-mapping.puml](docs/huggingface-mapping.puml) for architecture diagram
-- See [docs/platform-specification.json](docs/platform-specification.json) for platform spec structure
-- See [docs/example-aimodel.json](docs/example-aimodel.json) for example model instance
+### MLflow Integration
+
+- See [integrations/mlflow/README.md](integrations/mlflow/README.md) for comprehensive MLflow integration guide
+- See [docs/mlflow_to_tmf915_flow.puml](docs/mlflow_to_tmf915_flow.puml) for integration flow diagram
+- See [docs/mlflow_to_tmf915_class_entity_mapping.puml](docs/mlflow_to_tmf915_class_entity_mapping.puml) for entity mapping diagram
+- See [docs/mlflow_to_tmf915_field_mapping.puml](docs/mlflow_to_tmf915_field_mapping.puml) for field mapping details
+
+### HuggingFace Integration
+
+- See [integrations/huggingface/README.md](integrations/huggingface/README.md) for comprehensive HuggingFace integration guide
+
+## API Endpoints
+
+### Base Path: `/AiM/v4/`
+
+
+| Resource             | Endpoint                       | Description                       |
+| -------------------- | ------------------------------ | --------------------------------- |
+| AiModel              | `/AiM/v4/aiModel`              | AI Model instance management      |
+| AiModelSpecification | `/AiM/v4/aiModelSpecification` | AI Model specification management |
+| MLflow               | `/AiM/v4/mlflow/*`             | MLflow integration endpoints      |
+| HuggingFace          | `/AiM/v4/huggingface/*`        | HuggingFace integration endpoints |
 
 ## API Documentation
 
 The underlying library integrating OpenAPI to Spring Boot is [springdoc](https://springdoc.org).
 
 You can view the API documentation in swagger-ui:
+
 - Swagger UI: `http://localhost:13082/swagger-ui.html`
 - OpenAPI Spec: `http://localhost:13082/v3/api-docs/`
 
@@ -31,17 +49,25 @@ You can view the API documentation in swagger-ui:
 
 ### Configuration
 
-Add to `application.properties`:
-```properties
+Add to `application.yml`:
+
+```yaml
+# MLflow configuration
+mlflow:
+  enabled: true
+  host: "127.0.0.1"
+  port: 5000
+
 # Optional: HuggingFace API token for private models
-huggingface.api.token=your_token_here
+huggingface:
+  api:
+    token: your_token_here
 ```
 
 ### Running the Server
 
 Start the server as a Spring Boot application:
+
 ```bash
 mvn spring-boot:run
 ```
-
-Default port: 13082 (configurable in application.properties)

@@ -12,4 +12,5 @@ public interface AiModelSpecificationRepository extends CrudRepository<AiModelSp
     Optional<AiModelSpecification> findByUuid(String uuid);
 
     Optional<AiModelSpecification> findByNameAndVersion(String name, String version);
+    Optional<AiModelSpecification> findByName(String name);
 }
