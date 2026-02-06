@@ -60,4 +60,8 @@ public class AiModelRepositoryService {
                 orElseThrow(() -> new IllegalArgumentException("No AI Model with UUID: " + uuid));
         aiModelRepository.delete(aiModel);
     }
+
+    public List<AiModel> findByNameStartingWith(String namePrefix) {
+        return aiModelRepository.findByNameStartingWith(namePrefix);
+    }
 }

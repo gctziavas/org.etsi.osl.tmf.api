@@ -1,247 +1,543 @@
-# MLflow Platform Integration
+# MLflow Integration for TMF 915 AI Model Management
 
-Platform-based integration of MLflow with TMF 915 AI Model Management API.
+This module provides integration between MLflow and the TMF 915 AI Model Management API.
 
-## Overview
+## Architecture Overview
 
-This integration uses a **platform-based approach** where:
-- **AiModelSpecification** represents the MLflow platform itself (single, static specification)
-- **AiModel** instances represent individual registered models in MLflow
+The integration follows a clear separation between **model specifications** (blueprints) and **model instances** (deployments):
 
-## MLflow Platform
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        MLflow Registry                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ Model A v1  │  │ Model A v2  │  │ Model B v1  │  ...         │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ Import
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   AiModelSpecification                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ Spec A v1   │  │ Spec A v2   │  │ Spec B v1   │  ...         │
+│  │ (Blueprint) │  │ (Blueprint) │  │ (Blueprint) │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ Instantiate/Deploy
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        AiModel                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ Instance 1  │  │ Instance 2  │  │ Instance 3  │  ...         │
+│  │ (Running)   │  │ (Running)   │  │ (Designed)  │              │
+│  └─────────────┘  └─────────────┘  └─────────────┘              │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-[MLflow](https://mlflow.org/) is an open-source platform for managing the complete machine learning lifecycle, including:
-- **Experiment Tracking**: Log parameters, metrics, and artifacts
-- **Model Registry**: Centralized model store with versioning and stage transitions
-- **Model Deployment**: Deploy models to various targets
-- **Projects**: Packaging format for reproducible runs
 
-## Architecture
+| Concept                 | TMF Entity             | Description                                                |
+| ----------------------- | ---------------------- | ---------------------------------------------------------- |
+| **Model in MLflow**     | -                      | A registered model with versions, artifacts, and metadata  |
+| **Model Specification** | `AiModelSpecification` | Blueprint describing a model's capabilities and attributes |
+| **Model Instance**      | `AiModel`              | A running/deployed instance of a model                     |
 
-### Components
+---
 
-1. **MLflowPlatformService** - Main service for MLflow integration
-   - Creates/manages the platform specification
-   - Converts MLflow registered models to TMF AiModel format
-   - Provides model search and validation
-   - Interfaces with MLflow REST API
+## REST API Endpoints
 
-2. **MLflowIntegrationExample** - Usage examples
-   - Platform specification creation
-   - Model import workflows
-   - Listing and validation examples
+### Import & Sync Operations
 
-### Key Features
 
-- **Platform Specification**: 7 characteristics defining MLflow platform capabilities
-- **Model Characteristics**: Up to 10+ characteristics per model (varies by metadata)
-- **Model Versioning**: Supports specific versions or latest version
-- **Stage Management**: Tracks model lifecycle stages (None, Staging, Production, Archived)
-- **TMF Compliance**: Full alignment with TMF 915 specification fields
+| Method | Endpoint                                        | Description                                 |
+| ------ | ----------------------------------------------- | ------------------------------------------- |
+| `POST` | `/tmf-api/aim/v1/mlflow/import/{modelName}`     | Import MLflow model as AiModelSpecification |
+| `POST` | `/tmf-api/aim/v1/mlflow/import/{modelName}/all` | Import all versions of a model              |
+| `POST` | `/tmf-api/aim/v1/mlflow/sync`                   | Sync all MLflow models to specifications    |
+
+### Deployment Operations
+
+
+| Method   | Endpoint                                        | Description                                      |
+| -------- | ----------------------------------------------- | ------------------------------------------------ |
+| `POST`   | `/tmf-api/aim/v1/mlflow/deploy/{modelName}`     | Deploy using MLflow built-in serving             |
+| `POST`   | `/tmf-api/aim/v1/mlflow/instantiate/{specId}`   | Create AiModel with external inference URL       |
+| `DELETE` | `/tmf-api/aim/v1/mlflow/deploy/{modelName}/{v}` | Stop a running deployment                        |
+| `GET`    | `/tmf-api/aim/v1/mlflow/deployments`            | List all running deployments                     |
+
+### Query Operations
+
+
+| Method | Endpoint                                         | Description                          |
+| ------ | ------------------------------------------------ | ------------------------------------ |
+| `GET`  | `/tmf-api/aim/v1/mlflow/models`                  | List all registered models in MLflow |
+| `GET`  | `/tmf-api/aim/v1/mlflow/models/{name}/exists`    | Check if model exists                |
+| `GET`  | `/tmf-api/aim/v1/mlflow/models/{name}/artifacts` | List model artifacts                 |
+| `GET`  | `/tmf-api/aim/v1/mlflow/info`                    | Get MLflow connection info           |
+
+### Artifact Operations
+
+
+| Method | Endpoint                                                        | Description              |
+| ------ | --------------------------------------------------------------- | ------------------------ |
+| `GET`  | `/tmf-api/aim/v1/aiModel/{id}/artifacts/mlflow/model`           | Download model artifact  |
+| `GET`  | `/tmf-api/aim/v1/aiModel/{id}/artifacts/mlflow/training_data`   | Download training data   |
+| `GET`  | `/tmf-api/aim/v1/aiModel/{id}/artifacts/mlflow/evaluation_data` | Download evaluation data |
+
+### Example Requests
+
+**Import a model:**
+
+```bash
+# Import specific version
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/import/fraud-detector?version=3"
+
+# Import latest version
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/import/fraud-detector"
+```
+
+**Deploy a model using MLflow built-in serving:**
+
+```bash
+# Deploy on specific port
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3&port=5001"
+
+# Deploy on auto-assigned port
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3"
+```
+
+Response:
+```json
+{
+  "id": "abc123",
+  "name": "fraud-detector v3",
+  "state": "ACTIVE",
+  "serviceCharacteristic": [
+    {"name": "inferenceUrl", "value": "http://localhost:5001/invocations"}
+  ]
+}
+```
+
+**Create instance with external inference URL:**
+
+```bash
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/instantiate/{specId}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "instanceName": "fraud-detector-prod",
+    "inferenceUrl": "http://fraud-detector.ml.svc.cluster.local:8080/v1/models/fraud-detector:predict"
+  }'
+```
+
+**Stop a deployment:**
+
+```bash
+curl -X DELETE "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector/3"
+```
+
+**Call predictions on deployed model:**
+
+```bash
+curl -X POST "http://localhost:5001/invocations" \
+  -H "Content-Type: application/json" \
+  -d '{"inputs": [[1.0, 2.0, 3.0, 4.0]]}'
+```
+
+---
+
+## MLflow to TMF 915 Mapping
+
+### MLflow → AiModelSpecification
+
+When importing a model from MLflow, the following mapping is applied:
+
+
+| MLflow Source                                              | AiModelSpecification Field                 | Notes                               |
+| ---------------------------------------------------------- | ------------------------------------------ | ----------------------------------- |
+| `RegisteredModel.name`                                     | `name`                                     | Model name                          |
+| `ModelVersion.version`                                     | `version`                                  | Version number                      |
+| `RegisteredModel.description` / `ModelVersion.description` | `description`                              | Falls back to version description   |
+| `ModelVersion.status`                                      | `specCharacteristic[lifecycleStatus]`      | PENDING_REGISTRATION, READY, etc.   |
+| `ModelVersion.current_stage`                               | `specCharacteristic[stage]`                | None, Staging, Production, Archived |
+| `ModelVersion.run_id`                                      | `specCharacteristic[runId]`                | Link to training run                |
+| `ModelVersion.source`                                      | `specCharacteristic[artifactUri]`          | Model artifact location             |
+| `ModelVersion.user_id`                                     | `specCharacteristic[createdBy]`            | Creator                             |
+| `ModelVersion.creation_timestamp`                          | `specCharacteristic[creationTimestamp]`    | Creation time                       |
+| `ModelVersion.last_updated_timestamp`                      | `specCharacteristic[lastUpdatedTimestamp]` | Last update time                    |
+| `ModelVersion.tags[]`                                      | `specCharacteristic[tags]`                 | Concatenated key=value pairs        |
+| `RegisteredModel.tags[]`                                   | `specCharacteristic[tags]`                 | Merged with version tags            |
+| MLflow UI URL                                              | `specCharacteristic[mlflowUrl]`            | Link to MLflow UI                   |
+
+**From Run Data (if available):**
+
+
+| MLflow Source                         | AiModelSpecification Field      | Notes                              |
+| ------------------------------------- | ------------------------------- | ---------------------------------- |
+| `Run.data.tags["mlflow.runName"]`     | `specCharacteristic[runName]`   | Run name                           |
+| `Run.data.tags["mlflow.log-model.*"]` | `specCharacteristic[modelType]` | sklearn, pytorch, tensorflow, etc. |
+| `Run.data.params[]`                   | `specCharacteristic[param_*]`   | Important hyperparameters          |
+| `Run.data.metrics[]`                  | `specCharacteristic[metric_*]`  | Training/eval metrics              |
+
+**Artifact URLs (TMF 915 Standard Fields):**
+
+
+| Artifact Path                                | AiModelSpecification Field | Description                  |
+| -------------------------------------------- | -------------------------- | ---------------------------- |
+| `model_data_sheet`, `datasheet`, `README.md` | `modelDataSheet`           | Model card/documentation     |
+| `deployment_record`, `deployment.yaml`       | `deploymentRecord`         | Deployment configuration     |
+| `base_model`, `inherited_model`              | `inheritedModel`           | Parent/foundation model      |
+| `training_data`, `data/train`                | `modelTrainingData`        | Training dataset reference   |
+| `evaluation_data`, `data/test`               | `modelEvaluationData`      | Evaluation dataset reference |
+
+### MLflow → AiModel
+
+When deploying/instantiating a model, the following mapping is applied:
+
+
+| Source                     | AiModel Field          | Notes                                           |
+| -------------------------- | ---------------------- | ----------------------------------------------- |
+| AiModelSpecification       | `aiModelSpecification` | Reference to blueprint (contains all metadata)  |
+| `{modelName} v{version}`   | `name`                 | Instance name with auto minor version (v1, v1.1)|
+| `ModelVersion.description` | `description`          | Instance description                            |
+| Always                     | `state`                | Always ACTIVE (AiModel = live deployment)       |
+
+**Characteristics:**
+
+AiModel stores deployment configuration. All model metadata (metrics, hyperparameters, 
+artifact URLs, etc.) is accessed through the referenced `AiModelSpecification`.
+
+| Category            | Characteristic     | Description                                    |
+| ------------------- | ------------------ | ---------------------------------------------- |
+| **Core**            | `platform`         | Always "mlflow"                                |
+|                     | `endpoint`         | Inference API URL                              |
+|                     | `deploymentTarget` | LOCAL or REMOTE                                |
+|                     | `deployedAt`       | ISO timestamp of deployment                    |
+| **Resources**       | `resources`        | JSON object with requests/limits (from config) |
+| **Environment**     | `environment`      | JSON object with env vars (from config)        |
+| **Remote Only**     | `remoteUrl`        | Remote MLflow server URL                       |
+|                     | `endpointName`     | Endpoint name on remote server                 |
+
+**Example AiModel characteristics:**
+
+```json
+{
+  "serviceCharacteristic": [
+    {"name": "platform", "value": "mlflow", "valueType": "string"},
+    {"name": "endpoint", "value": "http://localhost:5001/invocations", "valueType": "string"},
+    {"name": "deploymentTarget", "value": "LOCAL", "valueType": "string"},
+    {"name": "deployedAt", "value": "2026-01-23T10:30:00Z", "valueType": "string"},
+    {"name": "resources", "valueType": "object", "value": {
+      "requests": {"cpu": "500m", "memory": "1Gi"},
+      "limits": {"cpu": "2", "memory": "4Gi", "nvidia.com/gpu": "1"}
+    }},
+    {"name": "environment", "valueType": "object", "value": {
+      "MODEL_BATCH_SIZE": "16",
+      "INFERENCE_TIMEOUT_MS": "5000"
+    }}
+  ]
+}
+```
+
+**Design Rationale:**
+
+- **AiModelSpecification** = Blueprint describing what a model can do (immutable metadata)
+- **AiModel** = Live deployment with configuration (platform, resources, environment)
+
+This separation ensures:
+1. No duplicate metadata between specification and instance
+2. Multiple instances can share the same specification
+3. Clear distinction between "what" (specification) and "where/how" (deployment)
+
+---
+
+## Deployment Configuration
+
+Resources and environment are configured in `application.yaml`:
+
+```yaml
+mlflow:
+  deployment:
+    # Resource requests and limits (optional, defaults to N/A)
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+        gpu: "1"                           # nvidia.com/gpu
+    
+    # Environment variables for serving (optional)
+    # Format: comma-separated KEY=value pairs
+    environment: "MODEL_BATCH_SIZE=16,INFERENCE_TIMEOUT_MS=5000"
+```
+
+**Note:** MLflow does not return runtime environment variables from its API. 
+Environment configuration is read from `application.yaml` and stored in the AiModel 
+for documentation/reference purposes.
+
+
+| Field                       | Description                                      |
+| --------------------------- | ------------------------------------------------ |
+| `resources.requests.cpu`    | Minimum CPU guaranteed (default: N/A)            |
+| `resources.requests.memory` | Minimum memory guaranteed (default: N/A)         |
+| `resources.limits.cpu`      | Maximum CPU limit (default: N/A)                 |
+| `resources.limits.memory`   | Maximum memory limit (default: N/A)              |
+| `resources.limits.gpu`      | GPU count (default: N/A, omitted if not set)     |
+| `environment`               | Runtime env vars as KEY=value,KEY=value          |
+
+---
+
+## Model Lifecycle
+
+```
+MLflow Model Registration
+         │
+         ▼
+   ┌─────────────┐
+   │   Import    │  POST /mlflow/import/{name}
+   └──────┬──────┘
+          │
+          ▼
+┌───────────────────┐
+│ AiModelSpec       │  (Blueprint - describes capabilities)
+│ state: n/a        │
+└─────────┬─────────┘
+          │
+          ▼
+   ┌─────────────┐
+   │   Deploy    │  POST /mlflow/deploy/{name}
+   └──────┬──────┘  (MLflow built-in serving)
+          │
+          ▼
+┌───────────────────┐
+│ AiModel           │
+│ state: ACTIVE     │
+│ inferenceUrl set  │
+└───────────────────┘
+```
+
+---
 
 ## Configuration
 
-Add to `application.properties`:
+Add to `application.yml`:
 
-```properties
-# MLflow tracking server URI
-mlflow.tracking.uri=http://localhost:5000
+```yaml
+mlflow:
+  enabled: true
+  host: "127.0.0.1"
+  port: 5000
+  tracking-uri: ""  # Optional, defaults to http://{host}:{port}
+  deployment:
+    host: "0.0.0.0"                    # Host to bind serving
+    startup-timeout-seconds: 60        # Max wait for server startup
+    health-check-interval-ms: 1000     # Health check polling interval
+
+aimodel:
+  specification:
+    default-lifecycle-status: Active
 ```
 
-Default: `http://localhost:5000`
+---
 
-## Platform Specification Characteristics
+## Built-in Model Serving
 
-| Characteristic | Type | Description |
-|---------------|------|-------------|
-| trackingUri | string | MLflow tracking server URI |
-| apiVersion | string | MLflow REST API version |
-| supportedFrameworks | array | ML frameworks (TensorFlow, PyTorch, etc.) |
-| modelFlavors | array | Model serialization formats |
-| deploymentTargets | array | Deployment options (local, SageMaker, etc.) |
-| modelStages | array | Lifecycle stages |
-| artifactStorage | array | Supported storage backends |
+The integration supports deploying models using MLflow's built-in `mlflow models serve` command.
 
-## Model Service Characteristics
+### How it works
 
-| Characteristic | TMF Field | Description |
-|---------------|-----------|-------------|
-| modelName | - | Registered model name |
-| modelVersion | - | Model version number |
-| modelUri | - | Artifact storage location |
-| runId | - | MLflow experiment run ID |
-| experimentUrl | - | Link to experiment in MLflow UI |
-| currentStage | - | Lifecycle stage (None/Staging/Production/Archived) |
-| creationTimestamp | - | Model creation time |
-| lastUpdatedTimestamp | - | Last update time |
-| userId | - | User who created the model |
-| tags | - | Model tags (key:value pairs) |
-| modelDataSheet | modelDataSheet | MLflow model page URL |
-| deploymentRecord | deploymentRecord | MLflow serving endpoint |
+1. **Deploy** - Starts an MLflow model server process
+2. **Serve** - Model is available at `http://localhost:{port}/invocations`
+3. **Record** - Creates an `AiModel` with the `inferenceUrl`
+4. **Stop** - Terminates the serving process
 
-## Usage Examples
+### Requirements
 
-### 1. Create Platform Specification
+- MLflow CLI must be installed (`pip install mlflow`)
+- Python environment with model dependencies
+- MLflow tracking server accessible
+
+### Inference API
+
+Once deployed, the model accepts predictions at:
+
+```
+POST http://localhost:{port}/invocations
+Content-Type: application/json
+
+{
+  "inputs": [[1.0, 2.0, 3.0, 4.0]]
+}
+```
+
+Or for DataFrame-oriented input:
+
+```json
+{
+  "dataframe_split": {
+    "columns": ["feature1", "feature2", "feature3"],
+    "data": [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+  }
+}
+```
+
+---
+
+## Remote Deployment
+
+The integration supports deploying models to local or remote MLflow servers:
+
+| Target | Description |
+|--------|-------------|
+| `LOCAL` | Local `mlflow models serve` process |
+| `REMOTE` | Remote MLflow server with serving capabilities |
+
+### Local Deployment
+
+Deploy locally using `mlflow models serve`:
+
+```bash
+# Deploy on specific port
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3&port=5001"
+
+# Deploy on auto-assigned port
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3"
+```
+
+### Remote MLflow Server
+
+Deploy to a remote MLflow instance with model serving capabilities:
+
+```bash
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "version": "3",
+    "remoteUrl": "https://mlflow.example.com",
+    "authToken": "your-auth-token"
+  }'
+```
+
+With custom endpoint name:
+
+```bash
+curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "version": "3",
+    "remoteUrl": "https://mlflow.example.com",
+    "authToken": "your-auth-token",
+    "endpointName": "fraud-detector-prod"
+  }'
+```
+
+**Requirements for Remote Deployment:**
+- Remote MLflow server must have model serving enabled
+- Network access to the remote server
+- Valid authentication token (if required by the server)
+
+---
+
+## Configuration
+
+Add to `application.yml`:
+
+```yaml
+mlflow:
+  enabled: true
+  host: "127.0.0.1"                     # MLflow tracking server host
+  port: 5000                            # MLflow tracking server port
+  tracking-uri: ""                      # Full URI (overrides host:port)
+  
+  deployment:
+    host: "0.0.0.0"                     # Local serving bind host
+    startup-timeout-seconds: 60         # Max wait for server startup
+    health-check-interval-ms: 1000      # Health check polling interval
+
+aimodel:
+  specification:
+    default-lifecycle-status: Active
+```
+
+---
+
+## Java API
 
 ```java
 @Autowired
-private MLflowPlatformService mlflowService;
+private MlflowIntegrationService mlflowService;
 
-AiModelSpecification platformSpec = mlflowService.getOrCreatePlatformSpecification();
-```
-
-### 2. Import a Specific Model Version
-
-```java
-String modelName = "fraud-detection-model";
-String version = "3";
-String baseUrl = "http://localhost:13082";
-
-AiModelCreate aiModel = mlflowService.mlflowModelToAiModelCreate(modelName, version, baseUrl);
-```
-
-### 3. Import Latest Version
-
-```java
-// Pass null for version to get latest
-AiModelCreate aiModel = mlflowService.mlflowModelToAiModelCreate(modelName, null, baseUrl);
-```
-
-### 4. List All Registered Models
-
-```java
-List<String> modelNames = mlflowService.listRegisteredModels();
-modelNames.forEach(name -> System.out.println(name));
-```
-
-### 5. Validate Model Existence
-
-```java
-boolean exists = mlflowService.validateModelExists("my-model");
-```
-
-## MLflow REST API Endpoints Used
-
-```
-GET /api/2.0/mlflow/registered-models/list
-GET /api/2.0/mlflow/registered-models/get?name={name}
-GET /api/2.0/mlflow/model-versions/get?name={name}&version={version}
-```
-
-## Model Lifecycle Stages
-
-MLflow supports four lifecycle stages:
-
-1. **None** - Newly registered model
-2. **Staging** - Model being tested/validated
-3. **Production** - Model deployed to production
-4. **Archived** - Model retired from active use
-
-## Example Workflow
-
-```java
 @Autowired
-private MLflowPlatformService mlflowService;
+private MlflowModelService modelService;
 
-// 1. Create platform specification
-AiModelSpecification platformSpec = mlflowService.getOrCreatePlatformSpecification();
+@Autowired
+private MlflowDeploymentService deploymentService;
 
-// 2. List all models
-List<String> models = mlflowService.listRegisteredModels();
+// Import model as specification
+AiModelSpecification spec = mlflowService.importModelAsSpecification("fraud-detector", "3");
 
-// 3. Import a model
-AiModelCreate aiModel = mlflowService.mlflowModelToAiModelCreate(
-    "my-model", 
-    "1",  // version
-    "http://localhost:13082"
+// ===== LOCAL DEPLOYMENT =====
+
+// Deploy using MLflow built-in serving (auto port)
+AiModelCreate model = modelService.deployAndCreateModel(spec, "fraud-detector", "3");
+
+// Deploy on specific port
+AiModelCreate model = modelService.deployAndCreateModel(spec, "fraud-detector", "3", 5001);
+
+// ===== REMOTE MLFLOW =====
+
+// Deploy to remote MLflow server
+AiModelCreate model = modelService.deployToRemote(
+    spec, "fraud-detector", "3",
+    "https://mlflow.example.com",
+    "auth-token"
 );
 
-// 4. Access model characteristics
-aiModel.getServiceCharacteristic().forEach(characteristic -> {
-    System.out.println(characteristic.getName() + ": " + characteristic.getValue());
-});
+// Deploy with custom endpoint name
+AiModelCreate model = modelService.deployToRemote(
+    spec, "fraud-detector", "3",
+    "https://mlflow.example.com",
+    "auth-token",
+    "fraud-detector-prod"
+);
+
+// ===== MANAGEMENT =====
+
+// Check if deployed
+boolean running = deploymentService.isDeployed("fraud-detector", "3");
+
+// Get deployment info
+DeploymentInfo info = deploymentService.getDeployment("fraud-detector", "3");
+String url = info.getInferenceUrl();
+boolean isLocal = info.isLocal();
+boolean isRemote = info.isRemote();
+
+// Stop deployment (local or remote)
+modelService.stopDeployment("fraud-detector", "3");
+
+// List all deployments
+Map<String, DeploymentInfo> deployments = deploymentService.getRunningDeployments();
 ```
 
-## MLflow UI Integration
+---
 
-Models in TMF API link to MLflow UI:
+## Service Components
 
-- **Model Page**: `{trackingUri}/#/models/{modelName}/versions/{version}`
-- **Experiment**: `{trackingUri}/#/experiments/{runId}`
 
-## Comparison with HuggingFace Integration
+| Service                      | Responsibility                                                         |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| `MlflowConfiguration`        | Spring beans for MLflow client                                         |
+| `MlflowClientService`        | Low-level MLflow API operations (models, runs, experiments, artifacts) |
+| `MlflowDeploymentService`    | Manages local and remote MLflow deployments                            |
+| `MlflowSpecificationService` | Converts MLflow models → AiModelSpecification                          |
+| `MlflowModelService`         | Creates AiModel instances, orchestrates deployments                    |
+| `MlflowIntegrationService`   | High-level orchestration API                                           |
+| `MlflowApiController`        | REST API endpoints                                                     |
 
-| Aspect | MLflow | HuggingFace |
-|--------|--------|-------------|
-| Focus | Internal ML lifecycle | External model hub |
-| Models | Organization's models | Public/private community models |
-| Versioning | Built-in versioning | Git-based versioning |
-| Stages | None/Staging/Production/Archived | N/A |
-| Artifacts | Custom storage backends | HuggingFace CDN |
-| Deployment | Multiple targets | Inference API |
-
-## Deployment Options
-
-MLflow models can be deployed to:
-
-- **Local**: Flask server on local machine
-- **SageMaker**: AWS SageMaker endpoints
-- **Azure ML**: Azure Machine Learning service
-- **Kubernetes**: Kubernetes clusters
-- **Databricks**: Databricks serving
-- **MLflow Serving**: Built-in serving infrastructure
-
-## Model Flavors
-
-MLflow supports multiple model formats (flavors):
-
-- `python_function` - Generic Python function
-- `sklearn` - Scikit-learn models
-- `tensorflow` - TensorFlow models
-- `pytorch` - PyTorch models
-- `keras` - Keras models
-- `xgboost` - XGBoost models
-- `lightgbm` - LightGBM models
-- `spark` - Apache Spark MLlib models
-- `onnx` - ONNX format
-- `h2o` - H2O.ai models
-- `fastai` - FastAI models
-
-## Troubleshooting
-
-### Connection Issues
-
-If you get connection errors:
-1. Verify MLflow tracking server is running: `mlflow server --host 0.0.0.0 --port 5000`
-2. Check `mlflow.tracking.uri` configuration
-3. Ensure network connectivity to tracking server
-
-### Model Not Found
-
-If a model is not found:
-1. Verify model is registered: `mlflow models list`
-2. Check model name spelling
-3. Ensure you have access to the model
-
-### No Models Listed
-
-If no models appear:
-1. Register a model first in MLflow
-2. Check tracking server URI
-3. Verify API version compatibility
-
-## Future Enhancements
-
-- Model artifact download support
-- Experiment tracking integration
-- Model comparison capabilities
-- Stage transition tracking
-- Metric history visualization
-- Model signature integration
+---
 
 ## References
 
 - [MLflow Documentation](https://mlflow.org/docs/latest/index.html)
-- [MLflow REST API](https://mlflow.org/docs/latest/rest-api.html)
+- [MLflow Java API](https://mlflow.org/docs/latest/api_reference/java_api/org/mlflow/tracking/MlflowClient.html)
 - [MLflow Model Registry](https://mlflow.org/docs/latest/model-registry.html)
 - [TMF 915 Specification](https://www.tmforum.org/resources/specification/tmf915-ai-ml-model-management-api/)
