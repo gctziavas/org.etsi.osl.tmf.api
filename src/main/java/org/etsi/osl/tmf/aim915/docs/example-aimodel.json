@@ -1,0 +1,151 @@
+{
+  "id": "generated-uuid-for-model",
+  "name": "mistralai/Mistral-7B-v0.1",
+  "description": "Mistral 7B v0.1 - A 7-billion parameter language model",
+  "aiModelSpecification": {
+    "id": "platform-spec-uuid",
+    "href": "/tmf-api/aim/v1/aiModelSpecification/platform-spec-uuid",
+    "name": "HuggingFace Platform",
+    "version": "1.0"
+  },
+  "serviceCharacteristic": [
+    {
+      "name": "platformUrl",
+      "value": "https://huggingface.co/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Model repository URL on Hugging Face Hub"
+    },
+    {
+      "name": "apiUrl",
+      "value": "https://huggingface.co/api/models/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Model API endpoint"
+    },
+    {
+      "name": "modelType",
+      "value": "text-generation",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Type of model task (pipeline tag)"
+    },
+    {
+      "name": "supportedLibraries",
+      "value": "transformers",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "ML framework/library used"
+    },
+    {
+      "name": "provider",
+      "value": "mistralai",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Model author/organization"
+    },
+    {
+      "name": "deploymentArtifactsUrl",
+      "value": "/tmf-api/aim/v1/aiModel/artifacts/huggingface/mistralai_Mistral-7B-v0.1/deployment.tar.gz",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Download URL for tar.gz archive with all deployment files"
+    },
+    {
+      "name": "totalSize (in bytes)",
+      "value": "14483963727",
+      "valueType": "integer",
+      "@type": "ServiceCharacteristic",
+      "description": "Total size of model files in bytes"
+    },
+    {
+      "name": "totalSizeHuman",
+      "value": "13.5 GB",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Human-readable size"
+    },
+    {
+      "name": "tags",
+      "value": "text-generation,transformers,pytorch,mistral,en,arxiv:2310.06825,license:apache-2.0",
+      "valueType": "array",
+      "@type": "ServiceCharacteristic",
+      "description": "Model tags and metadata"
+    },
+    {
+      "name": "modelDataSheet",
+      "value": "https://huggingface.co/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Model card URL with full documentation"
+    },
+    {
+      "name": "deploymentRecord",
+      "value": "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Inference API endpoint"
+    },
+    {
+      "name": "inheritedModel",
+      "value": "mistralai/Mistral-7B-base",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Base model identifier"
+    },
+    {
+      "name": "inheritedModelUrl",
+      "value": "https://huggingface.co/mistralai/Mistral-7B-base",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Base model repository URL"
+    },
+    {
+      "name": "modelTrainingData",
+      "value": "wikipedia,bookcorpus,openwebtext2",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Training dataset names"
+    },
+    {
+      "name": "modelTrainingDataUrls",
+      "value": "https://huggingface.co/datasets/wikipedia",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Training dataset URL"
+    },
+    {
+      "name": "modelEvaluationData",
+      "value": "mmlu,hellaswag,arc",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "TMF 915 field: Evaluation dataset names"
+    },
+    {
+      "name": "modelId",
+      "value": "mistralai/Mistral-7B-v0.1",
+      "valueType": "string",
+      "@type": "ServiceCharacteristic",
+      "description": "Hugging Face model identifier"
+    },
+    {
+      "name": "lastModified",
+      "value": "2024-09-30T14:23:56.000Z",
+      "valueType": "datetime",
+      "@type": "ServiceCharacteristic",
+      "description": "Last modification timestamp"
+    },
+    {
+      "name": "languages",
+      "value": "en,fr,de,es,it",
+      "valueType": "array",
+      "@type": "ServiceCharacteristic",
+      "description": "Supported languages for NLP models"
+    }
+  ],
+  "@type": "AiModel",
+  "@schemaLocation": "https://tmforum.org/schemas/aim915/AiModel",
+  "@baseType": "Resource",
+  "lifecycleStatus": "Active",
+  "version": "0.1"
+}

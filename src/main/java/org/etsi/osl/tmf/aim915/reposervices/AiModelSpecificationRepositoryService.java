@@ -24,6 +24,9 @@ public class AiModelSpecificationRepositoryService {
         this.aiModelSpecificationRepository = aiModelSpecificationRepository;
     }
 
+    @Autowired
+    private AiModelSpecificationMapper specificationMapper;
+
     public List<AiModelSpecification> findAllAiModelSpecifications() {
         log.info("AiModels LIST");
         return (List<AiModelSpecification>)  aiModelSpecificationRepository.findAll();
@@ -34,10 +37,14 @@ public class AiModelSpecificationRepositoryService {
         return aiModelSpecificationRepository.findByUuid(uuid).orElse(null);
     }
 
+    public AiModelSpecification findAiModelSpecificationByNameAndVersion(String name, String version) {
+        log.info("AiModelSpecification FIND BY name/version: {}/{}", name, version);
+        return aiModelSpecificationRepository.findByNameAndVersion(name, version).orElse(null);
+    }
+
     public AiModelSpecification createAiModelSpecification(AiModelSpecificationCreate aiModelSpecCreate) {
         log.info("AiModelSpecification CREATE: {}", aiModelSpecCreate);
-        AiModelSpecificationMapper mapper = AiModelSpecificationMapper.INSTANCE;
-        AiModelSpecification aiModelSpec = mapper.toAiModelSpecification(aiModelSpecCreate);
+        AiModelSpecification aiModelSpec = specificationMapper.fromCreate(aiModelSpecCreate);
         return aiModelSpecificationRepository.save(aiModelSpec);
     }
 
@@ -45,8 +52,7 @@ public class AiModelSpecificationRepositoryService {
         log.info("AiModelSpecification UPDATE with UUID: {}", uuid);
         aiModelSpecificationRepository.findByUuid(uuid).
                 orElseThrow(() -> new IllegalArgumentException("No AI Model with UUID: " + uuid));
-        AiModelSpecificationMapper mapper = AiModelSpecificationMapper.INSTANCE;
-        AiModelSpecification aiModelSpec = mapper.toAiModelSpecification(aiModelSpecUpdate);
+        AiModelSpecification aiModelSpec = specificationMapper.fromUpdate(aiModelSpecUpdate);
         return aiModelSpecificationRepository.save(aiModelSpec);
     }
 

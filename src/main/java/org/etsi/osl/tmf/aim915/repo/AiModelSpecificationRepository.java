@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface AiModelSpecificationRepository extends CrudRepository<AiModelSpecification, Long>, PagingAndSortingRepository<AiModelSpecification, Long> {
     Optional<AiModelSpecification> findByUuid(String uuid);
+
+    Optional<AiModelSpecification> findByNameAndVersion(String name, String version);
 }

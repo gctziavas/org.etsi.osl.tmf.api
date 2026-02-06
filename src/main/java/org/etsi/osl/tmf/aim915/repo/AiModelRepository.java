@@ -5,9 +5,12 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface AiModelRepository extends CrudRepository<AiModel, Long>, PagingAndSortingRepository<AiModel, Long> {
     Optional<AiModel> findByUuid(String uuid);
+    
+    List<AiModel> findByNameStartingWith(String namePrefix);
 }

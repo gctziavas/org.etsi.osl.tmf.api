@@ -101,34 +101,40 @@ logging:
     console: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
     file: "%d %p %c{1.} [%t] %m%n"
     
-  
-    
-
 kroki:
   serverurl: http://localhost:8000
 
 oauthsign:
    key: "EK97Y7Y9WPGG1MEG"
 
-mlflow:
+mlflow: # MLflow configuration for AIM915 model management
+  enabled: true
+  # MLflow tracking server host
   host: "127.0.0.1"
   port: 5000
+  connection-timeout: 30000 #seconds
+  read-timeout: 60000 #seconds
 
-# Hugging Face Integration Configuration
-# =======================================
-# Optional: Hugging Face API token for accessing private models
-# Get your token from: https://huggingface.co/settings/tokens
-# Download timeout in milliseconds (default: 300000 = 5 minutes)
-# Adjust based on your network speed and typical model sizes
-# Examples:
-#   Small models (<1GB):    120000 (2 minutes)
-#   Medium models (1-5GB):  600000 (10 minutes)
-#   Large models (>5GB):   1800000 (30 minutes)
-huggingface:
+huggingface: # Hugging Face API configuration for AIM915 model management
+   enabled: true
+   api-base-url: "https://api-inference.huggingface.co/models"
   api:
     token: ""
   download:
     timeout: 300000
+
+aimodel: # AIM915 model management configuration
+  deployment:
+    default-platform: mlflow # Options: mlflow, seldon, kserve, triton, custom
+    # Base URL for model serving endpoints (used in AiModel creation)
+    # Leave empty to auto-generate based on server configuration
+    serving-base-url: ""
+  specification:
+    default-lifecycle-status: "Active"
+  artifacts:
+    # Local storage path for downloaded artifacts
+    storage-path: "/tmp/aim915/artifacts"
+    max-size: 1073741824 # 1 GB
 
 #QUEUE MESSAGES
 CATALOG_GET_SERVICESPEC_BY_ID: "jms:queue:CATALOG.GET.SERVICESPEC_BY_ID"
