@@ -1,0 +1,72 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam swimlaneBorderColor #888888
+skinparam padding 2
+skinparam noteFontSize 9
+
+skinparam swimlane {
+  titleFontSize 12
+  titleFontStyle bold
+}
+
+title MLflow to TMF 915 Integration
+
+|#E3F2FD| MLflow |
+|#E8F5E9| TMF API |
+|#FFF3E0| Mapping |
+|#FCE4EC| Deploy |
+
+|#E3F2FD| MLflow |
+start
+:Register Model and Version;
+
+|#E8F5E9| TMF API |
+:POST /mlflow/import/name;
+
+|#FFF3E0| Mapping |
+:Fetch Model, Version, Run;
+:Build AiModelSpecification;
+note right
+  name, version, description
+  specCharacteristic:
+  lifecycleStatus, stage,
+  runId, modelType,
+  param, metric
+  URLs: dataSheet,
+  trainingData, evalData
+end note
+
+|#E8F5E9| TMF API |
+:Persist and Return Spec;
+:POST /mlflow/deploy/name;
+
+|#FFF3E0| Mapping |
+:deployAndCreateModel;
+
+|#FCE4EC| Deploy |
+if (Target?) then (LOCAL)
+  :mlflow models serve;
+else (REMOTE)
+  :Remote MLflow API;
+endif
+:Get inferenceUrl;
+
+|#FFF3E0| Mapping |
+:Build AiModel;
+note right
+  state = ACTIVE
+  characteristic:
+  platform, endpoint,
+  deploymentTarget,
+  resources, environment
+end note
+
+|#E8F5E9| TMF API |
+:Persist and Return Model;
+
+|#FCE4EC| Deploy |
+:Serving at inferenceUrl;
+stop
+@enduml

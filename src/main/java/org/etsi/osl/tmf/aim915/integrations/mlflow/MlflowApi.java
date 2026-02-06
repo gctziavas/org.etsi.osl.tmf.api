@@ -22,7 +22,7 @@ import java.util.Map;
  * - Querying MLflow registry
  */
 @Tag(name = "MLflow Integration", description = "Endpoints for MLflow AI Model integration")
-@RequestMapping("/aim/v4")
+@RequestMapping("/AiM/v4")
 public interface MlflowApi {
 
     // ========================================

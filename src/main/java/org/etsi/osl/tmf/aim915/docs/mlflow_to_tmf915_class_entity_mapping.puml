@@ -1,0 +1,109 @@
+@startuml MLflow-to-TMF-915-Mapping
+
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Arial
+skinparam defaultFontSize 9
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 40
+
+title MLflow to TMF 915 AI Model Management Mapping
+
+' ============================================
+' MLFLOW ENTITIES (Compact)
+' ============================================
+package "MLflow Registry" as MLflowRegistry #E8F5E9 {
+  class RegisteredModel <<MLflow>> #E8F5E9 {
+    name, description
+    tags[], latest_versions[]
+  }
+  
+  class ModelVersion <<MLflow>> #E8F5E9 {
+    name, version, status
+    current_stage, run_id, source
+  }
+  
+  class Run <<MLflow>> #E8F5E9 {
+    run_id, experiment_id
+    artifact_uri, data
+  }
+  
+  class RunData <<MLflow>> #lightgreen {
+    params[], metrics[], tags[]
+  }
+  
+  RegisteredModel "1" *-- "*" ModelVersion
+  ModelVersion --> Run : run_id
+  Run *-- RunData
+}
+
+' ============================================
+' TMF 915 ENTITIES (Compact)
+' ============================================
+package "TMF 915 AI Model Management" as TMF915 #E3F2FD {
+  class AiModelSpecification <<TMF915>> #E3F2FD {
+    id, name, version, description
+    lifecycleStatus
+    --
+    modelDataSheet, modelTrainingData
+    modelEvaluationData
+    --
+    specCharacteristic[]
+  }
+  
+  class CharacteristicSpec <<TMF915>> #E3F2FD {
+    name, valueType
+    characteristicValueSpec[]
+  }
+  
+  class AiModel <<TMF915>> #E3F2FD {
+    id, name, state
+    --
+    aiModelSpecification
+    serviceCharacteristic[]
+  }
+  
+  class Characteristic <<TMF915>> #E3F2FD {
+    name, value, valueType
+  }
+  
+  AiModelSpecification "1" *-- "*" CharacteristicSpec
+  AiModel --> AiModelSpecification : references
+  AiModel "1" *-- "*" Characteristic
+}
+
+' ============================================
+' MAPPING & DEPLOYMENT (Compact)
+' ============================================
+package "Mapping & Deployment" as Services #FFF3E0 {
+  class MlflowSpecificationService <<Service>> #FFF3E0 {
+    createSpecificationFromMlflow()
+    addCharacteristics()
+  }
+  
+  class MlflowModelService <<Service>> #FFF3E0 {
+    deployAndCreateModel()
+    createModelFromDeployment()
+  }
+  
+  class DeploymentInfo <<Info>> #FCE4EC {
+    modelName, version
+    inferenceUrl, target
+  }
+  
+  MlflowModelService --> DeploymentInfo : manages
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+RegisteredModel ..> MlflowSpecificationService : input
+ModelVersion ..> MlflowSpecificationService : input
+Run ..> MlflowSpecificationService : input
+
+MlflowSpecificationService ..> AiModelSpecification : creates
+MlflowModelService ..> AiModel : creates
+
+@enduml

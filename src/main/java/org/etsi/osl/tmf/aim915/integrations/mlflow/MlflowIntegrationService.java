@@ -219,7 +219,7 @@ public class MlflowIntegrationService {
         // Create model instance
         String baseUrl = getBaseUrl();
         AiModelCreate modelCreate = modelService.createModelFromDeployment(
-            spec, modelName, version != null ? version : spec.getVersion(), deploymentEndpoint, baseUrl);
+            spec, modelName, version != null ? version : spec.getVersion(), deploymentEndpoint);
         
         AiModel model = modelRepository.createAiModel(modelCreate);
         

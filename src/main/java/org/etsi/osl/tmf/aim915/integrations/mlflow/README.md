@@ -47,40 +47,35 @@ The integration follows a clear separation between **model specifications** (blu
 ### Import & Sync Operations
 
 
-| Method | Endpoint                                        | Description                                 |
-| ------ | ----------------------------------------------- | ------------------------------------------- |
-| `POST` | `/tmf-api/aim/v1/mlflow/import/{modelName}`     | Import MLflow model as AiModelSpecification |
-| `POST` | `/tmf-api/aim/v1/mlflow/import/{modelName}/all` | Import all versions of a model              |
-| `POST` | `/tmf-api/aim/v1/mlflow/sync`                   | Sync all MLflow models to specifications    |
+| Method | Endpoint                                  | Description                                 |
+| ------ | ----------------------------------------- | ------------------------------------------- |
+| `POST` | `/AiM/v4/mlflow/import/{modelName}`       | Import MLflow model as AiModelSpecification |
+| `POST` | `/AiM/v4/mlflow/sync`                     | Sync all MLflow models to specifications    |
 
 ### Deployment Operations
 
 
-| Method   | Endpoint                                        | Description                                      |
-| -------- | ----------------------------------------------- | ------------------------------------------------ |
-| `POST`   | `/tmf-api/aim/v1/mlflow/deploy/{modelName}`     | Deploy using MLflow built-in serving             |
-| `POST`   | `/tmf-api/aim/v1/mlflow/instantiate/{specId}`   | Create AiModel with external inference URL       |
-| `DELETE` | `/tmf-api/aim/v1/mlflow/deploy/{modelName}/{v}` | Stop a running deployment                        |
-| `GET`    | `/tmf-api/aim/v1/mlflow/deployments`            | List all running deployments                     |
+| Method | Endpoint                                      | Description                                |
+| ------ | --------------------------------------------- | ------------------------------------------ |
+| `POST` | `/AiM/v4/mlflow/deploy/{modelName}`           | Deploy using MLflow built-in serving       |
+| `POST` | `/AiM/v4/mlflow/instantiate/{specificationId}`| Create AiModel with external inference URL |
 
 ### Query Operations
 
 
-| Method | Endpoint                                         | Description                          |
-| ------ | ------------------------------------------------ | ------------------------------------ |
-| `GET`  | `/tmf-api/aim/v1/mlflow/models`                  | List all registered models in MLflow |
-| `GET`  | `/tmf-api/aim/v1/mlflow/models/{name}/exists`    | Check if model exists                |
-| `GET`  | `/tmf-api/aim/v1/mlflow/models/{name}/artifacts` | List model artifacts                 |
-| `GET`  | `/tmf-api/aim/v1/mlflow/info`                    | Get MLflow connection info           |
+| Method | Endpoint                                       | Description                          |
+| ------ | ---------------------------------------------- | ------------------------------------ |
+| `GET`  | `/AiM/v4/mlflow/models`                        | List all registered models in MLflow |
+| `GET`  | `/AiM/v4/mlflow/models/{modelName}/exists`     | Check if model exists                |
+| `GET`  | `/AiM/v4/mlflow/models/{modelName}/artifacts`  | List model artifacts                 |
+| `GET`  | `/AiM/v4/mlflow/info`                          | Get MLflow connection info           |
 
 ### Artifact Operations
 
 
-| Method | Endpoint                                                        | Description              |
-| ------ | --------------------------------------------------------------- | ------------------------ |
-| `GET`  | `/tmf-api/aim/v1/aiModel/{id}/artifacts/mlflow/model`           | Download model artifact  |
-| `GET`  | `/tmf-api/aim/v1/aiModel/{id}/artifacts/mlflow/training_data`   | Download training data   |
-| `GET`  | `/tmf-api/aim/v1/aiModel/{id}/artifacts/mlflow/evaluation_data` | Download evaluation data |
+| Method | Endpoint                                                  | Description                                 |
+| ------ | --------------------------------------------------------- | ------------------------------------------- |
+| `GET`  | `/AiM/v4/aiModel/{modelId}/artifacts/mlflow/{artifactType}` | Download artifact (model, training_data, etc.) |
 
 ### Example Requests
 
@@ -88,20 +83,20 @@ The integration follows a clear separation between **model specifications** (blu
 
 ```bash
 # Import specific version
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/import/fraud-detector?version=3"
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/import/fraud-detector?version=3"
 
 # Import latest version
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/import/fraud-detector"
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/import/fraud-detector"
 ```
 
 **Deploy a model using MLflow built-in serving:**
 
 ```bash
-# Deploy on specific port
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3&port=5001"
+# Deploy with endpoint
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/deploy/fraud-detector?version=3&endpoint=http://localhost:5001/invocations"
 
-# Deploy on auto-assigned port
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3"
+# Deploy without endpoint
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/deploy/fraud-detector?version=3"
 ```
 
 Response:
@@ -119,18 +114,7 @@ Response:
 **Create instance with external inference URL:**
 
 ```bash
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/instantiate/{specId}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "instanceName": "fraud-detector-prod",
-    "inferenceUrl": "http://fraud-detector.ml.svc.cluster.local:8080/v1/models/fraud-detector:predict"
-  }'
-```
-
-**Stop a deployment:**
-
-```bash
-curl -X DELETE "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector/3"
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/instantiate/{specificationId}?name=fraud-detector-prod&endpoint=http://fraud-detector.ml.svc.cluster.local:8080/v1/models/fraud-detector:predict"
 ```
 
 **Call predictions on deployed model:**
@@ -396,11 +380,11 @@ The integration supports deploying models to local or remote MLflow servers:
 Deploy locally using `mlflow models serve`:
 
 ```bash
-# Deploy on specific port
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3&port=5001"
+# Deploy with endpoint
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/deploy/fraud-detector?version=3&endpoint=http://localhost:5001/invocations"
 
-# Deploy on auto-assigned port
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector?version=3"
+# Deploy without endpoint
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/deploy/fraud-detector?version=3"
 ```
 
 ### Remote MLflow Server
@@ -408,26 +392,7 @@ curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector
 Deploy to a remote MLflow instance with model serving capabilities:
 
 ```bash
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "version": "3",
-    "remoteUrl": "https://mlflow.example.com",
-    "authToken": "your-auth-token"
-  }'
-```
-
-With custom endpoint name:
-
-```bash
-curl -X POST "http://localhost:13082/tmf-api/aim/v1/mlflow/deploy/fraud-detector" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "version": "3",
-    "remoteUrl": "https://mlflow.example.com",
-    "authToken": "your-auth-token",
-    "endpointName": "fraud-detector-prod"
-  }'
+curl -X POST "http://localhost:13082/AiM/v4/mlflow/deploy/fraud-detector?version=3&endpoint=https://mlflow.example.com/invocations"
 ```
 
 **Requirements for Remote Deployment:**

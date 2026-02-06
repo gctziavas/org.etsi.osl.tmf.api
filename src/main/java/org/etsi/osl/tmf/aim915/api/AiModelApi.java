@@ -9,6 +9,9 @@ import org.etsi.osl.tmf.aim915.model.AiModel;
 import org.etsi.osl.tmf.aim915.model.AiModelCreate;
 import org.etsi.osl.tmf.aim915.model.AiModelUpdate;
 import org.etsi.osl.tmf.aim915.model.Error;
+import org.etsi.osl.tmf.JsonUtils;
+
+import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +111,11 @@ public interface AiModelApi {
 
                     String exampleString;
                     AiModel exampleAiModel = new AiModel();
-                    exampleString = exampleAiModel.toJsonString();
+                    try {
+                        exampleString = JsonUtils.toJsonString(exampleAiModel);
+                    } catch (IOException e) {
+                        exampleString = "{}";
+                    }
                     ApiUtil.setExampleResponse(request, "application/json;charset=utf-8", exampleString);
                     break;
                 }
@@ -312,7 +321,11 @@ public interface AiModelApi {
                 if (mediaType.isCompatibleWith(MediaType.valueOf("application/json;charset=utf-8"))) {
                     String exampleString;
                     AiModel exampleAiModel = new AiModel();
-                    exampleString = exampleAiModel.toJsonString();
+                   try {
+                        exampleString = JsonUtils.toJsonString(exampleAiModel);
+                    } catch (IOException e) {
+                        exampleString = "{}";
+                    }
                     ApiUtil.setExampleResponse(request, "application/json;charset=utf-8", exampleString);
                     break;
                 }
