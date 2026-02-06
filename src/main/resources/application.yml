@@ -112,8 +112,25 @@ mlflow: # MLflow configuration for AIM915 model management
   # MLflow tracking server host
   host: "127.0.0.1"
   port: 5000
+  # Optional: override the tracking URI (empty = auto-build from host:port)
+  tracking-uri: ""
   connection-timeout: 30000 #seconds
   read-timeout: 60000 #seconds
+  docker: # Docker deployment configuration
+    # Enable Docker-based model deployment
+    enabled: false
+    # Docker daemon host (e.g., 10.0.0.1)
+    host: ""
+    # Docker API port (2375 = unencrypted, 2376 = TLS)
+    port: 2375
+    # Enable TLS for Docker API communication
+    tls-enabled: false
+    # MLflow Docker image to use for model serving
+    image: "ghcr.io/mlflow/mlflow:v2.10.0"
+    # Default container port for model serving
+    container-port: 5001
+    # Timeout waiting for container to become healthy
+    startup-timeout-seconds: 120
 
 aimodel: # AIM915 model management configuration
   deployment:
@@ -196,6 +213,23 @@ PM_MEASUREMENT_COLLECTION_JOB_ADD:       "jms:queue:PM.MEASUREMENTCOLLECTIONJOB.
 PM_MEASUREMENT_COLLECTION_JOB_CREATED:   "jms:queue:PM.MEASUREMENTCOLLECTIONJOB.CREATED"
 PM_MEASUREMENT_COLLECTION_JOB_UPDATE:    "jms:queue:PM.MEASUREMENTCOLLECTIONJOB.UPDATE"
 PM_MEASUREMENT_COLLECTION_JOB_GET_INPROGRESS_OR_PENDING: "jms:queue:PM.MEASUREMENTCOLLECTIONJOB.GET_INPROGRESS_OR_PENDING"
+
+#TMF915_AI_MODEL_MANAGEMENT
+AIM_AIMODELS_GET:                     "jms:queue:AIM.AIMODELS.GET"
+AIM_AIMODEL_GET_BY_ID:                "jms:queue:AIM.AIMODEL.GET_BY_ID"
+AIM_AIMODEL_ADD:                      "jms:queue:AIM.AIMODEL.ADD"
+AIM_AIMODEL_UPDATE:                   "jms:queue:AIM.AIMODEL.UPDATE"
+AIM_AIMODEL_DELETE:                   "jms:queue:AIM.AIMODEL.DELETE"
+AIM_AIMODEL_SPECIFICATIONS_GET:       "jms:queue:AIM.AIMODELSPECIFICATIONS.GET"
+AIM_AIMODEL_SPECIFICATION_GET_BY_ID:  "jms:queue:AIM.AIMODELSPECIFICATION.GET_BY_ID"
+AIM_AIMODEL_SPECIFICATION_ADD:        "jms:queue:AIM.AIMODELSPECIFICATION.ADD"
+AIM_AIMODEL_SPECIFICATION_UPDATE:     "jms:queue:AIM.AIMODELSPECIFICATION.UPDATE"
+AIM_AIMODEL_SPECIFICATION_DELETE:     "jms:queue:AIM.AIMODELSPECIFICATION.DELETE"
+AIM_AIMODEL_DEPLOY:                   "jms:queue:AIM.AIMODEL.DEPLOY"
+AIM_AIMODEL_DEPLOY_TO_HOST:           "jms:queue:AIM.AIMODEL.DEPLOY_TO_HOST"
+AIM_AIMODEL_UNDEPLOY:                 "jms:queue:AIM.AIMODEL.UNDEPLOY"
+AIM_AIMODEL_UNDEPLOY_FROM_HOST:       "jms:queue:AIM.AIMODEL.UNDEPLOY_FROM_HOST"
+AIM_AIMODEL_REGISTER_INSTANCE:        "jms:queue:AIM.AIMODEL.REGISTER_INSTANCE"
 
 #ALARMS
 ALARMS_ADD_ALARM: "jms:queue:ALARMS.ADD.ALARM"

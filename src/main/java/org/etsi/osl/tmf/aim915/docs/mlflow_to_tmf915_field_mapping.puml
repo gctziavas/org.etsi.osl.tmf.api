@@ -1,85 +1,73 @@
 @startuml MLflow-to-TMF-915-Field-Mapping
 
 !theme plain
-
 skinparam backgroundColor #FEFEFE
-
 skinparam defaultFontName Arial
-
-  
 
 title MLflow to TMF 915 - Detailed Field Mapping
 
-  
-
 ' ============================================
-
 ' MLFLOW → AiModelSpecification MAPPING
-
 ' ============================================
-
-  
 
 map "MLflow → AiModelSpecification" as SpecMapping {
-
-RegisteredModel.name => name
-
-ModelVersion.version => version
-
-RegisteredModel.description \n(or ModelVersion.description) => description
-
-ModelVersion.status => specCharacteristic[lifecycleStatus]
-
-ModelVersion.current_stage => specCharacteristic[stage]
-
-ModelVersion.run_id => specCharacteristic[runId]
-
-ModelVersion.source => specCharacteristic[artifactUri]
-
-ModelVersion.user_id => specCharacteristic[createdBy]
-
-ModelVersion.creation_timestamp => specCharacteristic[creationTimestamp]
-
-ModelVersion.last_updated_timestamp => specCharacteristic[lastUpdatedTimestamp]
-
-ModelVersion.tags[] + \nRegisteredModel.tags[] => specCharacteristic[tags]
-
-(computed MLflow UI URL) => specCharacteristic[mlflowUrl]
-
+  RegisteredModel.name => name
+  ModelVersion.version => version
+  RegisteredModel.description \n(or ModelVersion.description) => description
+  ModelVersion.status => specCharacteristic[lifecycleStatus]
+  ModelVersion.current_stage => specCharacteristic[stage]
+  ModelVersion.run_id => specCharacteristic[runId]
+  ModelVersion.source => specCharacteristic[artifactUri]
+  ModelVersion.user_id => specCharacteristic[createdBy]
+  ModelVersion.creation_timestamp => specCharacteristic[creationTimestamp]
+  ModelVersion.last_updated_timestamp => specCharacteristic[lastUpdatedTimestamp]
+  ModelVersion.tags[] + \nRegisteredModel.tags[] => specCharacteristic[tags]
+  (computed MLflow UI URL) => specCharacteristic[mlflowUrl]
 }
-
-  
 
 map "Run Data → AiModelSpecification" as RunMapping {
-
-Run.data.tags["mlflow.runName"] => specCharacteristic[runName]
-
-Run.data.tags["mlflow.log-model.*"] => specCharacteristic[modelType]
-
-Run.data.params[learning_rate,lr,...] => specCharacteristic[param_*]
-
-Run.data.metrics[accuracy,loss,...] => specCharacteristic[metric_*]
-
+  Run.data.tags["mlflow.runName"] => specCharacteristic[runName]
+  Run.data.tags["mlflow.log-model.*"] => specCharacteristic[modelType]
+  Run.data.params[learning_rate,lr,...] => specCharacteristic[param_*]
+  Run.data.metrics[accuracy,loss,...] => specCharacteristic[metric_*]
 }
-
-  
 
 map "Artifacts → AiModelSpecification URLs" as ArtifactMapping {
-
-model_data_sheet \n| datasheet \n| README.md => modelDataSheet
-
-deployment_record \n| deployment.yaml => deploymentRecord
-
-base_model \n| inherited_model => inheritedModel
-
-training_data \n| data/train => modelTrainingData
-
-evaluation_data \n| data/test => modelEvaluationData
-
+  model_data_sheet \n| datasheet \n| README.md => modelDataSheet
+  deployment_record \n| deployment.yaml => deploymentRecord
+  base_model \n| inherited_model => inheritedModel
+  training_data \n| data/train => modelTrainingData
+  evaluation_data \n| data/test => modelEvaluationData
 }
 
-  
+' ============================================
+' MLFLOW → AiModel MAPPING (Docker Deployment)
+' ============================================
+
+map "Docker Deployment → AiModel" as DeployMapping {
+  AiModelSpecification.id => aiModelSpecification (ref)
+  "{modelName} v{version}" => name
+  Always ACTIVE => state
+  deployment.inferenceUrl => characteristic[endpoint]
+  deployment.containerId => characteristic[containerId]
+  deployment.containerName => characteristic[containerName]
+  deployment.dockerHost => characteristic[dockerHost]
+  deployment.hostPort => characteristic[hostPort]
+  "mlflow" => characteristic[platform]
+  "docker" => characteristic[deploymentTarget]
+}
+
+map "External Deployment → AiModel" as ExternalMapping {
+  AiModelSpecification.id => aiModelSpecification (ref)
+  instanceName (provided) => name
+  Always ACTIVE => state
+  deploymentEndpoint (provided) => characteristic[endpoint]
+  "external" => characteristic[deploymentTarget]
+}
 
 SpecMapping -[hidden]-> RunMapping
-
 RunMapping -[hidden]-> ArtifactMapping
+ArtifactMapping -[hidden]-> DeployMapping
+DeployMapping -[hidden]-> ExternalMapping
+
+@enduml

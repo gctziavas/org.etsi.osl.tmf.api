@@ -34,6 +34,7 @@ public class MlflowClientService implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(MlflowClientService.class);
 
     private final MlflowClient client;
+
     private final String trackingUri;
 
     public MlflowClientService(MlflowClient mlflowClient, 
@@ -72,7 +73,6 @@ public class MlflowClientService implements AutoCloseable {
         log.debug("Listing all registered models");
         
         try {
-            // Use searchModelVersions to get all models
             ModelVersionsPage page = client.searchModelVersions("");
             List<String> modelNames = page.getItems().stream()
                     .map(ModelVersion::getName)

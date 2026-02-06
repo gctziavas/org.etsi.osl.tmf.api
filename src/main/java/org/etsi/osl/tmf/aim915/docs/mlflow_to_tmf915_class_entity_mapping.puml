@@ -23,6 +23,7 @@ package "MLflow Registry" as MLflowRegistry #E8F5E9 {
   class ModelVersion <<MLflow>> #E8F5E9 {
     name, version, status
     current_stage, run_id, source
+    user_id, creation_timestamp
   }
   
   class Run <<MLflow>> #E8F5E9 {
@@ -75,25 +76,64 @@ package "TMF 915 AI Model Management" as TMF915 #E3F2FD {
 }
 
 ' ============================================
-' MAPPING & DEPLOYMENT (Compact)
+' MAPPING, DEPLOYMENT & DOCKER (Compact)
 ' ============================================
 package "Mapping & Deployment" as Services #FFF3E0 {
   class MlflowSpecificationService <<Service>> #FFF3E0 {
     createSpecificationFromMlflow()
-    addCharacteristics()
+    addMlFlowCharacteristics()
+    addFrameworkCharacteristics()
+    addMetricsCharacteristics()
+    setArtifactUrls()
   }
   
   class MlflowModelService <<Service>> #FFF3E0 {
-    deployAndCreateModel()
+    deployAndCreateTmfModel()
+    deployAndCreateTmfModelToHost()
     createModelFromDeployment()
+    createModelInstance()
+  }
+  
+  class MlflowIntegrationService <<Service>> #FFF3E0 {
+    importModelAsSpecification()
+    importAllVersionsAsSpecifications()
+    syncAllModels()
+    deployModelFromMlflow()
+    deployModelToHost()
+    stopDeployment()
   }
   
   class DeploymentInfo <<Info>> #FCE4EC {
     modelName, version
-    inferenceUrl, target
+    containerId, containerName
+    inferenceUrl, dockerHost
+    hostPort
   }
   
   MlflowModelService --> DeploymentInfo : manages
+  MlflowIntegrationService --> MlflowModelService
+  MlflowIntegrationService --> MlflowSpecificationService
+}
+
+package "Docker Deployment" as Docker #FCE4EC {
+  class DockerDeploymentService <<Service>> #FCE4EC {
+    deployModel()
+    deployModelToHost()
+    stopDeployment()
+    stopDeploymentOnHost()
+    isContainerRunning()
+  }
+  
+  class MlflowDeploymentService <<Service>> #FCE4EC {
+    deployModel()
+    deployModelToHost()
+    stopDeployment()
+    getInferenceUrl()
+    isDeployed()
+  }
+  
+  MlflowDeploymentService --> DockerDeploymentService
+  MlflowModelService --> MlflowDeploymentService
 }
 
 ' ============================================
@@ -105,5 +145,6 @@ Run ..> MlflowSpecificationService : input
 
 MlflowSpecificationService ..> AiModelSpecification : creates
 MlflowModelService ..> AiModel : creates
+DockerDeploymentService ..> DeploymentInfo : returns
 
 @enduml

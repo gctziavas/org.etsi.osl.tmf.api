@@ -172,15 +172,16 @@ public class MlflowIntegrationService {
     // ========================================
 
     /**
-     * Creates an AiModel instance from an existing specification.
+     * Creates an AiModel instance from an existing specification for an external deployment.
      * 
-     * Use this when deploying/instantiating a model.
+     * Use this when registering an externally deployed/hosted model that is not
+     * managed by this system's Docker deployment.
      * 
      * @param specificationId The ID of the specification to instantiate
      * @param instanceName Optional name for the instance
-     * @param deploymentEndpoint Optional deployment endpoint URL
+     * @param deploymentEndpoint The deployment endpoint URL (required)
      * @return The created AiModel
-     * @throws IllegalArgumentException if specification not found
+     * @throws IllegalArgumentException if specification not found or endpoint is null
      */
     public AiModel createModelInstance(String specificationId, String instanceName, String deploymentEndpoint) {
         log.info("Creating model instance from specification: {}", specificationId);
@@ -198,33 +199,166 @@ public class MlflowIntegrationService {
     }
 
     /**
-     * Creates an AiModel directly from MLflow (imports spec if needed).
+     * Deploys an MLflow model to Docker and creates an AiModel.
      * 
-     * This is a convenience method that:
+     * This method:
      * 1. Imports/finds the specification
-     * 2. Creates a model instance
+     * 2. Deploys the model to Docker
+     * 3. Creates an AiModel with the inference endpoint
      * 
      * @param modelName The MLflow model name
-     * @param version The model version
-     * @param deploymentEndpoint Optional deployment endpoint
+     * @param version The model version (null for latest)
      * @return The created AiModel
-     * @throws IOException if model cannot be accessed
+     * @throws IOException if deployment fails
      */
-    public AiModel deployModelFromMlflow(String modelName, String version, String deploymentEndpoint) throws IOException {
-        log.info("Deploying model from MLflow: {} v{}", modelName, version);
+    public AiModel deployModelFromMlflow(String modelName, String version) throws IOException {
+        log.info("Deploying model from MLflow: {} v{}", modelName, version != null ? version : "latest");
         
         // Ensure specification exists
         AiModelSpecification spec = importModelAsSpecification(modelName, version);
         
-        // Create model instance
-        String baseUrl = getBaseUrl();
-        AiModelCreate modelCreate = modelService.createModelFromDeployment(
-            spec, modelName, version != null ? version : spec.getVersion(), deploymentEndpoint);
+        // Deploy to Docker and create AiModel
+        AiModelCreate modelCreate = modelService.deployAndCreateTmfModel(
+            spec, modelName, version != null ? version : spec.getVersion());
         
         AiModel model = modelRepository.createAiModel(modelCreate);
         
         log.info("Deployed model {} v{} with ID: {}", modelName, version, model.getId());
         return model;
+    }
+
+    /**
+     * Deploys an MLflow model to Docker on a specific port.
+     * 
+     * @param modelName The MLflow model name
+     * @param version The model version (null for latest)
+     * @param port The host port to expose
+     * @return The created AiModel
+     * @throws IOException if deployment fails
+     */
+    public AiModel deployModelFromMlflow(String modelName, String version, int port) throws IOException {
+        log.info("Deploying model from MLflow: {} v{} on port {}", modelName, version != null ? version : "latest", port);
+        
+        // Ensure specification exists
+        AiModelSpecification spec = importModelAsSpecification(modelName, version);
+        
+        // Deploy to Docker on specific port and create AiModel
+        AiModelCreate modelCreate = modelService.deployAndCreateTmfModel(
+            spec, modelName, version != null ? version : spec.getVersion(), port);
+        
+        AiModel model = modelRepository.createAiModel(modelCreate);
+        
+        log.info("Deployed model {} v{} on port {} with ID: {}", modelName, version, port, model.getId());
+        return model;
+    }
+
+    /**
+     * Deploys an MLflow model to a CUSTOM Docker host.
+     * 
+     * Use this to deploy models to Docker hosts other than the configured one.
+     * 
+     * @param modelName The MLflow model name
+     * @param version The model version (null for latest)
+     * @param customDockerHost The Docker host IP/hostname to deploy to
+     * @param customDockerPort The Docker API port on the custom host
+     * @param port The host port to expose (null for auto-assign)
+     * @return The created AiModel
+     * @throws IOException if deployment fails
+     */
+    public AiModel deployModelToHost(String modelName, String version, 
+            String customDockerHost, int customDockerPort, Integer port) throws IOException {
+        log.info("Deploying model from MLflow: {} v{} to custom Docker host {}:{}", 
+                modelName, version != null ? version : "latest", customDockerHost, customDockerPort);
+        
+        // Ensure specification exists
+        AiModelSpecification spec = importModelAsSpecification(modelName, version);
+        
+        // Deploy to custom Docker host and create AiModel
+        AiModelCreate modelCreate = modelService.deployAndCreateTmfModelToHost(
+            spec, modelName, version != null ? version : spec.getVersion(), 
+            customDockerHost, customDockerPort, port);
+        
+        AiModel model = modelRepository.createAiModel(modelCreate);
+        
+        log.info("Deployed model {} v{} to host {} with ID: {}", 
+                modelName, version, customDockerHost, model.getId());
+        return model;
+    }
+
+    /**
+     * Checks if a model is currently deployed.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @return true if deployed and serving
+     */
+    public boolean isModelDeployed(String modelName, String version) {
+        return modelService.isDeployed(modelName, version);
+    }
+
+    /**
+     * Checks if a model is currently deployed on a CUSTOM Docker host.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @param customDockerHost The Docker host
+     * @param customDockerPort The Docker API port
+     * @return true if deployed and serving
+     */
+    public boolean isModelDeployedOnHost(String modelName, String version, 
+            String customDockerHost, int customDockerPort) {
+        return modelService.isDeployedOnHost(modelName, version, customDockerHost, customDockerPort);
+    }
+
+    /**
+     * Stops a deployed model.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @throws IOException if stopping fails
+     */
+    public void stopDeployment(String modelName, String version) throws IOException {
+        log.info("Stopping deployment: {} v{}", modelName, version);
+        modelService.stopDeployment(modelName, version);
+        log.info("Deployment stopped: {} v{}", modelName, version);
+    }
+
+    /**
+     * Stops a deployed model on a CUSTOM Docker host.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @param customDockerHost The Docker host
+     * @param customDockerPort The Docker API port
+     */
+    public void stopDeploymentOnHost(String modelName, String version, 
+            String customDockerHost, int customDockerPort) {
+        log.info("Stopping deployment on host {}: {} v{}", customDockerHost, modelName, version);
+        modelService.stopDeploymentOnHost(modelName, version, customDockerHost, customDockerPort);
+        log.info("Deployment stopped on host {}: {} v{}", customDockerHost, modelName, version);
+    }
+
+    /**
+     * Gets the inference URL for a deployed model.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @return The inference URL, or null if not deployed
+     */
+    public String getDeploymentUrl(String modelName, String version) {
+        return modelService.getInferenceUrl(modelName, version);
+    }
+
+    /**
+     * Gets the inference URL for a model deployed on a CUSTOM Docker host.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @param customDockerHost The Docker host
+     * @return The inference URL, or null if not deployed
+     */
+    public String getDeploymentUrlOnHost(String modelName, String version, String customDockerHost) {
+        return modelService.getInferenceUrlOnHost(modelName, version, customDockerHost);
     }
 
     // ========================================
@@ -308,6 +442,6 @@ public class MlflowIntegrationService {
      * Builds the base URL for API endpoints.
      */
     private String getBaseUrl() {
-        return "http://localhost:" + serverPort + contextPath;
+        return "https://api.example.com/:" + serverPort + contextPath;
     }
 }

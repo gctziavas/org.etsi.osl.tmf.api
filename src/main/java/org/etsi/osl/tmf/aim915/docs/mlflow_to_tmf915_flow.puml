@@ -1,4 +1,4 @@
-@startuml
+@startuml MLflow-to-TMF915-Integration-Flow
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontName Arial
 skinparam defaultFontSize 10
@@ -11,62 +11,120 @@ skinparam swimlane {
   titleFontStyle bold
 }
 
-title MLflow to TMF 915 Integration
+title MLflow to TMF 915 Integration Flow
 
 |#E3F2FD| MLflow |
 |#E8F5E9| TMF API |
 |#FFF3E0| Mapping |
-|#FCE4EC| Deploy |
+|#FCE4EC| Docker |
+
+' ============================================
+' IMPORT FLOW
+' ============================================
 
 |#E3F2FD| MLflow |
 start
 :Register Model and Version;
 
 |#E8F5E9| TMF API |
-:POST /mlflow/import/name;
+:MlflowIntegrationService\n.importModelAsSpecification();
 
 |#FFF3E0| Mapping |
-:Fetch Model, Version, Run;
-:Build AiModelSpecification;
+:MlflowClientService\nfetch Model, Version, Run;
+:MlflowSpecificationService\nbuildSpecificationCreate();
 note right
   name, version, description
   specCharacteristic:
-  lifecycleStatus, stage,
-  runId, modelType,
-  param, metric
+  - lifecycleStatus, stage
+  - runId, createdBy
+  - creationTimestamp
+  - modelType, framework
+  - param_*, metric_*
   URLs: dataSheet,
   trainingData, evalData
 end note
 
 |#E8F5E9| TMF API |
-:Persist and Return Spec;
-:POST /mlflow/deploy/name;
+:Persist AiModelSpecification;
+:Return Specification;
+
+' ============================================
+' DOCKER DEPLOYMENT FLOW
+' ============================================
+
+|#E8F5E9| TMF API |
+:MlflowIntegrationService\n.deployModelFromMlflow();
 
 |#FFF3E0| Mapping |
-:deployAndCreateModel;
+:MlflowModelService\n.deployAndCreateTmfModel();
+:Check specification exists\n(import if needed);
 
-|#FCE4EC| Deploy |
-if (Target?) then (LOCAL)
-  :mlflow models serve;
-else (REMOTE)
-  :Remote MLflow API;
-endif
-:Get inferenceUrl;
+|#FCE4EC| Docker |
+:DockerDeploymentService\n.deployModel();
+:Find available port;
+:Create container via\nDocker Remote API;
+:Start container;
+:Wait for health check;
+:Return ContainerDeploymentInfo;
+note right
+  containerId
+  containerName
+  inferenceUrl
+  dockerHost
+  hostPort
+end note
 
 |#FFF3E0| Mapping |
-:Build AiModel;
+:MlflowModelService\n.createModelFromDeployment();
+:Build AiModelCreate;
 note right
   state = ACTIVE
   characteristic:
-  platform, endpoint,
-  deploymentTarget,
-  resources, environment
+  - platform: mlflow
+  - endpoint: inferenceUrl
+  - containerId
+  - containerName
+  - dockerHost
+  - hostPort
+  - deploymentTarget: docker
 end note
 
 |#E8F5E9| TMF API |
-:Persist and Return Model;
+:Persist AiModel;
+:Return Model with ID;
 
-|#FCE4EC| Deploy |
-:Serving at inferenceUrl;
+|#FCE4EC| Docker |
+:Container serving at\ninferenceUrl/invocations;
+
+' ============================================
+' EXTERNAL REGISTRATION FLOW
+' ============================================
+
+|#E8F5E9| TMF API |
+:Alternative: External Deployment;
+:MlflowIntegrationService\n.createModelInstance();
+
+|#FFF3E0| Mapping |
+:MlflowModelService\n.createModelInstance();
+:Build AiModelCreate with\nexternal endpoint;
+
+|#E8F5E9| TMF API |
+:Persist AiModel;
+:Return Model;
+
+' ============================================
+' STOP DEPLOYMENT FLOW
+' ============================================
+
+|#E8F5E9| TMF API |
+:MlflowIntegrationService\n.stopDeployment();
+
+|#FCE4EC| Docker |
+:DockerDeploymentService\n.stopDeployment();
+:Stop container;
+:Remove container;
+:Update tracking map;
+
 stop
+
 @enduml

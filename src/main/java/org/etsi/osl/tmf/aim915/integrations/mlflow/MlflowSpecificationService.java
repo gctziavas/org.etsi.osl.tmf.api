@@ -70,6 +70,7 @@ public class MlflowSpecificationService {
         RegisteredModel registeredModel = mlflowClient.getRegisteredModel(modelName);
         ModelVersion modelVersion;
         
+        // Checks if the specified version exists, otherwise uses the latest version. Throws if no versions found.
         String resolvedVersion = version;
         if (resolvedVersion != null) {
             List<org.mlflow.api.proto.ModelRegistry.ModelVersion> versions = mlflowClient.getModelVersions(modelName);
@@ -100,9 +101,11 @@ public class MlflowSpecificationService {
         String version = modelVersion.getVersion();
         String modelId = modelName + "_v" + version;
         Run run = null;
+        // Try to get the associated run for more details (if available)
         if (modelVersion.getRunId() != null && !modelVersion.getRunId().isEmpty()) {
             run = mlflowClient.getRun(modelVersion.getRunId());
         }
+        // Determine description: prefer model version description, then registered model description, then default
         String description = null;
         if (modelVersion.getDescription() != null && !modelVersion.getDescription().isEmpty()) {
             description = modelVersion.getDescription();
@@ -124,7 +127,6 @@ public class MlflowSpecificationService {
         addFrameworkCharacteristics(spec, modelVersion, run);
         addMetricsCharacteristics(spec, run);
         addTagsCharacteristics(spec, modelVersion, registeredModel);
-
         // Set artifact URLs (TMF 915 standard fields)
         setArtifactUrls(spec, modelVersion, run, baseUrl, modelId);
 
