@@ -126,17 +126,18 @@ end note
 :Return Model;
 
 ' ============================================
-' STOP DEPLOYMENT FLOW
+' STOP DEPLOYMENT FLOW (via state change)
 ' ============================================
 
 |#E8F5E9| TMF API |
-:MlflowIntegrationService\n.stopDeployment(uuid);
+:User sets state = TERMINATED\nor calls terminateModel();
 
 |#FFF3E0| Mapping |
-:MlflowModelService\n.stopDeploymentAndTerminate();
+:AiModelLifecycleService\n.updateStateWithContainerSync();
+:Get mlflowModelName and\nmlflowModelVersion from\ncharacteristics;
 
 |#FCE4EC| Docker |
-:DockerDeploymentService\n.stopDeployment();
+:MlflowDeploymentService\n.stopDeployment();
 :Stop container;
 :Remove container;
 :Update tracking map;
@@ -144,6 +145,27 @@ end note
 |#E8F5E9| TMF API |
 :Update AiModel state;
 :state = **TERMINATED**;
+
+stop
+
+' ============================================
+' CONTAINER STATUS SYNC (Scheduled)
+' ============================================
+
+|#FFF3E0| Mapping |
+start
+:AiModelLifecycleService\n.syncContainerStatus()\n«every 30 seconds»;
+:Get all ACTIVE AiModels;
+
+repeat
+  :Check if container running\nfor model;
+  if (container stopped?) then (yes)
+    |#E8F5E9| TMF API |
+    :Update state to TERMINATED;
+  else (no)
+    :Model still running;
+  endif
+repeat while (more models?)
 
 stop
 
@@ -159,6 +181,10 @@ note as N1
   3. **TERMINATED** - Container stopped
   
   Flow: RESERVED → ACTIVE → TERMINATED
+  
+  **Bidirectional Sync:**
+  - State=TERMINATED → stops container
+  - Container stops → State=TERMINATED
 end note
 
 @enduml

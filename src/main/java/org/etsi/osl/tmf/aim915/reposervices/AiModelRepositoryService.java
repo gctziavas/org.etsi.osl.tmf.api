@@ -81,4 +81,15 @@ public class AiModelRepositoryService {
     public List<AiModel> findByNameStartingWith(String namePrefix) {
         return aiModelRepository.findByNameStartingWith(namePrefix);
     }
+
+    /**
+     * Finds all AiModels with a given state.
+     * 
+     * @param state The state to filter by
+     * @return List of AiModels with the given state
+     */
+    public List<AiModel> findByState(ServiceStateType state) {
+        log.info("AiModel FIND BY STATE: {}", state);
+        return aiModelRepository.findByState(state);
+    }
 }

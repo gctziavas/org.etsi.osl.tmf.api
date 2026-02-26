@@ -114,6 +114,17 @@ package "Mapping & Deployment" as Services #FFF3E0 {
     Lifecycle: RESERVED→ACTIVE→TERMINATED
   }
   
+  class AiModelLifecycleService <<Service>> #FFCCBC {
+    updateStateWithContainerSync()
+    terminateModel()
+    syncContainerStatus() «scheduled»
+    checkModelStatus()
+    --
+    Bidirectional sync:
+    State=TERMINATED → stop container
+    Container stopped → State=TERMINATED
+  }
+  
   class DeploymentInfo <<Info>> #FCE4EC {
     modelName, version
     containerId, containerName
@@ -124,6 +135,8 @@ package "Mapping & Deployment" as Services #FFF3E0 {
   MlflowModelService --> DeploymentInfo : manages
   MlflowIntegrationService --> MlflowModelService
   MlflowIntegrationService --> MlflowSpecificationService
+  AiModelLifecycleService --> MlflowDeploymentService : stops containers
+  AiModelLifecycleService ..> AiModel : syncs state
 }
 
 package "Docker Deployment" as Docker #FCE4EC {
