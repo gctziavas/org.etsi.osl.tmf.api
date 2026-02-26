@@ -56,8 +56,24 @@ end note
 :MlflowIntegrationService\n.deployModelFromMlflow();
 
 |#FFF3E0| Mapping |
-:MlflowModelService\n.deployAndCreateTmfModel();
+:MlflowModelService\n.createReservedAiModel();
 :Check specification exists\n(import if needed);
+:Build AiModelCreate;
+note right
+  state = **RESERVED**
+  characteristic:
+  - platform: mlflow
+  - deploymentTarget: docker
+  - mlflowModelName
+  - mlflowModelVersion
+end note
+
+|#E8F5E9| TMF API |
+:Persist AiModel (RESERVED);
+:Return Model with ID;
+
+|#FFF3E0| Mapping |
+:MlflowModelService\n.deployAndActivate();
 
 |#FCE4EC| Docker |
 :DockerDeploymentService\n.deployModel();
@@ -75,23 +91,20 @@ note right
 end note
 
 |#FFF3E0| Mapping |
-:MlflowModelService\n.createModelFromDeployment();
-:Build AiModelCreate;
+:Update AiModel with\ndeployment info;
 note right
-  state = ACTIVE
-  characteristic:
-  - platform: mlflow
+  Add characteristics:
   - endpoint: inferenceUrl
   - containerId
   - containerName
   - dockerHost
   - hostPort
-  - deploymentTarget: docker
+  - deployedAt
 end note
 
 |#E8F5E9| TMF API |
-:Persist AiModel;
-:Return Model with ID;
+:Update AiModel state;
+:state = **ACTIVE**;
 
 |#FCE4EC| Docker |
 :Container serving at\ninferenceUrl/invocations;
@@ -117,7 +130,10 @@ end note
 ' ============================================
 
 |#E8F5E9| TMF API |
-:MlflowIntegrationService\n.stopDeployment();
+:MlflowIntegrationService\n.stopDeployment(uuid);
+
+|#FFF3E0| Mapping |
+:MlflowModelService\n.stopDeploymentAndTerminate();
 
 |#FCE4EC| Docker |
 :DockerDeploymentService\n.stopDeployment();
@@ -125,6 +141,24 @@ end note
 :Remove container;
 :Update tracking map;
 
+|#E8F5E9| TMF API |
+:Update AiModel state;
+:state = **TERMINATED**;
+
 stop
+
+' ============================================
+' LIFECYCLE STATE DIAGRAM
+' ============================================
+
+note as N1
+  **AiModel Lifecycle States:**
+  
+  1. **RESERVED** - Model created, deployment pending
+  2. **ACTIVE** - Container running and serving
+  3. **TERMINATED** - Container stopped
+  
+  Flow: RESERVED → ACTIVE → TERMINATED
+end note
 
 @enduml

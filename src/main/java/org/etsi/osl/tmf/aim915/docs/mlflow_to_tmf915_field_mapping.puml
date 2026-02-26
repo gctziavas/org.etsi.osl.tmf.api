@@ -47,7 +47,9 @@ map "Artifacts → AiModelSpecification URLs" as ArtifactMapping {
 map "Docker Deployment → AiModel" as DeployMapping {
   AiModelSpecification.id => aiModelSpecification (ref)
   "{modelName} v{version}" => name
-  Always ACTIVE => state
+  Initial: RESERVED => state (before deployment)
+  After deploy: ACTIVE => state (container running)
+  After stop: TERMINATED => state (container stopped)
   deployment.inferenceUrl => characteristic[endpoint]
   deployment.containerId => characteristic[containerId]
   deployment.containerName => characteristic[containerName]
@@ -60,7 +62,7 @@ map "Docker Deployment → AiModel" as DeployMapping {
 map "External Deployment → AiModel" as ExternalMapping {
   AiModelSpecification.id => aiModelSpecification (ref)
   instanceName (provided) => name
-  Always ACTIVE => state
+  ACTIVE => state (external deployments)
   deploymentEndpoint (provided) => characteristic[endpoint]
   "external" => characteristic[deploymentTarget]
 }

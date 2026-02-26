@@ -64,6 +64,9 @@ package "TMF 915 AI Model Management" as TMF915 #E3F2FD {
     --
     aiModelSpecification
     serviceCharacteristic[]
+    --
+    Lifecycle:
+    RESERVED → ACTIVE → TERMINATED
   }
   
   class Characteristic <<TMF915>> #E3F2FD {
@@ -88,10 +91,15 @@ package "Mapping & Deployment" as Services #FFF3E0 {
   }
   
   class MlflowModelService <<Service>> #FFF3E0 {
+    createReservedAiModel()
+    deployAndActivate()
+    deployAndActivateToHost()
+    stopDeploymentAndTerminate()
+    createModelInstance()
+    --
+    «deprecated»
     deployAndCreateTmfModel()
     deployAndCreateTmfModelToHost()
-    createModelFromDeployment()
-    createModelInstance()
   }
   
   class MlflowIntegrationService <<Service>> #FFF3E0 {
@@ -100,7 +108,10 @@ package "Mapping & Deployment" as Services #FFF3E0 {
     syncAllModels()
     deployModelFromMlflow()
     deployModelToHost()
-    stopDeployment()
+    stopDeployment(uuid)
+    stopDeploymentOnHost(uuid)
+    --
+    Lifecycle: RESERVED→ACTIVE→TERMINATED
   }
   
   class DeploymentInfo <<Info>> #FCE4EC {

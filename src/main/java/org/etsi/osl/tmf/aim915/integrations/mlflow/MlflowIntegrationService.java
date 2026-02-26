@@ -203,8 +203,9 @@ public class MlflowIntegrationService {
      * 
      * This method:
      * 1. Imports/finds the specification
-     * 2. Deploys the model to Docker
-     * 3. Creates an AiModel with the inference endpoint
+     * 2. Creates AiModel in RESERVED state
+     * 3. Deploys the model to Docker
+     * 4. Updates AiModel to ACTIVE state
      * 
      * @param modelName The MLflow model name
      * @param version The model version (null for latest)
@@ -216,19 +217,33 @@ public class MlflowIntegrationService {
         
         // Ensure specification exists
         AiModelSpecification spec = importModelAsSpecification(modelName, version);
+        String resolvedVersion = version != null ? version : spec.getVersion();
         
-        // Deploy to Docker and create AiModel
-        AiModelCreate modelCreate = modelService.deployAndCreateTmfModel(
-            spec, modelName, version != null ? version : spec.getVersion());
-        
+        // Step 1: Create AiModel in RESERVED state
+        AiModelCreate modelCreate = modelService.createReservedAiModel(spec, modelName, resolvedVersion);
         AiModel model = modelRepository.createAiModel(modelCreate);
+        log.info("Created RESERVED AiModel {} with ID: {}", model.getName(), model.getId());
         
-        log.info("Deployed model {} v{} with ID: {}", modelName, version, model.getId());
+        try {
+            // Step 2: Deploy to Docker and update to ACTIVE
+            modelService.deployAndActivate(model, modelName, resolvedVersion, null);
+            log.info("Deployed model {} v{} with ID: {}", modelName, version, model.getId());
+        } catch (Exception e) {
+            log.error("Deployment failed for AiModel {}, state remains RESERVED: {}", model.getId(), e.getMessage());
+            throw e;
+        }
+        
         return model;
     }
 
     /**
      * Deploys an MLflow model to Docker on a specific port.
+     * 
+     * This method:
+     * 1. Imports/finds the specification
+     * 2. Creates AiModel in RESERVED state
+     * 3. Deploys the model to Docker on the specified port
+     * 4. Updates AiModel to ACTIVE state
      * 
      * @param modelName The MLflow model name
      * @param version The model version (null for latest)
@@ -241,14 +256,22 @@ public class MlflowIntegrationService {
         
         // Ensure specification exists
         AiModelSpecification spec = importModelAsSpecification(modelName, version);
+        String resolvedVersion = version != null ? version : spec.getVersion();
         
-        // Deploy to Docker on specific port and create AiModel
-        AiModelCreate modelCreate = modelService.deployAndCreateTmfModel(
-            spec, modelName, version != null ? version : spec.getVersion(), port);
-        
+        // Step 1: Create AiModel in RESERVED state
+        AiModelCreate modelCreate = modelService.createReservedAiModel(spec, modelName, resolvedVersion);
         AiModel model = modelRepository.createAiModel(modelCreate);
+        log.info("Created RESERVED AiModel {} with ID: {}", model.getName(), model.getId());
         
-        log.info("Deployed model {} v{} on port {} with ID: {}", modelName, version, port, model.getId());
+        try {
+            // Step 2: Deploy to Docker on specific port and update to ACTIVE
+            modelService.deployAndActivate(model, modelName, resolvedVersion, port);
+            log.info("Deployed model {} v{} on port {} with ID: {}", modelName, version, port, model.getId());
+        } catch (Exception e) {
+            log.error("Deployment failed for AiModel {}, state remains RESERVED: {}", model.getId(), e.getMessage());
+            throw e;
+        }
+        
         return model;
     }
 
@@ -256,6 +279,12 @@ public class MlflowIntegrationService {
      * Deploys an MLflow model to a CUSTOM Docker host.
      * 
      * Use this to deploy models to Docker hosts other than the configured one.
+     * 
+     * This method:
+     * 1. Imports/finds the specification
+     * 2. Creates AiModel in RESERVED state
+     * 3. Deploys the model to the custom Docker host
+     * 4. Updates AiModel to ACTIVE state
      * 
      * @param modelName The MLflow model name
      * @param version The model version (null for latest)
@@ -272,16 +301,24 @@ public class MlflowIntegrationService {
         
         // Ensure specification exists
         AiModelSpecification spec = importModelAsSpecification(modelName, version);
+        String resolvedVersion = version != null ? version : spec.getVersion();
         
-        // Deploy to custom Docker host and create AiModel
-        AiModelCreate modelCreate = modelService.deployAndCreateTmfModelToHost(
-            spec, modelName, version != null ? version : spec.getVersion(), 
-            customDockerHost, customDockerPort, port);
-        
+        // Step 1: Create AiModel in RESERVED state
+        AiModelCreate modelCreate = modelService.createReservedAiModel(spec, modelName, resolvedVersion);
         AiModel model = modelRepository.createAiModel(modelCreate);
+        log.info("Created RESERVED AiModel {} with ID: {}", model.getName(), model.getId());
         
-        log.info("Deployed model {} v{} to host {} with ID: {}", 
-                modelName, version, customDockerHost, model.getId());
+        try {
+            // Step 2: Deploy to custom Docker host and update to ACTIVE
+            modelService.deployAndActivateToHost(model, modelName, resolvedVersion, 
+                    customDockerHost, customDockerPort, port);
+            log.info("Deployed model {} v{} to host {} with ID: {}", 
+                    modelName, version, customDockerHost, model.getId());
+        } catch (Exception e) {
+            log.error("Deployment failed for AiModel {}, state remains RESERVED: {}", model.getId(), e.getMessage());
+            throw e;
+        }
+        
         return model;
     }
 
@@ -324,6 +361,20 @@ public class MlflowIntegrationService {
     }
 
     /**
+     * Stops a deployed model and updates AiModel to TERMINATED state.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @param aiModelUuid The UUID of the AiModel to update to TERMINATED
+     * @throws IOException if stopping fails
+     */
+    public void stopDeployment(String modelName, String version, String aiModelUuid) throws IOException {
+        log.info("Stopping deployment: {} v{} and terminating AiModel {}", modelName, version, aiModelUuid);
+        modelService.stopDeploymentAndTerminate(modelName, version, aiModelUuid);
+        log.info("Deployment stopped and AiModel {} set to TERMINATED", aiModelUuid);
+    }
+
+    /**
      * Stops a deployed model on a CUSTOM Docker host.
      * 
      * @param modelName The model name
@@ -336,6 +387,24 @@ public class MlflowIntegrationService {
         log.info("Stopping deployment on host {}: {} v{}", customDockerHost, modelName, version);
         modelService.stopDeploymentOnHost(modelName, version, customDockerHost, customDockerPort);
         log.info("Deployment stopped on host {}: {} v{}", customDockerHost, modelName, version);
+    }
+
+    /**
+     * Stops a deployed model on a CUSTOM Docker host and updates AiModel to TERMINATED state.
+     * 
+     * @param modelName The model name
+     * @param version The model version
+     * @param customDockerHost The Docker host
+     * @param customDockerPort The Docker API port
+     * @param aiModelUuid The UUID of the AiModel to update to TERMINATED
+     */
+    public void stopDeploymentOnHost(String modelName, String version, 
+            String customDockerHost, int customDockerPort, String aiModelUuid) {
+        log.info("Stopping deployment on host {}: {} v{} and terminating AiModel {}", 
+                customDockerHost, modelName, version, aiModelUuid);
+        modelService.stopDeploymentOnHostAndTerminate(modelName, version, 
+                customDockerHost, customDockerPort, aiModelUuid);
+        log.info("Deployment stopped on host {} and AiModel {} set to TERMINATED", customDockerHost, aiModelUuid);
     }
 
     /**
